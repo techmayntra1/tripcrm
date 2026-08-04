@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('incomes', function (Blueprint $table) {
+            $table->id();
+            $table->string('receipt_number', 20)->unique();
+            $table->enum('income_type', ['project', 'advance', 'other']);
+            $table->date('income_date');
+            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('invoice_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
+            $table->enum('payment_mode', ['cash', 'bank_transfer', 'upi', 'cheque', 'card']);
+            $table->foreignId('bank_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('description', 255);
+            $table->decimal('amount', 12, 2);
+            $table->decimal('tds_amount', 12, 2)->default(0);
+            $table->decimal('net_amount', 12, 2);
+            $table->string('cheque_number', 20)->nullable();
+            $table->date('cheque_date')->nullable();
+            $table->string('bank_name', 100)->nullable();
+            $table->string('transaction_id', 50)->nullable();
+            $table->string('bank_reference', 50)->nullable();
+            $table->text('notes')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('incomes');
+    }
+};

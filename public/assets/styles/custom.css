@@ -1,0 +1,1069 @@
+:root {
+    --primary-color: #0EA5A4;
+    --primary-dark: #0B8281;
+    --dark-color: #1a1a1a;
+    --dark-sidebar: #1a1a1a;
+}
+html {
+    font-size: 105%;
+}
+.was-validated .form-control:valid,
+.was-validated .form-select:valid {
+    border-color: #ced4da !important;
+    background-image: none !important;
+}
+.was-validated .form-control:valid:focus,
+.was-validated .form-select:valid:focus {
+    border-color: #86b7fe !important;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+.was-validated .select2-container--bootstrap-5 .select2-selection {
+    border-color: #ced4da !important;
+}
+.was-validated .form-control:invalid ~ .select2-container--bootstrap-5 .select2-selection,
+.was-validated .form-select:invalid ~ .select2-container--bootstrap-5 .select2-selection {
+    border-color: #dc3545 !important;
+}
+.app-sidebar {
+    transition: width 0.15s linear !important;
+}
+.app-sidebar .vertical-nav-menu li a {
+    transition: background 0.1s linear !important;
+    color: #fff !important;
+    font-size: 0.95rem;
+    display: flex !important;
+    align-items: center;
+    padding: 0.75rem 1.5rem !important;
+}
+.app-sidebar .app-sidebar__inner {
+    background: var(--dark-sidebar) !important;
+}
+.app-sidebar .vertical-nav-menu li a i {
+    color: #fff !important;
+    min-width: 30px;
+    margin-right: 10px;
+    font-size: 1.15rem !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+}
+.app-sidebar .vertical-nav-menu li a:hover {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+}
+.app-sidebar .vertical-nav-menu li a:hover i {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+}
+.app-sidebar .vertical-nav-menu li a.mm-active {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    font-weight: 600;
+}
+.app-sidebar .vertical-nav-menu li a.mm-active i {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+}
+.app-sidebar .app-sidebar__heading {
+    color: var(--primary-color) !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+.app-sidebar .scrollbar-sidebar {
+    background: var(--dark-sidebar) !important;
+}
+.app-header {
+    background: var(--dark-color) !important;
+    color: #fff !important;
+}
+.app-header *:not(input):not(select):not(option):not(.form-control):not(.form-select) {
+    color: #fff !important;
+}
+.app-header i {
+    color: #fff !important;
+}
+.app-header .app-header__logo {
+    background: var(--dark-color) !important;
+}
+.app-header .hamburger-inner,
+.app-header .hamburger-inner::before,
+.app-header .hamburger-inner::after {
+    background-color: var(--primary-color) !important;
+}
+.app-sidebar .hamburger-inner,
+.app-sidebar .hamburger-inner::before,
+.app-sidebar .hamburger-inner::after {
+    background-color: var(--primary-color) !important;
+}
+.app-sidebar .app-header__logo {
+    background: var(--dark-sidebar) !important;
+}
+.closed-sidebar .app-sidebar .vertical-nav-menu li a {
+    justify-content: center !important;
+    padding: 0.85rem 0 !important;
+    text-indent: 0 !important;
+}
+.closed-sidebar .app-sidebar .vertical-nav-menu li a i {
+    margin: 0 !important;
+    font-size: 1.25rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+    text-indent: 0 !important;
+}
+.closed-sidebar .app-sidebar .vertical-nav-menu li a span {
+    display: none !important;
+}
+.closed-sidebar .app-sidebar .app-sidebar__heading {
+    visibility: hidden;
+    height: 10px;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden;
+}
+.closed-sidebar .app-sidebar .vertical-nav-menu li > a > i {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    text-indent: 0 !important;
+}
+.closed-sidebar .app-sidebar:hover .vertical-nav-menu li a {
+    text-indent: 0 !important;
+    padding: 0.75rem 1.5rem !important;
+    justify-content: flex-start !important;
+}
+.closed-sidebar .app-sidebar:hover .vertical-nav-menu li a i {
+    margin-right: 10px !important;
+}
+.closed-sidebar .app-sidebar:hover .vertical-nav-menu li a span {
+    display: inline !important;
+}
+.closed-sidebar .app-sidebar .vertical-nav-menu li a:hover i,
+.closed-sidebar .app-sidebar .vertical-nav-menu li a.mm-active i {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    text-indent: 0 !important;
+}
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.btn-primary:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: #fff !important;
+}
+.btn-primary i {
+    color: #fff !important;
+}
+.bg-primary, .badge.bg-primary {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.bg-primary *, .badge.bg-primary * {
+    color: #fff !important;
+}
+.bg-warning, .badge.bg-warning {
+    color: #000 !important;
+}
+.bg-warning *, .badge.bg-warning * {
+    color: #000 !important;
+}
+.bg-dark, .badge.bg-dark {
+    color: #fff !important;
+}
+.bg-dark *, .badge.bg-dark * {
+    color: #fff !important;
+}
+.text-primary {
+    color: var(--primary-color) !important;
+}
+/* Page title - larger text, smaller icon for clear hierarchy */
+.app-page-title .page-title-heading > div:not(.page-title-icon) {
+    font-size: 1.35rem !important;
+    font-weight: 600 !important;
+}
+.app-page-title .page-title-icon {
+    background: var(--primary-color) !important;
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.app-page-title .page-title-icon i {
+    font-size: 1.25rem !important;
+    color: #fff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #fff !important;
+    background: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+.app-page-title .page-title-icon i.icon-gradient {
+    color: #fff !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: #fff !important;
+    background: none !important;
+}
+.card-header {
+    background: linear-gradient(135deg, var(--dark-color) 0%, #333 100%) !important;
+    color: #fff !important;
+}
+.card-header *:not(input):not(select):not(option):not(.form-control):not(.form-select):not(i):not(a) {
+    color: #fff !important;
+}
+.header-title {
+    font-size: 1.1rem;
+}
+.app-header-left {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+a {
+    color: var(--dark-color);
+}
+.table thead {
+    background: var(--primary-color) !important;
+}
+.table thead tr {
+    background: var(--primary-color) !important;
+}
+.table thead th {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+}
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.input-group .input-group-text {
+    background: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.input-group .input-group-text i {
+    color: #fff !important;
+}
+
+/* Card header search bar - yellow button */
+.card-header .input-group .btn,
+.card-header .input-group .btn-outline-secondary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.card-header .input-group .btn:hover,
+.card-header .input-group .btn-outline-secondary:hover {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+}
+.card-header .input-group .btn i,
+.card-header .input-group .btn-outline-secondary i {
+    color: #fff !important;
+}
+
+.app-sidebar .app-header__logo,
+.app-header .app-header__logo {
+    width: auto !important;
+    min-width: 290px !important;
+    padding: 12px 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.closed-sidebar .app-header .app-header__logo {
+    min-width: 70px !important;
+    padding: 0.85rem 0 !important;
+    justify-content: center !important;
+}
+.closed-sidebar .app-header .app-header__logo .header-sidebar-text {
+    display: none !important;
+}
+.closed-sidebar .app-header .app-header__logo .header__pane {
+    margin: 0 !important;
+}
+.card-header-tabs .nav-link {
+    border: none !important;
+}
+.card-header-tabs .nav-link:hover,
+.card-header-tabs .nav-link:focus {
+    border: none !important;
+    color: #fff !important;
+    isolation: isolate;
+}
+.card-header-tabs .nav-link.active {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+    font-weight: 500;
+    border: none !important;
+}
+.card-header-tabs .nav-link.active i {
+    color: #fff !important;
+}
+/* Lead/Customer tabs styling */
+.card-header .lead-tabs .nav-link,
+.card-header .lead-tabs .nav-link i {
+    color: rgba(255, 255, 255, 0.65) !important;
+    background: none !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    border-radius: 0 !important;
+    font-weight: 600 !important;
+}
+.card-header .lead-tabs .nav-link:hover,
+.card-header .lead-tabs .nav-link:hover i {
+    color: #fff !important;
+}
+.card-header .lead-tabs .nav-link.active,
+.card-header .lead-tabs .nav-link.active i {
+    color: #fff !important;
+    background: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    border-bottom: 3px solid var(--primary-color) !important;
+    border-radius: 0 !important;
+    font-weight: 600 !important;
+}
+/* Kill the theme's yellow (#ffc107) ::before accent bar so only the teal
+   border-bottom underline shows on the active tab */
+.card-header .lead-tabs .nav-link::before,
+.card-header .lead-tabs .nav-link.active::before {
+    content: none !important;
+    display: none !important;
+}
+/* Remove card-header bottom border for tabs */
+.card-header.has-tabs {
+    border-bottom: none !important;
+}
+/* Table header bottom border accent */
+.table thead {
+    border-bottom: 2px solid var(--primary-dark) !important;
+}
+.table thead th {
+    border-bottom: none !important;
+}
+.card-header-tabs .nav-link.active::before {
+    content: unset;
+}
+/* Project detail tabs - ensure white text on active */
+#projectTabs .nav-link.active,
+#projectTabs .nav-link.active i,
+#projectTabs button.nav-link.active,
+#projectTabs button.nav-link.active i,
+.project-tabs .nav-link.active,
+.project-tabs .nav-link.active i,
+.project-tabs button.nav-link.active,
+.project-tabs button.nav-link.active i {
+    color: #fff !important;
+    font-weight: 600;
+}
+/* Project tabs styling */
+#projectTabs .nav-link {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+}
+#projectTabs .nav-link i {
+    font-size: 0.9rem;
+}
+/* Tab add buttons */
+.tab-add-buttons .tab-add-btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+    text-transform: none;
+}
+.no-mb .nav-tabs {
+    margin-bottom: 0;
+}
+.font-09 {
+    font-size: 0.9rem;
+}
+.meeting-header {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+}
+.width-100 {
+    width: 100%;
+}
+.form-control::placeholder {
+    color: #6c757d !important;
+    opacity: 1 !important;
+}
+.form-control::-webkit-input-placeholder {
+    color: #6c757d !important;
+}
+.form-control::-moz-placeholder {
+    color: #6c757d !important;
+}
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    font-size: 0.8rem !important;
+    padding: 2px 8px !important;
+    margin: 2px !important;
+    flex-direction: row-reverse !important;
+    color: #212529 !important;
+    background-color: #e9ecef !important;
+}
+.select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+    font-size: 0.75rem !important;
+    padding: 0 4px !important;
+    margin-right: 0 !important;
+    margin-left: 6px !important;
+    color: #6c757d !important;
+}
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__option {
+    font-size: 0.9rem !important;
+    padding: 6px 12px !important;
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__option--highlighted {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+}
+.select2-container--bootstrap-5 .select2-dropdown .select2-results__option--selected {
+    background-color: #e9ecef !important;
+    color: #212529 !important;
+}
+.select2-container--bootstrap-5 .select2-selection--multiple {
+    min-height: 38px !important;
+}
+.select2-container--bootstrap-5 .select2-selection--single {
+    min-height: 38px !important;
+}
+.select2-container--bootstrap-5 .select2-search--dropdown .select2-search__field {
+    color: #212529 !important;
+}
+.select2-container--bootstrap-5 .select2-selection__placeholder {
+    color: #6c757d !important;
+}
+.card-header .form-control,
+.card-header .form-select,
+.card-header input,
+.card-header select {
+    color: #212529 !important;
+    background-color: #fff !important;
+    border: 1px solid #ced4da !important;
+}
+.card-header .form-control *,
+.card-header .form-select *,
+.card-header input *,
+.card-header select * {
+    color: #212529 !important;
+}
+.card-header .form-control::placeholder,
+.card-header input::placeholder {
+    color: #6c757d !important;
+}
+.card-header .form-control option,
+.card-header .form-select option,
+.card-header select option {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+.card-header .select2-container--bootstrap-5 .select2-selection {
+    background-color: #fff !important;
+    border-color: #ced4da !important;
+}
+.card-header .select2-container--bootstrap-5 .select2-selection__rendered {
+    color: #212529 !important;
+}
+.card-header .select2-container--bootstrap-5 .select2-selection__placeholder {
+    color: #6c757d !important;
+}
+.form-select option {
+    color: #212529 !important;
+    background-color: #fff !important;
+}
+input[type="date"],
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"] {
+    color: #212529 !important;
+    background-color: #fff !important;
+    color-scheme: light !important;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0) !important;
+}
+.card-header input,
+.card-header input[type="date"],
+.card-header input[type="text"] {
+    color: #212529 !important;
+    background-color: #fff !important;
+    color-scheme: light !important;
+    -webkit-text-fill-color: #212529 !important;
+}
+/* Disable table row hover effect - keep white background */
+.table-hover tbody tr:hover {
+    background-color: #fff !important;
+    --bs-table-hover-bg: #fff !important;
+    --bs-table-accent-bg: #fff !important;
+}
+.table-hover tbody tr:hover > * {
+    background-color: #fff !important;
+    --bs-table-accent-bg: #fff !important;
+}
+.table tbody tr:hover td {
+    background-color: #fff !important;
+}
+.table-striped tbody tr:nth-of-type(odd),
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: #fff !important;
+    --bs-table-striped-bg: #fff !important;
+}
+/* Special row styles - keep their colored background */
+.table tbody tr.table-secondary,
+.table tbody tr.table-secondary td {
+    background-color: #e2e3e5 !important;
+}
+.table tbody tr.table-dark,
+.table tbody tr.table-dark td {
+    background-color: #212529 !important;
+    color: #fff !important;
+}
+
+/* ============================================
+   Consistent Table Grid Styling
+   ============================================ */
+
+/* Table base styling */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+}
+.table th,
+.table td {
+    vertical-align: middle !important;
+    padding: 0.65rem 0.75rem !important;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-align: center !important;
+}
+.table th {
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.table td {
+    font-size: 0.9rem !important;
+}
+
+/* Give name/title columns more width (first column in most tables) */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    min-width: 150px;
+}
+
+
+/* Text alignments */
+.table .text-end,
+.table [class*="col-amount"] {
+    text-align: right !important;
+}
+.table .text-center,
+.table [class*="col-id"],
+.table [class*="col-status"],
+.table [class*="col-actions"] {
+    text-align: center !important;
+}
+
+/* Action buttons container */
+.table .btn-group-actions {
+    display: inline-flex;
+    gap: 0.25rem;
+    justify-content: center;
+}
+.table .btn-group-actions .btn {
+    padding: 0.25rem 0.5rem !important;
+}
+
+/* Table row - white background, no alternating colors */
+.table tbody tr:nth-child(even) {
+    background-color: #fff !important;
+}
+.table tbody tr:nth-child(odd) {
+    background-color: #fff !important;
+}
+.table tbody tr {
+    background-color: #fff !important;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* Table footer styling */
+.table tfoot {
+    font-weight: 600;
+    border-top: 2px solid var(--primary-color) !important;
+}
+.table tfoot td {
+    background-color: #f8f9fa !important;
+}
+
+/* Badge styling in tables */
+.table .badge {
+    font-size: 0.75rem !important;
+    padding: 0.35em 0.6em !important;
+    font-weight: 500 !important;
+}
+
+/* Empty state styling */
+.table .empty-state {
+    padding: 2rem !important;
+    text-align: center;
+    color: #6c757d;
+}
+.table .empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    opacity: 0.5;
+}
+
+/* Card footer pagination */
+.card-footer {
+    background-color: #f8f9fa !important;
+    border-top: 1px solid #e9ecef !important;
+    padding: 0.75rem 1rem !important;
+}
+
+/* Consistent filter section in card header */
+.card-header .filter-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+.card-header .form-select-sm,
+.card-header .form-control-sm {
+    font-size: 0.85rem !important;
+}
+
+/* Name column with subtitle */
+.table .name-cell strong {
+    display: block;
+    font-weight: 600;
+}
+.table .name-cell small {
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+/* Amount cell formatting */
+.table .amount-cell {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 500;
+}
+
+/* Fix double scrollbar issue */
+html, body {
+    overflow: hidden;
+    height: 100%;
+}
+.app-container {
+    height: 100vh;
+    overflow: hidden;
+}
+.app-main {
+    height: calc(100vh - 60px);
+    overflow: hidden;
+}
+.app-main__outer {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* ============================================
+   Table Responsive & Scrollable
+   ============================================ */
+
+/* Card body - allow horizontal scroll for tables */
+.card-body {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Table responsive wrapper */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Tab content panels - allow table scroll */
+.tab-content,
+.tab-pane {
+    overflow-x: auto;
+}
+
+/* Better table cell behavior on zoom */
+.table th,
+.table td {
+    white-space: nowrap;
+}
+
+/* Allow wrapping for name/description columns */
+.table th:nth-child(2),
+.table td:nth-child(2),
+.table .wrap-text {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* ============================================
+   Badge Spacing Fix for Adjacent Columns
+   ============================================ */
+
+/* Add spacing between badges in same cell */
+.table td .badge {
+    margin-right: 0.25rem;
+    margin-bottom: 0.15rem;
+    display: inline-block;
+}
+
+.table td .badge:last-child {
+    margin-right: 0;
+}
+
+/* Ensure badges in adjacent columns don't overlap */
+.table td {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+}
+
+/* Badge columns need proper spacing */
+.table td:has(.badge) {
+    min-width: 100px;
+}
+
+/* Fallback for browsers without :has support */
+.table .badge-cell {
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+/* Action column minimum width */
+.table .col-actions,
+.table th:last-child,
+.table td:last-child {
+    white-space: nowrap;
+}
+
+/* Amount columns */
+.table .col-amount {
+    min-width: 100px;
+    white-space: nowrap;
+}
+
+/* Scrollbar styling for table containers */
+.card-body::-webkit-scrollbar {
+    height: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+/* ============================================
+   Text Truncation with Hover Tooltip
+   ============================================ */
+
+/* Truncate text in table cells */
+.table .truncate {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Name column truncation */
+.table td:first-child {
+    max-width: 200px;
+}
+
+.table td:first-child strong,
+.table td:first-child > a,
+.table .name-truncate {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Description/notes truncation - max ~150 chars */
+.table .desc-truncate {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.desc-truncate {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+/* Custom tooltip for truncated text and badges */
+.table [title] {
+    position: relative;
+}
+
+/* Address/long text truncation */
+.table .address-truncate {
+    max-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Email truncation */
+.table .email-truncate {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* ============================================
+   Custom Tooltip Styling
+   ============================================ */
+
+/* Base tooltip styles for names and badges */
+.name-truncate[data-tooltip],
+.email-truncate[data-tooltip],
+.desc-truncate[data-tooltip],
+.address-truncate[data-tooltip],
+.badge[data-tooltip] {
+    position: relative;
+}
+
+.name-truncate[data-tooltip]::after,
+.email-truncate[data-tooltip]::after,
+.desc-truncate[data-tooltip]::after,
+.address-truncate[data-tooltip]::after,
+.badge[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 8px);
+    transform: translateX(-50%);
+    z-index: 1050;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 400;
+    white-space: nowrap;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(5px);
+}
+
+/* Tooltip arrow */
+.name-truncate[data-tooltip]::before,
+.email-truncate[data-tooltip]::before,
+.desc-truncate[data-tooltip]::before,
+.address-truncate[data-tooltip]::before,
+.badge[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 2px);
+    transform: translateX(-50%);
+    z-index: 1051;
+    border: 6px solid transparent;
+    border-top-color: #1a1a1a;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+    pointer-events: none;
+}
+
+/* Show tooltip on hover */
+.name-truncate[data-tooltip]:hover::after,
+.email-truncate[data-tooltip]:hover::after,
+.desc-truncate[data-tooltip]:hover::after,
+.address-truncate[data-tooltip]:hover::after,
+.badge[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.name-truncate[data-tooltip]:hover::before,
+.email-truncate[data-tooltip]:hover::before,
+.desc-truncate[data-tooltip]:hover::before,
+.address-truncate[data-tooltip]:hover::before,
+.badge[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Badge specific - smaller font in tooltip */
+.badge[data-tooltip]::after {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* For tooltips that would go off-screen left */
+.table td:first-child .name-truncate[data-tooltip]::after,
+.table td:nth-child(2) .name-truncate[data-tooltip]::after {
+    left: 0;
+    transform: translateX(0) translateY(5px);
+}
+.table td:first-child .name-truncate[data-tooltip]:hover::after,
+.table td:nth-child(2) .name-truncate[data-tooltip]:hover::after {
+    transform: translateX(0) translateY(0);
+}
+.table td:first-child .name-truncate[data-tooltip]::before,
+.table td:nth-child(2) .name-truncate[data-tooltip]::before {
+    left: 20px;
+    transform: translateX(0);
+}
+
+/* ============================================
+   Cursor Pointer for Clickable Elements
+   ============================================ */
+
+/* Ensure all clickable elements have pointer cursor */
+a,
+button,
+.btn,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+.nav-link,
+.dropdown-item,
+.page-link,
+.form-check-input,
+.form-select,
+select,
+label[for],
+.clickable,
+[data-bs-toggle],
+[onclick] {
+    cursor: pointer !important;
+}
+
+/* Table specific - buttons and links should have pointer */
+.table a,
+.table button,
+.table .btn,
+.table [role="button"],
+.table .dropdown-toggle,
+.table [data-bs-toggle] {
+    cursor: pointer !important;
+}
+
+/* Action buttons in tables */
+.table .btn-group-actions .btn,
+.table .btn-sm,
+.table .btn-outline-primary,
+.table .btn-outline-secondary,
+.table .btn-outline-danger,
+.table .btn-outline-warning,
+.table .btn-outline-success,
+.table .btn-outline-info {
+    cursor: pointer !important;
+}
+
+/* Modal triggers */
+[data-bs-toggle="modal"],
+[data-bs-toggle="dropdown"],
+[data-bs-toggle="collapse"],
+[data-bs-toggle="tab"],
+[data-bs-toggle="tooltip"],
+[data-bs-toggle="popover"] {
+    cursor: pointer !important;
+}
+
+/* Sidebar links */
+.app-sidebar a,
+.vertical-nav-menu a {
+    cursor: pointer !important;
+}
+
+/* Header elements */
+.app-header a,
+.app-header button,
+.hamburger {
+    cursor: pointer !important;
+}
+
+/* Disable hover tooltip on name-truncate and desc-truncate */
+.name-truncate[data-tooltip]::after,
+.name-truncate[data-tooltip]::before,
+.name-truncate[data-tooltip]:hover::after,
+.name-truncate[data-tooltip]:hover::before,
+.desc-truncate[data-tooltip]::after,
+.desc-truncate[data-tooltip]::before,
+.desc-truncate[data-tooltip]:hover::after,
+.desc-truncate[data-tooltip]:hover::before {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Remove title attribute hover styling */
+.table .name-truncate[title],
+.table td strong[title],
+.table .truncate[title] {
+    pointer-events: auto;
+}
+
+/* Disable browser default title tooltip - use CSS to hide */
+.name-truncate,
+.table td strong {
+    pointer-events: auto;
+}

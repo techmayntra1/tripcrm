@@ -1,0 +1,111 @@
+/* TripMantra brand: teal + dark theme for SweetAlert2 */
+
+.ko-swal-popup {
+    border-radius: 16px !important;
+    padding: 8px 0 16px !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35) !important;
+    border-top: 5px solid #0EA5A4 !important;
+    font-family: inherit !important;
+}
+
+.ko-swal-title {
+    color: #1a1a1a !important;
+    font-weight: 700 !important;
+    font-size: 1.4rem !important;
+    padding-top: 12px !important;
+}
+
+.ko-swal-body {
+    color: #555 !important;
+    font-size: 0.98rem !important;
+    line-height: 1.55 !important;
+    padding: 4px 24px 8px !important;
+}
+
+.ko-swal-icon {
+    margin-top: 18px !important;
+    margin-bottom: 6px !important;
+    border-width: 3px !important;
+}
+
+.ko-swal-actions {
+    margin-top: 20px !important;
+    gap: 10px !important;
+}
+
+.ko-swal-confirm {
+    background: #0EA5A4 !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 9px 22px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(14, 165, 164, 0.4) !important;
+    transition: all 0.2s ease !important;
+}
+.ko-swal-confirm:hover {
+    background: #0B8281 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 16px rgba(14, 165, 164, 0.5) !important;
+}
+.ko-swal-confirm:focus {
+    box-shadow: 0 0 0 3px rgba(14, 165, 164, 0.35) !important;
+}
+
+.ko-swal-cancel {
+    background: #1a1a1a !important;
+    color: #fff !important;
+    font-weight: 600 !important;
+    padding: 9px 22px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+}
+.ko-swal-cancel:hover {
+    background: #2d2d2d !important;
+    transform: translateY(-1px) !important;
+}
+.ko-swal-cancel:focus {
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.3) !important;
+}
+
+/* Toast styling */
+.ko-toast-popup {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18) !important;
+    border-left: 4px solid #0EA5A4 !important;
+    padding: 12px 16px !important;
+    font-family: inherit !important;
+}
+.ko-toast-popup .swal2-title {
+    font-size: 0.95rem !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+    padding: 0 !important;
+    margin: 0 0 0 8px !important;
+}
+.ko-toast-popup .swal2-icon {
+    margin: 0 !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-width: 2px !important;
+}
+.ko-toast-popup .swal2-icon .swal2-icon-content {
+    font-size: 1.1rem !important;
+}
+.ko-toast-popup.swal2-icon-success { border-left-color: #28a745 !important; }
+.ko-toast-popup.swal2-icon-error { border-left-color: #dc3545 !important; }
+.ko-toast-popup.swal2-icon-warning { border-left-color: #f7b924 !important; }
+.ko-toast-popup.swal2-icon-info { border-left-color: #17a2b8 !important; }
+
+.ko-toast-popup .swal2-timer-progress-bar-container {
+    height: 3px !important;
+}
+.ko-toast-popup .swal2-timer-progress-bar {
+    background: #0EA5A4 !important;
+}
+
+/* Backdrop subtle dark */
+.swal2-backdrop-show {
+    background: rgba(15, 15, 15, 0.55) !important;
+}
