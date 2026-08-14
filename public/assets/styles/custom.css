@@ -362,24 +362,24 @@ a {
 .card-header-tabs .nav-link.active::before {
     content: unset;
 }
-/* Project detail tabs - ensure white text on active */
-#projectTabs .nav-link.active,
-#projectTabs .nav-link.active i,
-#projectTabs button.nav-link.active,
-#projectTabs button.nav-link.active i,
-.project-tabs .nav-link.active,
-.project-tabs .nav-link.active i,
-.project-tabs button.nav-link.active,
-.project-tabs button.nav-link.active i {
+/* Trip detail tabs - ensure white text on active */
+#tripTabs .nav-link.active,
+#tripTabs .nav-link.active i,
+#tripTabs button.nav-link.active,
+#tripTabs button.nav-link.active i,
+.trip-tabs .nav-link.active,
+.trip-tabs .nav-link.active i,
+.trip-tabs button.nav-link.active,
+.trip-tabs button.nav-link.active i {
     color: #fff !important;
     font-weight: 600;
 }
-/* Project tabs styling */
-#projectTabs .nav-link {
+/* Trip tabs styling */
+#tripTabs .nav-link {
     padding: 0.5rem 0.85rem;
     font-size: 0.9rem;
 }
-#projectTabs .nav-link i {
+#tripTabs .nav-link i {
     font-size: 0.9rem;
 }
 /* Tab add buttons */

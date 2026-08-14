@@ -7,7 +7,7 @@ use App\Models\Company;
 use App\Models\Customer;
 use App\Models\GstRate;
 use App\Models\Invoice;
-use App\Models\Project;
+use App\Models\Trip;
 use App\Models\Quotation;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -17,7 +17,7 @@ class InvoiceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Invoice::with(['customer', 'project', 'company']);
+        $query = Invoice::with(['customer', 'trip', 'company']);
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -32,9 +32,9 @@ class InvoiceController extends Controller
                     ->orWhereHas('customer', function ($cq) use ($search) {
                         $cq->where('name', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('project', function ($pq) use ($search) {
+                    ->orWhereHas('trip', function ($pq) use ($search) {
                         $pq->where('name', 'like', "%{$search}%")
-                            ->orWhere('project_number', 'like', "%{$search}%");
+                            ->orWhere('trip_number', 'like', "%{$search}%");
                     });
             });
         }
@@ -63,7 +63,7 @@ class InvoiceController extends Controller
 
     public function trashed(Request $request)
     {
-        $query = Invoice::onlyTrashed()->with(['customer', 'project', 'company']);
+        $query = Invoice::onlyTrashed()->with(['customer', 'trip', 'company']);
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -104,14 +104,14 @@ class InvoiceController extends Controller
     public function create(Request $request)
     {
         $customers = Customer::orderBy('name')->get();
-        $projects = Project::orderBy('project_number', 'desc')->get();
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
         $companies = Company::orderBy('name')->get();
         $quotations = Quotation::where('status', 'accepted')
             ->whereDoesntHave('invoices')
             ->orderBy('quotation_number', 'desc')
             ->get();
 
-        $selectedProjectId = $request->project_id;
+        $selectedTripId = $request->trip_id;
         $selectedCustomerId = $request->customer_id;
         $selectedQuotationId = $request->quotation_id;
 
@@ -123,10 +123,10 @@ class InvoiceController extends Controller
             }
         }
 
-        if ($selectedProjectId) {
-            $project = Project::find($selectedProjectId);
-            if ($project && $project->customer_id) {
-                $selectedCustomerId = $project->customer_id;
+        if ($selectedTripId) {
+            $trip = Trip::find($selectedTripId);
+            if ($trip && $trip->customer_id) {
+                $selectedCustomerId = $trip->customer_id;
             }
         }
 
@@ -135,10 +135,10 @@ class InvoiceController extends Controller
 
         return view('admin.invoices.create', compact(
             'customers',
-            'projects',
+            'trips',
             'companies',
             'quotations',
-            'selectedProjectId',
+            'selectedTripId',
             'selectedCustomerId',
             'selectedQuotationId',
             'units',
@@ -153,7 +153,7 @@ class InvoiceController extends Controller
             'due_date' => 'nullable|date|after_or_equal:date',
             'company_id' => 'nullable|exists:companies,id',
             'customer_id' => 'required|exists:customers,id',
-            'project_id' => 'required|exists:projects,id',
+            'trip_id' => 'required|exists:trips,id',
             'quotation_id' => 'nullable|exists:quotations,id',
             'subject' => 'nullable|string|max:200',
             'invoice_type' => 'required|in:items,pdf',
@@ -185,11 +185,11 @@ class InvoiceController extends Controller
             }
         }
 
-        if (!empty($validated['project_id'])) {
-            $project = Project::find($validated['project_id']);
-            if ($project && (int) $project->customer_id !== (int) $validated['customer_id']) {
+        if (!empty($validated['trip_id'])) {
+            $trip = Trip::find($validated['trip_id']);
+            if ($trip && (int) $trip->customer_id !== (int) $validated['customer_id']) {
                 return back()->withInput()
-                    ->withErrors(['project_id' => 'The selected project does not belong to the selected customer.']);
+                    ->withErrors(['trip_id' => 'The selected trip does not belong to the selected customer.']);
             }
         }
 
@@ -217,9 +217,9 @@ class InvoiceController extends Controller
 
     public function show(Request $request, Invoice $invoice)
     {
-        $invoice->load(['customer', 'project', 'company', 'quotation', 'incomes']);
-        $fromProject = $request->from_project;
-        return view('admin.invoices.show', compact('invoice', 'fromProject'));
+        $invoice->load(['customer', 'trip', 'company', 'quotation', 'incomes']);
+        $fromTrip = $request->from_trip;
+        return view('admin.invoices.show', compact('invoice', 'fromTrip'));
     }
 
     public function edit(Request $request, Invoice $invoice)
@@ -230,14 +230,14 @@ class InvoiceController extends Controller
         }
 
         $customers = Customer::orderBy('name')->get();
-        $projects = Project::orderBy('project_number', 'desc')->get();
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
         $companies = Company::orderBy('name')->get();
         $quotations = Quotation::orderBy('quotation_number', 'desc')->get();
-        $fromProject = $request->from_project;
+        $fromTrip = $request->from_trip;
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
 
-        return view('admin.invoices.edit', compact('invoice', 'customers', 'projects', 'companies', 'quotations', 'fromProject', 'units', 'gstRates'));
+        return view('admin.invoices.edit', compact('invoice', 'customers', 'trips', 'companies', 'quotations', 'fromTrip', 'units', 'gstRates'));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -252,7 +252,7 @@ class InvoiceController extends Controller
             'due_date' => 'nullable|date|after_or_equal:date',
             'company_id' => 'nullable|exists:companies,id',
             'customer_id' => 'required|exists:customers,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'quotation_id' => 'nullable|exists:quotations,id',
             'subject' => 'nullable|string|max:200',
             'invoice_type' => 'required|in:items,pdf',
@@ -268,11 +268,11 @@ class InvoiceController extends Controller
             'status' => 'nullable|in:sent,partial,paid,overdue,cancelled',
         ]);
 
-        if (!empty($validated['project_id'])) {
-            $project = Project::find($validated['project_id']);
-            if ($project && (int) $project->customer_id !== (int) $validated['customer_id']) {
+        if (!empty($validated['trip_id'])) {
+            $trip = Trip::find($validated['trip_id']);
+            if ($trip && (int) $trip->customer_id !== (int) $validated['customer_id']) {
                 return back()->withInput()
-                    ->withErrors(['project_id' => 'The selected project does not belong to the selected customer.']);
+                    ->withErrors(['trip_id' => 'The selected trip does not belong to the selected customer.']);
             }
         }
 
@@ -286,13 +286,13 @@ class InvoiceController extends Controller
 
         $invoice->update($validated);
 
-        if ($request->filled('from_project')) {
-            return redirect()->route('admin.projects.show', $request->from_project)
+        if ($request->filled('from_trip')) {
+            return redirect()->route('admin.trips.show', $request->from_trip)
                 ->with('success', 'Invoice updated successfully.');
         }
 
-        if ($invoice->project_id) {
-            return redirect()->route('admin.projects.show', $invoice->project_id)
+        if ($invoice->trip_id) {
+            return redirect()->route('admin.trips.show', $invoice->trip_id)
                 ->with('success', 'Invoice updated successfully.');
         }
 
@@ -302,17 +302,17 @@ class InvoiceController extends Controller
 
     public function destroy(Request $request, Invoice $invoice)
     {
-        $projectId = $invoice->project_id;
-        $fromProject = $request->from_project;
+        $tripId = $invoice->trip_id;
+        $fromTrip = $request->from_trip;
         $invoice->delete();
 
-        if ($fromProject) {
-            return redirect()->route('admin.projects.show', $fromProject)
+        if ($fromTrip) {
+            return redirect()->route('admin.trips.show', $fromTrip)
                 ->with('success', 'Invoice deleted successfully.');
         }
 
-        if ($projectId) {
-            return redirect()->route('admin.projects.show', $projectId)
+        if ($tripId) {
+            return redirect()->route('admin.trips.show', $tripId)
                 ->with('success', 'Invoice deleted successfully.');
         }
 
@@ -332,13 +332,13 @@ class InvoiceController extends Controller
         return redirect()->route('admin.income.create', [
             'invoice_id' => $invoice->id,
             'customer_id' => $invoice->customer_id,
-            'project_id' => $invoice->project_id,
+            'trip_id' => $invoice->trip_id,
         ])->with('info', 'Please record the payment with bank/cash account to mark invoice as paid.');
     }
 
     public function downloadPdf(Invoice $invoice)
     {
-        $invoice->load(['company', 'customer', 'project', 'quotation']);
+        $invoice->load(['company', 'customer', 'trip', 'quotation']);
 
         $pdf = Pdf::loadView('admin.invoices.pdf', compact('invoice'))
             ->setPaper('a4', 'portrait')

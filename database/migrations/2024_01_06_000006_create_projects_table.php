@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('trips', function (Blueprint $table) {
             $table->id();
-            $table->string('project_number', 20)->unique();
+            $table->string('trip_number', 20)->unique();
             $table->string('name', 200);
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->json('work_type')->nullable();
@@ -28,16 +28,16 @@ return new class extends Migration
         });
 
        
-        Schema::table('project_addons', function (Blueprint $table) {
-            $table->foreign('project_id')->references('id')->on('projects')->cascadeOnDelete();
+        Schema::table('trip_addons', function (Blueprint $table) {
+            $table->foreign('trip_id')->references('id')->on('trips')->cascadeOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::table('project_addons', function (Blueprint $table) {
-            $table->dropForeign(['project_id']);
+        Schema::table('trip_addons', function (Blueprint $table) {
+            $table->dropForeign(['trip_id']);
         });
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('trips');
     }
 };

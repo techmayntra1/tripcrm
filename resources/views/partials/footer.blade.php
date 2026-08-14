@@ -1,9 +1,15 @@
-<div class="app-wrapper-footer">
-    <div class="app-footer">
-        <div class="app-footer__inner">
-            <div class="app-footer-left">
-                <span>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</span>
+{{-- Velzon footer (reskin) --}}
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-6">
+                &copy; {{ date('Y') }} {{ config('app.name') }}.
+            </div>
+            <div class="col-sm-6">
+                <div class="text-sm-end d-none d-sm-block">
+                    All rights reserved.
+                </div>
             </div>
         </div>
     </div>
-</div>
+</footer>

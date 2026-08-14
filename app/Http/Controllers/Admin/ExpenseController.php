@@ -8,7 +8,7 @@ use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\ExpenseType;
 use App\Models\PaymentMode;
-use App\Models\Project;
+use App\Models\Trip;
 use App\Models\Unit;
 use App\Models\Bank;
 use App\Models\Vendor;
@@ -18,7 +18,7 @@ class ExpenseController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Expense::with(['vendor', 'staff', 'project', 'category', 'bank']);
+        $query = Expense::with(['vendor', 'staff', 'trip', 'category', 'bank']);
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -67,7 +67,7 @@ class ExpenseController extends Controller
 
     public function trashed(Request $request)
     {
-        $query = Expense::onlyTrashed()->with(['vendor', 'staff', 'project', 'category', 'bank']);
+        $query = Expense::onlyTrashed()->with(['vendor', 'staff', 'trip', 'category', 'bank']);
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -98,7 +98,7 @@ class ExpenseController extends Controller
     public function create(Request $request)
     {
         $vendors = Vendor::orderBy('name')->get();
-        $projects = Project::orderBy('name')->get();
+        $trips = Trip::orderBy('name')->get();
         $categories = ExpenseCategory::orderBy('name')->get();
         $expenseTypes = ExpenseType::active()->get();
         $paymentModes = PaymentMode::active()->get();
@@ -107,17 +107,17 @@ class ExpenseController extends Controller
         $cashAccount = Bank::where('is_protected', true)->first();
 
         $selectedVendorId = $request->vendor_id;
-        $selectedProjectId = $request->project_id;
+        $selectedTripId = $request->trip_id;
         $selectedExpenseType = $request->expense_type;
 
-        // Build project-vendor mapping for vendor payment filtering
-        $projectVendorMap = $projects->mapWithKeys(function ($project) {
-            return [$project->id => $project->assigned_vendor_ids ?? []];
+        // Build trip-vendor mapping for vendor payment filtering
+        $tripVendorMap = $trips->mapWithKeys(function ($trip) {
+            return [$trip->id => $trip->assigned_vendor_ids ?? []];
         });
 
         return view('admin.expenses.create', compact(
             'vendors',
-            'projects',
+            'trips',
             'categories',
             'expenseTypes',
             'paymentModes',
@@ -125,9 +125,9 @@ class ExpenseController extends Controller
             'banks',
             'cashAccount',
             'selectedVendorId',
-            'selectedProjectId',
+            'selectedTripId',
             'selectedExpenseType',
-            'projectVendorMap'
+            'tripVendorMap'
         ));
     }
 
@@ -135,7 +135,7 @@ class ExpenseController extends Controller
     {
         $validated = $request->validate([
             'expense_date' => 'required|date',
-            'project_id' => 'nullable|integer',
+            'trip_id' => 'nullable|integer',
             'vendor_id' => 'nullable|integer',
             'grand_total' => 'required|numeric',
         ]);
@@ -144,10 +144,10 @@ class ExpenseController extends Controller
             ->whereDate('expense_date', $validated['expense_date'])
             ->where('grand_total', $validated['grand_total']);
 
-        if (!empty($validated['project_id'])) {
-            $query->where('project_id', $validated['project_id']);
+        if (!empty($validated['trip_id'])) {
+            $query->where('trip_id', $validated['trip_id']);
         } else {
-            $query->whereNull('project_id');
+            $query->whereNull('trip_id');
         }
 
         if (!empty($validated['vendor_id'])) {
@@ -170,12 +170,12 @@ class ExpenseController extends Controller
         $isCash = $paymentMode && $paymentMode->slug === 'cash';
 
         $validated = $request->validate([
-            'expense_type' => 'required|in:project,vendor,general,salary',
+            'expense_type' => 'required|in:trip,vendor,general,salary',
             'expense_date' => 'required|date',
             'payment_mode_id' => 'required|exists:payment_modes,id',
             'bank_id' => $isCash ? 'nullable|exists:banks,id' : 'required|exists:banks,id',
             'vendor_id' => 'nullable|exists:vendors,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'category_id' => 'nullable|exists:expense_categories,id',
             'entry_type' => 'required|in:bill,items',
             'items' => 'nullable|array',
@@ -213,7 +213,7 @@ class ExpenseController extends Controller
             'payment_mode_id' => $validated['payment_mode_id'],
             'bank_id' => $validated['bank_id'],
             'vendor_id' => $validated['vendor_id'] ?? null,
-            'project_id' => $validated['project_id'] ?? null,
+            'trip_id' => $validated['trip_id'] ?? null,
             'category_id' => $validated['category_id'] ?? null,
             'items' => $items,
             'sub_total' => $validated['sub_total'],
@@ -226,8 +226,8 @@ class ExpenseController extends Controller
             'description' => $description,
         ]);
 
-        if ($request->filled('project_id')) {
-            return redirect()->route('admin.projects.show', $request->project_id)
+        if ($request->filled('trip_id')) {
+            return redirect()->route('admin.trips.show', $request->trip_id)
                 ->with('success', 'Expense added successfully.');
         }
 
@@ -242,9 +242,9 @@ class ExpenseController extends Controller
 
     public function show(Request $request, Expense $expense)
     {
-        $expense->load(['vendor', 'project', 'category', 'bank']);
-        $fromProject = $request->from_project;
-        return view('admin.expenses.show', compact('expense', 'fromProject'));
+        $expense->load(['vendor', 'trip', 'category', 'bank']);
+        $fromTrip = $request->from_trip;
+        return view('admin.expenses.show', compact('expense', 'fromTrip'));
     }
 
     public function edit(Request $request, Expense $expense)
@@ -254,21 +254,21 @@ class ExpenseController extends Controller
         }
 
         $vendors = Vendor::orderBy('name')->get();
-        $projects = Project::orderBy('name')->get();
+        $trips = Trip::orderBy('name')->get();
         $categories = ExpenseCategory::orderBy('name')->get();
         $expenseTypes = ExpenseType::active()->get();
         $paymentModes = PaymentMode::active()->get();
         $units = Unit::active()->get();
         $banks = Bank::where('is_protected', false)->orderBy('bank_name')->get();
         $cashAccount = Bank::where('is_protected', true)->first();
-        $fromProject = $request->from_project;
+        $fromTrip = $request->from_trip;
 
-        // Build project-vendor mapping for vendor payment filtering
-        $projectVendorMap = $projects->mapWithKeys(function ($project) {
-            return [$project->id => $project->assigned_vendor_ids ?? []];
+        // Build trip-vendor mapping for vendor payment filtering
+        $tripVendorMap = $trips->mapWithKeys(function ($trip) {
+            return [$trip->id => $trip->assigned_vendor_ids ?? []];
         });
 
-        return view('admin.expenses.edit', compact('expense', 'vendors', 'projects', 'categories', 'expenseTypes', 'paymentModes', 'units', 'banks', 'cashAccount', 'fromProject', 'projectVendorMap'));
+        return view('admin.expenses.edit', compact('expense', 'vendors', 'trips', 'categories', 'expenseTypes', 'paymentModes', 'units', 'banks', 'cashAccount', 'fromTrip', 'tripVendorMap'));
     }
 
     public function update(Request $request, Expense $expense)
@@ -281,12 +281,12 @@ class ExpenseController extends Controller
         $isCash = $paymentMode && $paymentMode->slug === 'cash';
 
         $validated = $request->validate([
-            'expense_type' => 'required|in:project,vendor,general,salary',
+            'expense_type' => 'required|in:trip,vendor,general,salary',
             'expense_date' => 'required|date',
             'payment_mode_id' => 'required|exists:payment_modes,id',
             'bank_id' => $isCash ? 'nullable|exists:banks,id' : 'required|exists:banks,id',
             'vendor_id' => 'nullable|exists:vendors,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'category_id' => 'nullable|exists:expense_categories,id',
             'entry_type' => 'required|in:bill,items',
             'items' => 'nullable|array',
@@ -334,7 +334,7 @@ class ExpenseController extends Controller
             'payment_mode_id' => $validated['payment_mode_id'],
             'bank_id' => $validated['bank_id'],
             'vendor_id' => $validated['vendor_id'] ?? null,
-            'project_id' => $validated['project_id'] ?? null,
+            'trip_id' => $validated['trip_id'] ?? null,
             'category_id' => $validated['category_id'] ?? null,
             'items' => $items,
             'sub_total' => $validated['sub_total'],
@@ -347,13 +347,13 @@ class ExpenseController extends Controller
             'description' => $description,
         ]);
 
-        if ($request->filled('from_project')) {
-            return redirect()->route('admin.projects.show', $request->from_project)
+        if ($request->filled('from_trip')) {
+            return redirect()->route('admin.trips.show', $request->from_trip)
                 ->with('success', 'Expense updated successfully.');
         }
 
-        if ($expense->project_id) {
-            return redirect()->route('admin.projects.show', $expense->project_id)
+        if ($expense->trip_id) {
+            return redirect()->route('admin.trips.show', $expense->trip_id)
                 ->with('success', 'Expense updated successfully.');
         }
 
@@ -368,18 +368,18 @@ class ExpenseController extends Controller
 
     public function destroy(Request $request, Expense $expense)
     {
-        $projectId = $expense->project_id;
+        $tripId = $expense->trip_id;
         $vendorId = $expense->vendor_id;
-        $fromProject = $request->from_project;
+        $fromTrip = $request->from_trip;
         $expense->delete();
 
-        if ($fromProject) {
-            return redirect()->route('admin.projects.show', $fromProject)
+        if ($fromTrip) {
+            return redirect()->route('admin.trips.show', $fromTrip)
                 ->with('success', 'Expense deleted successfully.');
         }
 
-        if ($projectId) {
-            return redirect()->route('admin.projects.show', $projectId)
+        if ($tripId) {
+            return redirect()->route('admin.trips.show', $tripId)
                 ->with('success', 'Expense deleted successfully.');
         }
 

@@ -137,7 +137,7 @@ class StaffController extends Controller
             ->limit(5)
             ->get();
 
-        $projects = \App\Models\Project::where(function($q) use ($staff) {
+        $trips = \App\Models\Trip::where(function($q) use ($staff) {
                 $q->where('assigned_staff_id', $staff->id)
                   ->orWhereJsonContains('assigned_staff_ids', $staff->id);
             })
@@ -146,11 +146,11 @@ class StaffController extends Controller
         $tasks = Task::where('assignee_type', 'staff')
             ->where('assignee_id', $staff->id)
             ->whereNull('deleted_at')
-            ->with(['project', 'status'])
+            ->with(['trip', 'status'])
             ->orderBy('due_at')
             ->get();
 
-        return view('admin.staff.show', compact('staff', 'salaryRecords', 'projects', 'tasks'));
+        return view('admin.staff.show', compact('staff', 'salaryRecords', 'trips', 'tasks'));
     }
 
     public function edit(Staff $staff)

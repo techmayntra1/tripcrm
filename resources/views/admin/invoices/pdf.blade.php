@@ -27,7 +27,7 @@
         .header {
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 3px solid #0EA5A4;
+            border-bottom: 3px solid #405189;
         }
         .company-section {
             float: left;
@@ -51,7 +51,7 @@
         .invoice-title {
             font-size: 28px;
             font-weight: bold;
-            color: #0EA5A4;
+            color: #405189;
             margin-bottom: 8px;
         }
         .invoice-details {
@@ -62,7 +62,7 @@
             display: inline-block;
             margin-top: 10px;
             padding: 5px 15px;
-            background-color: #0EA5A4;
+            background-color: #405189;
             color: #fff;
             font-size: 11px;
             font-weight: bold;
@@ -77,7 +77,7 @@
             float: left;
             width: 50%;
         }
-        .project-section {
+        .trip-section {
             float: right;
             width: 45%;
         }
@@ -134,7 +134,7 @@
         .pdf-info {
             background-color: #f8f9fa;
             border: 1px solid #ddd;
-            border-left: 3px solid #0EA5A4;
+            border-left: 3px solid #405189;
             padding: 15px;
             margin-bottom: 25px;
         }
@@ -163,7 +163,7 @@
         .signature-company {
             font-size: 12px;
             font-weight: bold;
-            color: #0EA5A4;
+            color: #405189;
         }
         .signature-text {
             font-size: 11px;
@@ -212,11 +212,11 @@
                 @endif
             </div>
         </div>
-        @if($invoice->project)
-        <div class="project-section">
-            <div class="section-label">PROJECT:</div>
-            <div style="font-size: 14px; font-weight: bold; color: #333;">{{ $invoice->project->project_number }}</div>
-            <div style="font-size: 12px; color: #555;">{{ $invoice->project->name }}</div>
+        @if($invoice->trip)
+        <div class="trip-section">
+            <div class="section-label">TRIP:</div>
+            <div style="font-size: 14px; font-weight: bold; color: #333;">{{ $invoice->trip->trip_number }}</div>
+            <div style="font-size: 12px; color: #555;">{{ $invoice->trip->name }}</div>
         </div>
         @endif
     </div>
@@ -238,7 +238,7 @@
     @endphp
     <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border-color: #ccc;">
         <thead>
-            <tr style="background-color: #0EA5A4; color: #fff;">
+            <tr style="background-color: #405189; color: #fff;">
                 <th style="width: {{ $hasDimensions ? '4%' : '5%' }}; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">#</th>
                 <th style="width: {{ $hasDimensions ? '27%' : '35%' }}; text-align: left; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
                 <th style="width: {{ $hasDimensions ? '8%' : '10%' }}; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">HSN</th>

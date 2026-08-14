@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->decimal('gst_percent', 5, 2)->default(0)->after('budget');
             $table->boolean('gst_inclusive')->default(false)->after('gst_percent');
             $table->boolean('gst_split')->default(false)->after('gst_inclusive');
@@ -18,7 +18,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->dropColumn(['gst_percent', 'gst_inclusive', 'gst_split', 'gst_amount']);
         });
     }

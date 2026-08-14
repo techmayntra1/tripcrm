@@ -94,7 +94,7 @@
         <form method="GET" action="{{ route('admin.expenses.index') }}" class="d-flex align-items-center gap-2">
             <select name="expense_type" class="form-select form-select-sm" style="width: 130px;" onchange="this.form.submit()">
                 <option value="">All Types</option>
-                <option value="project" {{ request('expense_type') == 'project' ? 'selected' : '' }}>Project</option>
+                <option value="trip" {{ request('expense_type') == 'trip' ? 'selected' : '' }}>Trip</option>
                 <option value="vendor" {{ request('expense_type') == 'vendor' ? 'selected' : '' }}>Vendor</option>
                 <option value="general" {{ request('expense_type') == 'general' ? 'selected' : '' }}>General</option>
                 <option value="salary" {{ request('expense_type') == 'salary' ? 'selected' : '' }}>Salary</option>
@@ -142,7 +142,7 @@
                 <td>
                     @php
                         $typeColors = [
-                            'project' => 'bg-warning',
+                            'trip' => 'bg-warning',
                             'vendor' => 'bg-info',
                             'general' => 'bg-secondary',
                             'salary' => 'bg-primary',
@@ -156,14 +156,14 @@
                     <div>{{ $expense->expense_type_display }}</div>
                     @if($expense->expense_type === 'vendor' && $expense->vendor)
                         <a href="{{ route('admin.vendors.show', $expense->vendor) }}" class="small text-muted d-block"><span class="name-truncate" title="{{ $expense->vendor->name }}">{{ $expense->vendor->name }}</span></a>
-                    @elseif($expense->expense_type === 'project' && $expense->project)
-                        <a href="{{ route('admin.projects.show', $expense->project) }}" class="small text-muted d-block"><span class="name-truncate" title="{{ $expense->project->name }}">{{ $expense->project->name }}</span></a>
+                    @elseif($expense->expense_type === 'trip' && $expense->trip)
+                        <a href="{{ route('admin.trips.show', $expense->trip) }}" class="small text-muted d-block"><span class="name-truncate" title="{{ $expense->trip->name }}">{{ $expense->trip->name }}</span></a>
                     @elseif($expense->expense_type === 'salary' && $expense->staff)
                         <span class="small text-muted d-block name-truncate" title="{{ $expense->staff->name }}">{{ $expense->staff->name }}</span>
                     @elseif($expense->vendor)
                         <a href="{{ route('admin.vendors.show', $expense->vendor) }}" class="small text-muted d-block"><span class="name-truncate" title="{{ $expense->vendor->name }}">{{ $expense->vendor->name }}</span></a>
-                    @elseif($expense->project)
-                        <a href="{{ route('admin.projects.show', $expense->project) }}" class="small text-muted d-block"><span class="name-truncate" title="{{ $expense->project->name }}">{{ $expense->project->name }}</span></a>
+                    @elseif($expense->trip)
+                        <a href="{{ route('admin.trips.show', $expense->trip) }}" class="small text-muted d-block"><span class="name-truncate" title="{{ $expense->trip->name }}">{{ $expense->trip->name }}</span></a>
                     @elseif($expense->staff)
                         <span class="small text-muted d-block name-truncate" title="{{ $expense->staff->name }}">{{ $expense->staff->name }}</span>
                     @endif

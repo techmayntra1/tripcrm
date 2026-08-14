@@ -167,7 +167,7 @@
                         <tr>
                             <th width="100">Date</th>
                             <th width="200">Description</th>
-                            <th width="100" class="text-center">Project</th>
+                            <th width="100" class="text-center">Trip</th>
                             <th width="120" class="text-end">Amount</th>
                             <th width="120" class="text-end">Paid</th>
                             <th width="120" class="text-end">Balance</th>
@@ -202,8 +202,8 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                @if($expense->project)
-                                    <span class="badge bg-info">{{ $expense->project->project_number }}</span>
+                                @if($expense->trip)
+                                    <span class="badge bg-info">{{ $expense->trip->trip_number }}</span>
                                 @else
                                     -
                                 @endif
@@ -275,7 +275,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Title</th>
-                        <th>Project</th>
+                        <th>Trip</th>
                         <th>Start Date</th>
                         <th>Due Date</th>
                         <th>Location</th>
@@ -287,9 +287,9 @@
                     <tr class="{{ $task->is_overdue ? 'table-danger' : '' }}">
                         <td><strong>{{ $task->title }}</strong></td>
                         <td>
-                            @if($task->project)
-                                <a href="{{ route('admin.projects.show', $task->project) }}">
-                                    {{ $task->project->project_code }}
+                            @if($task->trip)
+                                <a href="{{ route('admin.trips.show', $task->trip) }}">
+                                    {{ $task->trip->trip_code }}
                                 </a>
                             @else
                                 -

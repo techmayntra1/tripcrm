@@ -62,9 +62,9 @@
 
 
 <div class="summary-row mb-3">
-    <div class="summary-item bg-success text-white" data-bs-toggle="tooltip" title="{{ formatMoney($customer->project_value) }}">
-        <span class="summary-label">Project Value</span>
-        <span class="summary-value">{{ formatMoney($customer->project_value) }}</span>
+    <div class="summary-item bg-success text-white" data-bs-toggle="tooltip" title="{{ formatMoney($customer->trip_value) }}">
+        <span class="summary-label">Trip Value</span>
+        <span class="summary-value">{{ formatMoney($customer->trip_value) }}</span>
     </div>
     <div class="summary-item bg-info text-white" data-bs-toggle="tooltip" title="{{ formatMoney($customer->total_income) }}">
         <span class="summary-label">Total Income</span>
@@ -81,9 +81,9 @@
         <span class="summary-value">{{ formatMoney($customer->income_receivable) }}</span>
     </div>
     @endif
-    <div class="summary-item bg-midnight-bloom text-white" data-bs-toggle="tooltip" title="{{ $customer->projects->count() }}">
-        <span class="summary-label">Projects</span>
-        <span class="summary-value">{{ $customer->projects->count() }}</span>
+    <div class="summary-item bg-midnight-bloom text-white" data-bs-toggle="tooltip" title="{{ $customer->trips->count() }}">
+        <span class="summary-label">Trips</span>
+        <span class="summary-value">{{ $customer->trips->count() }}</span>
     </div>
 </div>
 
@@ -168,10 +168,10 @@
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span><i class="bi bi-cash-coin me-2"></i> Income Ledger</span>
                 <div class="d-flex align-items-center gap-2">
-                    <select id="incomeProjectFilter" class="form-select form-select-sm" style="min-width: 200px;">
-                        <option value="">All Projects</option>
-                        @foreach($customer->projects as $project)
-                            <option value="{{ $project->id }}">{{ $project->project_number }} - {{ Str::limit($project->name, 30) }}</option>
+                    <select id="incomeTripFilter" class="form-select form-select-sm" style="min-width: 200px;">
+                        <option value="">All Trips</option>
+                        @foreach($customer->trips as $trip)
+                            <option value="{{ $trip->id }}">{{ $trip->trip_number }} - {{ Str::limit($trip->name, 30) }}</option>
                         @endforeach
                     </select>
                     <a href="{{ route('admin.customers.income.export', $customer) }}" id="incomeExportBtn" class="btn btn-sm btn-success">
@@ -185,7 +185,7 @@
                         <tr>
                             <th>Date</th>
                             <th>Receipt #</th>
-                            <th>Project</th>
+                            <th>Trip</th>
                             <th>Type</th>
                             <th>Payment Mode</th>
                             <th>Description</th>
@@ -194,10 +194,10 @@
                     </thead>
                     <tbody>
                         @forelse($incomes as $income)
-                        <tr class="income-row" data-project-id="{{ $income->project_id }}" data-amount="{{ $income->amount }}">
+                        <tr class="income-row" data-trip-id="{{ $income->trip_id }}" data-amount="{{ $income->amount }}">
                             <td>{{ optional($income->income_date)->format('d-m-Y') ?? '-' }}</td>
                             <td>{{ $income->receipt_number ?? '-' }}</td>
-                            <td>{{ $income->project->name ?? '-' }}</td>
+                            <td>{{ $income->trip->name ?? '-' }}</td>
                             <td>{{ $income->income_type_display }}</td>
                             <td>{{ $income->paymentMode->name ?? '-' }}</td>
                             <td>{{ $income->description ?? '-' }}</td>
@@ -211,7 +211,7 @@
                     </tbody>
                     <tfoot>
                         <tr id="incomeNoMatchRow" style="display: none;">
-                            <td colspan="7" class="text-center text-muted py-3">No income records for the selected project.</td>
+                            <td colspan="7" class="text-center text-muted py-3">No income records for the selected trip.</td>
                         </tr>
                         <tr class="fw-bold">
                             <td colspan="6" class="text-end">Total</td>
@@ -226,7 +226,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const filter = document.getElementById('incomeProjectFilter');
+    const filter = document.getElementById('incomeTripFilter');
     const exportBtn = document.getElementById('incomeExportBtn');
     const rows = document.querySelectorAll('#incomeLedgerTable tbody tr.income-row');
     const totalCell = document.getElementById('incomeTotal');
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let visibleCount = 0;
 
         rows.forEach(function (row) {
-            const match = !selected || row.dataset.projectId === selected;
+            const match = !selected || row.dataset.tripId === selected;
             row.style.display = match ? '' : 'none';
             if (match) {
                 total += parseFloat(row.dataset.amount) || 0;
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (noMatchRow) noMatchRow.style.display = (rows.length > 0 && visibleCount === 0) ? '' : 'none';
 
         if (exportBtn && exportBaseUrl) {
-            exportBtn.setAttribute('href', selected ? exportBaseUrl + '?project_id=' + selected : exportBaseUrl);
+            exportBtn.setAttribute('href', selected ? exportBaseUrl + '?trip_id=' + selected : exportBaseUrl);
         }
     }
 
@@ -414,11 +414,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         <div class="main-card mb-3 card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-kanban me-2"></i> Projects</span>
+                <span><i class="bi bi-kanban me-2"></i> Trips</span>
                 @if(!isset($isTrashed) || !$isTrashed)
-                @can('projects.create')
-                <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addProjectModal" style="color: #ffffff !important">
-                    <i class="bi bi-plus-lg me-1"></i> Add Project
+                @can('trips.create')
+                <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#addTripModal" style="color: #ffffff !important">
+                    <i class="bi bi-plus-lg me-1"></i> Add Trip
                 </button>
                 @endcan
                 @endif
@@ -427,20 +427,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th width="250">Project</th>
+                            <th width="250">Trip</th>
                             <th width="120">Budget</th>
                             <th width="120">Status</th>
                             <th width="90">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($customer->projects as $project)
-                        <tr class="project-row" data-href="{{ route('admin.projects.show', $project->id) }}" style="cursor: pointer;">
+                        @forelse($customer->trips as $trip)
+                        <tr class="trip-row" data-href="{{ route('admin.trips.show', $trip->id) }}" style="cursor: pointer;">
                             <td>
-                                <strong>{{ $project->project_number }}</strong>
-                                <br><small class="text-muted text-truncate-cell" title="{{ $project->name }}" style="max-width: 200px;">{{ Str::limit($project->name, 30) }}</small>
+                                <strong>{{ $trip->trip_number }}</strong>
+                                <br><small class="text-muted text-truncate-cell" title="{{ $trip->name }}" style="max-width: 200px;">{{ Str::limit($trip->name, 30) }}</small>
                             </td>
-                            <td>{{ formatMoney($project->budget) }}</td>
+                            <td>{{ formatMoney($trip->budget) }}</td>
                             <td>
                                 @php
                                     $statusColors = [
@@ -451,17 +451,17 @@ document.addEventListener('DOMContentLoaded', function () {
                                         'cancelled' => 'bg-danger',
                                     ];
                                 @endphp
-                                <span class="badge {{ $statusColors[$project->status] ?? 'bg-secondary' }}">{{ ucfirst(str_replace('_', ' ', $project->status)) }}</span>
+                                <span class="badge {{ $statusColors[$trip->status] ?? 'bg-secondary' }}">{{ ucfirst(str_replace('_', ' ', $trip->status)) }}</span>
                             </td>
                             <td class="action-buttons" onclick="event.stopPropagation();">
-                                <a href="{{ route('admin.projects.show', $project->id) }}" class="btn btn-sm btn-outline-info" title="Details">
+                                <a href="{{ route('admin.trips.show', $trip->id) }}" class="btn btn-sm btn-outline-info" title="Details">
                                     <i class="bi bi-info-circle"></i>
                                 </a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">No projects found.</td>
+                            <td colspan="4" class="text-center py-4 text-muted">No trips found.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <thead class="table-light">
                     <tr>
                         <th>Title</th>
-                        <th>Project</th>
+                        <th>Trip</th>
                         <th>Assigned To</th>
                         <th>Start Date</th>
                         <th>Due Date</th>
@@ -489,9 +489,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <tr class="{{ $task->is_overdue ? 'table-danger' : '' }}">
                         <td><strong>{{ $task->title }}</strong></td>
                         <td>
-                            @if($task->project)
-                                <a href="{{ route('admin.projects.show', $task->project) }}">
-                                    {{ $task->project->project_code }}
+                            @if($task->trip)
+                                <a href="{{ route('admin.trips.show', $task->trip) }}">
+                                    {{ $task->trip->trip_code }}
                                 </a>
                             @else
                                 -
@@ -629,14 +629,14 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
 </div>
 
-<div class="modal fade" id="addProjectModal" tabindex="-1">
+<div class="modal fade" id="addTripModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-kanban me-2"></i>Add Project</h5>
+                <h5 class="modal-title"><i class="bi bi-kanban me-2"></i>Add Trip</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('admin.customers.projects.link', $customer) }}" method="POST">
+            <form action="{{ route('admin.customers.trips.link', $customer) }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
@@ -644,19 +644,19 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="form-control bg-light">{{ $customer->name }}</div>
                     </div>
                     <div class="mb-3">
-                        <label for="project_id" class="form-label">Select Project <span class="text-danger">*</span></label>
-                        <select class="form-select" name="project_id" id="project_id" required>
-                            <option value="">Select a Project</option>
-                            @foreach($availableProjects ?? [] as $project)
-                                <option value="{{ $project->id }}">{{ $project->project_number }} - {{ $project->name }}</option>
+                        <label for="trip_id" class="form-label">Select Trip <span class="text-danger">*</span></label>
+                        <select class="form-select" name="trip_id" id="trip_id" required>
+                            <option value="">Select a Trip</option>
+                            @foreach($availableTrips ?? [] as $trip)
+                                <option value="{{ $trip->id }}">{{ $trip->trip_number }} - {{ $trip->name }}</option>
                             @endforeach
                         </select>
-                        <small class="text-muted">Select an existing project to link to this customer</small>
+                        <small class="text-muted">Select an existing trip to link to this customer</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-link me-1"></i> Link Project</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-link me-1"></i> Link Trip</button>
                 </div>
             </form>
         </div>
@@ -877,23 +877,23 @@ document.addEventListener('DOMContentLoaded', function () {
 .table td {
     vertical-align: middle;
 }
-.project-row:hover {
+.trip-row:hover {
     background-color: rgba(0,0,0,.075) !important;
     --bs-table-hover-bg: rgba(0,0,0,.075) !important;
     --bs-table-accent-bg: rgba(0,0,0,.075) !important;
 }
-.project-row:hover td {
+.trip-row:hover td {
     background-color: transparent !important;
 }
-.project-row:hover td,
-.project-row:hover td *,
-.project-row:hover td strong,
-.project-row:hover td small,
-.project-row:hover td .text-muted,
-.project-row:hover td .badge {
+.trip-row:hover td,
+.trip-row:hover td *,
+.trip-row:hover td strong,
+.trip-row:hover td small,
+.trip-row:hover td .text-muted,
+.trip-row:hover td .badge {
     color: inherit !important;
 }
-.table-hover tbody tr.project-row:hover {
+.table-hover tbody tr.trip-row:hover {
     --bs-table-hover-color: inherit !important;
 }
 </style>
@@ -908,7 +908,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    document.querySelectorAll('.project-row').forEach(function(row) {
+    document.querySelectorAll('.trip-row').forEach(function(row) {
         row.addEventListener('click', function() {
             window.location.href = this.dataset.href;
         });

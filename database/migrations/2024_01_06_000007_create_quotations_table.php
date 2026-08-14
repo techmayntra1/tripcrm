@@ -31,14 +31,14 @@ return new class extends Migration
         });
 
        
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->foreignId('quotation_id')->nullable()->after('advance_received')->constrained()->nullOnDelete();
         });
     }
 
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->dropForeign(['quotation_id']);
             $table->dropColumn('quotation_id');
         });

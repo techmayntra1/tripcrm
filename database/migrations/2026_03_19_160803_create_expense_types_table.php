@@ -19,7 +19,7 @@ return new class extends Migration
         });
 
         DB::table('expense_types')->insert([
-            ['name' => 'Project Expense', 'slug' => 'project', 'is_active' => true, 'sort_order' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Trip Expense', 'slug' => 'trip', 'is_active' => true, 'sort_order' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Vendor Payment', 'slug' => 'vendor', 'is_active' => true, 'sort_order' => 2, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'General Expense', 'slug' => 'general', 'is_active' => true, 'sort_order' => 3, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Staff Salary', 'slug' => 'salary', 'is_active' => true, 'sort_order' => 4, 'created_at' => now(), 'updated_at' => now()],

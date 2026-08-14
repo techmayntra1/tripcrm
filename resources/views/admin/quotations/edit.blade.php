@@ -92,14 +92,14 @@
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="project" class="form-label">Project</label>
-                        <select class="form-select @error('project_id') is-invalid @enderror" id="project" name="project_id">
-                            <option value="">Select Project (Optional)</option>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}" data-customer="{{ $project->customer_id }}" {{ old('project_id', $quotation->project_id) == $project->id ? 'selected' : '' }}>{{ $project->project_number }} - {{ $project->name }}</option>
+                        <label for="trip" class="form-label">Trip</label>
+                        <select class="form-select @error('trip_id') is-invalid @enderror" id="trip" name="trip_id">
+                            <option value="">Select Trip (Optional)</option>
+                            @foreach($trips as $trip)
+                                <option value="{{ $trip->id }}" data-customer="{{ $trip->customer_id }}" {{ old('trip_id', $quotation->trip_id) == $trip->id ? 'selected' : '' }}>{{ $trip->trip_number }} - {{ $trip->name }}</option>
                             @endforeach
                         </select>
-                        @error('project_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('trip_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -342,21 +342,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsSection = document.getElementById('manualItemsSection');
     const addItemBtn = document.getElementById('addItemBtn');
     const customerSelect = document.getElementById('customer');
-    const projectSelect = document.getElementById('project');
+    const tripSelect = document.getElementById('trip');
     let itemIndex = itemsBody.querySelectorAll('tr').length;
 
-    // ----- Customer <-> Project linking -----
-    const projectOptions = Array.from(projectSelect.options);
+    // ----- Customer <-> Trip linking -----
+    const tripOptions = Array.from(tripSelect.options);
 
-    function filterProjectsByCustomer(customerId) {
+    function filterTripsByCustomer(customerId) {
         let currentStillValid = false;
-        projectOptions.forEach(function(opt) {
+        tripOptions.forEach(function(opt) {
             if (!opt.value) { opt.hidden = false; return; }
             const belongs = !customerId || opt.getAttribute('data-customer') === String(customerId);
             opt.hidden = !belongs;
-            if (belongs && opt.value === projectSelect.value) currentStillValid = true;
+            if (belongs && opt.value === tripSelect.value) currentStillValid = true;
         });
-        if (projectSelect.value && !currentStillValid) projectSelect.value = '';
+        if (tripSelect.value && !currentStillValid) tripSelect.value = '';
     }
 
     function lockCustomer(customerId) {
@@ -382,10 +382,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     customerSelect.addEventListener('change', function() {
-        filterProjectsByCustomer(this.value);
+        filterTripsByCustomer(this.value);
     });
 
-    projectSelect.addEventListener('change', function() {
+    tripSelect.addEventListener('change', function() {
         if (this.value) {
             const opt = this.options[this.selectedIndex];
             lockCustomer(opt.getAttribute('data-customer'));
@@ -394,12 +394,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initial customer <-> project sync
-    if (projectSelect.value) {
-        const opt = projectSelect.options[projectSelect.selectedIndex];
+    // Initial customer <-> trip sync
+    if (tripSelect.value) {
+        const opt = tripSelect.options[tripSelect.selectedIndex];
         lockCustomer(opt.getAttribute('data-customer'));
     } else if (customerSelect.value) {
-        filterProjectsByCustomer(customerSelect.value);
+        filterTripsByCustomer(customerSelect.value);
     }
 
     function toggleItemsRequired(isRequired) {

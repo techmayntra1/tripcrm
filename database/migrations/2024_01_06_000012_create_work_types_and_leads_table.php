@@ -25,7 +25,7 @@ return new class extends Migration
             ['name' => 'Wardrobe', 'sort_order' => 3, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'False Ceiling', 'sort_order' => 4, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Renovation', 'sort_order' => 5, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Turnkey Project', 'sort_order' => 6, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Turnkey Trip', 'sort_order' => 6, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
        
@@ -63,7 +63,7 @@ return new class extends Migration
             ['name' => 'Site Visit', 'sort_order' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Design Discussion', 'sort_order' => 2, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Quotation Review', 'sort_order' => 3, 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Project Update', 'sort_order' => 4, 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Trip Update', 'sort_order' => 4, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Payment Collection', 'sort_order' => 5, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Final Handover', 'sort_order' => 6, 'created_at' => now(), 'updated_at' => now()],
         ]);

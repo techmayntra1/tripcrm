@@ -75,7 +75,7 @@
                                 <th>SR</th>
                                 <th>Name</th>
                                 <th>Work Type</th>
-                                <th>Projects</th>
+                                <th>Trips</th>
                                 <th>Payment</th>
                                 <th>GST Number</th>
                                 <th>City</th>
@@ -103,10 +103,10 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($customer->projects_count > 0)
-                                        <a href="{{ route('admin.projects.index', ['customer_id' => $customer->id]) }}" class="project-count-badge" title="{{ $customer->projects->take(3)->pluck('name')->implode(', ') }}{{ $customer->projects_count > 3 ? '...' : '' }}">
+                                    @if($customer->trips_count > 0)
+                                        <a href="{{ route('admin.trips.index', ['customer_id' => $customer->id]) }}" class="trip-count-badge" title="{{ $customer->trips->take(3)->pluck('name')->implode(', ') }}{{ $customer->trips_count > 3 ? '...' : '' }}">
                                             <i class="bi bi-kanban"></i>
-                                            <span>{{ $customer->projects_count }}</span>
+                                            <span>{{ $customer->trips_count }}</span>
                                         </a>
                                     @else
                                         <span class="text-muted">-</span>
@@ -177,7 +177,7 @@
         background-color: #fff !important;
         color: #333 !important;
     }
-    .project-count-badge {
+    .trip-count-badge {
         display: inline-flex;
         align-items: center;
         gap: 0.35rem;
@@ -190,12 +190,12 @@
         text-decoration: none;
         transition: all 0.2s;
     }
-    .project-count-badge:hover {
+    .trip-count-badge:hover {
         transform: scale(1.05);
         box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
         color: #fff;
     }
-    .project-count-badge i {
+    .trip-count-badge i {
         font-size: 0.9rem;
     }
 </style>

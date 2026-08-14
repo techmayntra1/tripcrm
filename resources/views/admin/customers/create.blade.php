@@ -143,16 +143,16 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="mb-3">
-                        <label for="project_ids" class="form-label">Projects</label>
-                        <select class="form-select select2-multiple @error('project_ids') is-invalid @enderror" id="project_ids" name="project_ids[]" multiple>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}" {{ in_array($project->id, old('project_ids', [])) ? 'selected' : '' }}>{{ $project->project_number }} - {{ $project->name }}</option>
+                        <label for="trip_ids" class="form-label">Trips</label>
+                        <select class="form-select select2-multiple @error('trip_ids') is-invalid @enderror" id="trip_ids" name="trip_ids[]" multiple>
+                            @foreach($trips as $trip)
+                                <option value="{{ $trip->id }}" {{ in_array($trip->id, old('trip_ids', [])) ? 'selected' : '' }}>{{ $trip->trip_number }} - {{ $trip->name }}</option>
                             @endforeach
                         </select>
-                        @error('project_ids')
+                        @error('trip_ids')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                        <small class="text-muted">Link projects to this customer</small>
+                        <small class="text-muted">Link trips to this customer</small>
                     </div>
                 </div>
             </div>
@@ -189,8 +189,8 @@ $(document).ready(function() {
         width: '100%',
         theme: 'bootstrap-5'
     });
-    $('#project_ids').select2({
-        placeholder: 'Select Projects',
+    $('#trip_ids').select2({
+        placeholder: 'Select Trips',
         allowClear: true,
         width: '100%',
         theme: 'bootstrap-5'

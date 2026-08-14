@@ -72,7 +72,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Work Type</th>
-                                <th>Projects</th>
+                                <th>Trips</th>
                                 <th>Payment Type</th>
                                 <th>City</th>
                                 <th>Deleted</th>
@@ -99,9 +99,9 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($customer->projects_count > 0)
+                                    @if($customer->trips_count > 0)
                                         <span class="badge bg-secondary">
-                                            {{ $customer->projects_count }} {{ Str::plural('Project', $customer->projects_count) }}
+                                            {{ $customer->trips_count }} {{ Str::plural('Trip', $customer->trips_count) }}
                                         </span>
                                     @else
                                         <span class="text-muted">-</span>

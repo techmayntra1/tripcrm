@@ -90,9 +90,9 @@
                 <hr class="my-2">
                 <div class="row mb-3">
                     <div class="col-md-3">
-                        <small class="text-muted d-block">Project</small>
-                        @if($task->project)
-                        <a href="{{ route('admin.projects.show', $task->project) }}">{{ $task->project->name }}</a>
+                        <small class="text-muted d-block">Trip</small>
+                        @if($task->trip)
+                        <a href="{{ route('admin.trips.show', $task->trip) }}">{{ $task->trip->name }}</a>
                         @else
                         <strong>-</strong>
                         @endif
@@ -212,11 +212,11 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="project_id" class="form-label">Project</label>
-                            <select class="form-select" name="project_id" id="project_id">
-                                <option value="">Select Project</option>
-                                @foreach($projects as $project)
-                                <option value="{{ $project->id }}" {{ $task->project_id == $project->id ? 'selected' : '' }}>{{ $project->name }}</option>
+                            <label for="trip_id" class="form-label">Trip</label>
+                            <select class="form-select" name="trip_id" id="trip_id">
+                                <option value="">Select Trip</option>
+                                @foreach($trips as $trip)
+                                <option value="{{ $trip->id }}" {{ $task->trip_id == $trip->id ? 'selected' : '' }}>{{ $trip->name }}</option>
                                 @endforeach
                             </select>
                         </div>

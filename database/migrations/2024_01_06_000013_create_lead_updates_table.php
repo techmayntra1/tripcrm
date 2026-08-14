@@ -23,7 +23,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('lead_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('trip_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('purpose_id')->nullable()->constrained('meeting_purposes')->nullOnDelete();
             $table->string('title', 200);
             $table->date('meeting_date');

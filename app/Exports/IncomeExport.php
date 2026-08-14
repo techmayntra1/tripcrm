@@ -23,7 +23,7 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping, WithEve
     public function collection()
     {
         $r = $this->request;
-        $query = Income::with(['project', 'customer', 'invoice', 'paymentMode', 'bank']);
+        $query = Income::with(['trip', 'customer', 'invoice', 'paymentMode', 'bank']);
 
         // A customer-scoped export is a lifetime ledger (matches the customer
         // page), so the financial-year filter only applies to the global export.
@@ -39,7 +39,7 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping, WithEve
                 $q->where('receipt_number', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
                     ->orWhereHas('customer', fn($cq) => $cq->where('name', 'like', "%{$search}%"))
-                    ->orWhereHas('project', fn($pq) => $pq->where('name', 'like', "%{$search}%")->orWhere('project_number', 'like', "%{$search}%"));
+                    ->orWhereHas('trip', fn($pq) => $pq->where('name', 'like', "%{$search}%")->orWhere('trip_number', 'like', "%{$search}%"));
             });
         }
         if ($r->filled('income_type')) {
@@ -48,14 +48,14 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping, WithEve
         if ($r->filled('payment_mode_id')) {
             $query->where('payment_mode_id', $r->payment_mode_id);
         }
-        if ($r->filled('project_id')) {
-            $query->where('project_id', $r->project_id);
+        if ($r->filled('trip_id')) {
+            $query->where('trip_id', $r->trip_id);
         }
         if ($r->filled('customer_id')) {
             $cid = $r->customer_id;
             $query->where(function ($q) use ($cid) {
                 $q->where('customer_id', $cid)
-                    ->orWhereHas('project', fn($pq) => $pq->where('customer_id', $cid));
+                    ->orWhereHas('trip', fn($pq) => $pq->where('customer_id', $cid));
             });
         }
 
@@ -64,7 +64,7 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping, WithEve
 
     public function headings(): array
     {
-        return ['Date', 'Receipt #', 'Type', 'Project', 'Customer', 'Invoice', 'Payment Mode', 'Bank', 'Description', 'Amount'];
+        return ['Date', 'Receipt #', 'Type', 'Trip', 'Customer', 'Invoice', 'Payment Mode', 'Bank', 'Description', 'Amount'];
     }
 
     public function map($income): array
@@ -73,7 +73,7 @@ class IncomeExport implements FromCollection, WithHeadings, WithMapping, WithEve
             optional($income->income_date)->format('d-m-Y') ?? '-',
             $income->receipt_number ?? '-',
             ucfirst($income->income_type ?? '-'),
-            $income->project->name ?? '-',
+            $income->trip->name ?? '-',
             $income->customer->name ?? '-',
             $income->invoice->invoice_number ?? '-',
             $income->paymentMode->name ?? '-',

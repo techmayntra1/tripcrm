@@ -13,12 +13,12 @@ return new class extends Migration
     public function up(): void
     {
        
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->softDeletes();
         });
 
        
-        DB::table('projects')->where('is_active', false)->update(['deleted_at' => now()]);
+        DB::table('trips')->where('is_active', false)->update(['deleted_at' => now()]);
 
        
         Schema::table('staff', function (Blueprint $table) {
@@ -42,7 +42,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->dropSoftDeletes();
         });
 

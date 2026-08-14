@@ -98,7 +98,7 @@
                         <tr>
                             <th style="white-space: nowrap">SR</th>
                             <th>Title</th>
-                            <th>Project</th>
+                            <th>Trip</th>
                             <th>Assigned To</th>
                             <th style="white-space: nowrap">Start Date</th>
                             <th style="white-space: nowrap">Due Date</th>
@@ -122,8 +122,8 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($task->project)
-                                        <a href="{{ route('admin.projects.show', $task->project) }}" class="name-truncate">{{ $task->project->name }}</a>
+                                    @if($task->trip)
+                                        <a href="{{ route('admin.trips.show', $task->trip) }}" class="name-truncate">{{ $task->trip->name }}</a>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -238,11 +238,11 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Project</label>
-                            <select class="form-select" name="project_id" id="addProjectId">
-                                <option value="">Select Project</option>
-                                @foreach($projects as $project)
-                                    <option value="{{ $project->id }}" data-address="{{ $project->site_address }}" {{ old('project_id') == $project->id ? 'selected' : '' }}>{{ Str::limit($project->name, 40) }}</option>
+                            <label class="form-label">Trip</label>
+                            <select class="form-select" name="trip_id" id="addTripId">
+                                <option value="">Select Trip</option>
+                                @foreach($trips as $trip)
+                                    <option value="{{ $trip->id }}" data-address="{{ $trip->site_address }}" {{ old('trip_id') == $trip->id ? 'selected' : '' }}>{{ Str::limit($trip->name, 40) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -291,11 +291,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Location</label>
-                        <input type="text" class="form-control" name="location" id="addLocation" value="{{ old('location') }}" maxlength="255" placeholder="Type to search project addresses" list="projectAddressList">
-                        <datalist id="projectAddressList">
-                            @foreach($projects as $project)
-                                @if($project->site_address)
-                                <option value="{{ $project->site_address }}">{{ $project->name }}</option>
+                        <input type="text" class="form-control" name="location" id="addLocation" value="{{ old('location') }}" maxlength="255" placeholder="Type to search trip addresses" list="tripAddressList">
+                        <datalist id="tripAddressList">
+                            @foreach($trips as $trip)
+                                @if($trip->site_address)
+                                <option value="{{ $trip->site_address }}">{{ $trip->name }}</option>
                                 @endif
                             @endforeach
                         </datalist>
@@ -338,11 +338,11 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <label class="form-label">Project</label>
-                            <select class="form-select edit-project-select" name="project_id" data-task-id="{{ $task->id }}">
-                                <option value="">No Project</option>
-                                @foreach($projects as $project)
-                                    <option value="{{ $project->id }}" data-address="{{ $project->site_address }}" {{ $task->project_id == $project->id ? 'selected' : '' }}>{{ Str::limit($project->name, 40) }}</option>
+                            <label class="form-label">Trip</label>
+                            <select class="form-select edit-trip-select" name="trip_id" data-task-id="{{ $task->id }}">
+                                <option value="">No Trip</option>
+                                @foreach($trips as $trip)
+                                    <option value="{{ $trip->id }}" data-address="{{ $trip->site_address }}" {{ $task->trip_id == $trip->id ? 'selected' : '' }}>{{ Str::limit($trip->name, 40) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -387,7 +387,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Location</label>
-                        <input type="text" class="form-control edit-location-{{ $task->id }}" name="location" value="{{ $task->location }}" maxlength="255" placeholder="Type to search project addresses" list="projectAddressList">
+                        <input type="text" class="form-control edit-location-{{ $task->id }}" name="location" value="{{ $task->location }}" maxlength="255" placeholder="Type to search trip addresses" list="tripAddressList">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Description</label>
@@ -524,9 +524,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    var addProjectId = document.getElementById('addProjectId');
-    if (addProjectId) {
-        addProjectId.addEventListener('change', function() {
+    var addTripId = document.getElementById('addTripId');
+    if (addTripId) {
+        addTripId.addEventListener('change', function() {
             var selected = this.options[this.selectedIndex];
             var locationField = document.getElementById('addLocation');
             if (this.value && selected.dataset.address) {
@@ -550,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    document.querySelectorAll('.edit-project-select').forEach(function(select) {
+    document.querySelectorAll('.edit-trip-select').forEach(function(select) {
         select.addEventListener('change', function() {
             var taskId = this.getAttribute('data-task-id');
             var selected = this.options[this.selectedIndex];

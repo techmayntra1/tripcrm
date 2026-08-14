@@ -14,7 +14,7 @@ class Income extends Model
         'receipt_number',
         'income_type',
         'income_date',
-        'project_id',
+        'trip_id',
         'invoice_id',
         'customer_id',
         'payment_mode_id',
@@ -56,9 +56,9 @@ class Income extends Model
         return 'INC-' . $year . '-' . str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
 
-    public function project(): BelongsTo
+    public function trip(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Trip::class);
     }
 
     public function invoice(): BelongsTo
@@ -84,7 +84,7 @@ class Income extends Model
     public function getIncomeTypeDisplayAttribute(): string
     {
         return match ($this->income_type) {
-            'project' => 'Project Income',
+            'trip' => 'Trip Income',
             'advance' => 'Advance Payment',
             'other' => 'Other Income',
             default => ucfirst($this->income_type),

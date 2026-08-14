@@ -36,12 +36,12 @@
                         <small class="text-muted d-block">Income Type</small>
                         @php
                             $typeColors = [
-                                'project' => 'bg-primary',
+                                'trip' => 'bg-primary',
                                 'advance' => 'bg-info',
                                 'other' => 'bg-secondary',
                             ];
                             $typeLabels = [
-                                'project' => 'Project Payment',
+                                'trip' => 'Trip Payment',
                                 'advance' => 'Advance Payment',
                                 'other' => 'Other Income',
                             ];
@@ -68,11 +68,11 @@
                         </a>
                     </div>
                     @endif
-                    @if($income->project)
+                    @if($income->trip)
                     <div class="col-md-4">
-                        <small class="text-muted d-block">Project</small>
-                        <a href="{{ route('admin.projects.show', $income->project) }}">
-                            <strong>{{ $income->project->project_number }} - {{ $income->project->name }}</strong>
+                        <small class="text-muted d-block">Trip</small>
+                        <a href="{{ route('admin.trips.show', $income->trip) }}">
+                            <strong>{{ $income->trip->trip_number }} - {{ $income->trip->name }}</strong>
                         </a>
                     </div>
                     @endif

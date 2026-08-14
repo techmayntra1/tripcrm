@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\GstRate;
-use App\Models\Project;
+use App\Models\Trip;
 use App\Models\Quotation;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -105,11 +105,11 @@ class QuotationController extends Controller
     {
         $companies = Company::orderBy('name')->get();
         $customers = Customer::orderBy('name')->get();
-        $projects = Project::orderBy('project_number', 'desc')->get();
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
 
-        return view('admin.quotations.create', compact('companies', 'customers', 'projects', 'units', 'gstRates'));
+        return view('admin.quotations.create', compact('companies', 'customers', 'trips', 'units', 'gstRates'));
     }
 
     public function store(Request $request)
@@ -118,7 +118,7 @@ class QuotationController extends Controller
             'date' => 'required|date',
             'company_id' => 'required|exists:companies,id',
             'customer_id' => 'required|exists:customers,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'subject' => 'nullable|string|max:150',
             'quotation_type' => 'required|in:pdf,items',
             'quotation_pdf' => 'nullable|file|mimes:pdf|max:10240',
@@ -154,11 +154,11 @@ class QuotationController extends Controller
             'items.*.qty.required' => 'Item quantity is required.',
         ]);
 
-        if (!empty($validated['project_id'])) {
-            $project = Project::find($validated['project_id']);
-            if ($project && (int) $project->customer_id !== (int) $validated['customer_id']) {
+        if (!empty($validated['trip_id'])) {
+            $trip = Trip::find($validated['trip_id']);
+            if ($trip && (int) $trip->customer_id !== (int) $validated['customer_id']) {
                 return back()->withInput()
-                    ->withErrors(['project_id' => 'The selected project does not belong to the selected customer.']);
+                    ->withErrors(['trip_id' => 'The selected trip does not belong to the selected customer.']);
             }
         }
 
@@ -187,7 +187,7 @@ class QuotationController extends Controller
             'date' => $validated['date'],
             'company_id' => $validated['company_id'],
             'customer_id' => $validated['customer_id'],
-            'project_id' => $validated['project_id'] ?? null,
+            'trip_id' => $validated['trip_id'] ?? null,
             'subject' => $validated['subject'] ?? null,
             'quotation_type' => $validated['quotation_type'],
             'quotation_pdf' => $pdfPath,
@@ -221,12 +221,12 @@ class QuotationController extends Controller
 
         $companies = Company::orderBy('name')->get();
         $customers = Customer::orderBy('name')->get();
-        $projects = Project::orderBy('project_number', 'desc')->get();
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
         $quotation->load(['company', 'customer']);
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
 
-        return view('admin.quotations.edit', compact('quotation', 'companies', 'customers', 'projects', 'units', 'gstRates'));
+        return view('admin.quotations.edit', compact('quotation', 'companies', 'customers', 'trips', 'units', 'gstRates'));
     }
 
     public function update(Request $request, Quotation $quotation)
@@ -239,7 +239,7 @@ class QuotationController extends Controller
             'date' => 'required|date',
             'company_id' => 'required|exists:companies,id',
             'customer_id' => 'required|exists:customers,id',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'subject' => 'nullable|string|max:150',
             'quotation_type' => 'required|in:pdf,items',
             'quotation_pdf' => 'nullable|file|mimes:pdf|max:10240',
@@ -276,11 +276,11 @@ class QuotationController extends Controller
             'items.*.qty.required' => 'Item quantity is required.',
         ]);
 
-        if (!empty($validated['project_id'])) {
-            $project = Project::find($validated['project_id']);
-            if ($project && (int) $project->customer_id !== (int) $validated['customer_id']) {
+        if (!empty($validated['trip_id'])) {
+            $trip = Trip::find($validated['trip_id']);
+            if ($trip && (int) $trip->customer_id !== (int) $validated['customer_id']) {
                 return back()->withInput()
-                    ->withErrors(['project_id' => 'The selected project does not belong to the selected customer.']);
+                    ->withErrors(['trip_id' => 'The selected trip does not belong to the selected customer.']);
             }
         }
 
@@ -310,7 +310,7 @@ class QuotationController extends Controller
             'date' => $validated['date'],
             'company_id' => $validated['company_id'],
             'customer_id' => $validated['customer_id'],
-            'project_id' => $validated['project_id'] ?? null,
+            'trip_id' => $validated['trip_id'] ?? null,
             'subject' => $validated['subject'] ?? null,
             'quotation_type' => $validated['quotation_type'],
             'quotation_pdf' => $validated['quotation_pdf'] ?? $quotation->quotation_pdf,

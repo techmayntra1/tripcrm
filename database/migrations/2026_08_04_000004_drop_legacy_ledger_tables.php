@@ -13,7 +13,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::dropIfExists('project_service_payments');
+        Schema::dropIfExists('trip_service_payments');
         Schema::dropIfExists('bank_transactions');
     }
 
@@ -35,10 +35,10 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('project_service_payments')) {
-            Schema::create('project_service_payments', function (Blueprint $table) {
+        if (!Schema::hasTable('trip_service_payments')) {
+            Schema::create('trip_service_payments', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('project_service_id')->constrained()->cascadeOnDelete();
+                $table->foreignId('trip_service_id')->constrained()->cascadeOnDelete();
                 $table->foreignId('bank_id')->constrained()->cascadeOnDelete();
                 $table->decimal('amount', 12, 2);
                 $table->date('payment_date');

@@ -77,7 +77,7 @@
                             <th>Invoice #</th>
                             <th>Date</th>
                             <th>Customer</th>
-                            <th>Project</th>
+                            <th>Trip</th>
                             <th>Total</th>
                             <th>Paid</th>
                             <th>Balance</th>
@@ -93,8 +93,8 @@
                             <td>{{ formatDate($invoice->date) }}</td>
                             <td><span class="name-truncate" title="{{ $invoice->customer->name ?? '-' }}">{{ $invoice->customer->name ?? '-' }}</span></td>
                             <td>
-                                @if($invoice->project)
-                                    <a href="{{ route('admin.projects.show', $invoice->project) }}">{{ $invoice->project->project_number }}</a>
+                                @if($invoice->trip)
+                                    <a href="{{ route('admin.trips.show', $invoice->trip) }}">{{ $invoice->trip->trip_number }}</a>
                                 @else
                                     -
                                 @endif

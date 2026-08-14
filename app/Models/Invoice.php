@@ -16,7 +16,7 @@ class Invoice extends Model
         'due_date',
         'company_id',
         'customer_id',
-        'project_id',
+        'trip_id',
         'quotation_id',
         'subject',
         'invoice_type',
@@ -99,9 +99,9 @@ class Invoice extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function project(): BelongsTo
+    public function trip(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Trip::class);
     }
 
     public function quotation(): BelongsTo

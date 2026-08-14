@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('title', 100);
             $table->text('description')->nullable();
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('trip_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('assignee_type', ['staff', 'vendor']);
             $table->unsignedBigInteger('assignee_id');
             $table->datetime('task_at');

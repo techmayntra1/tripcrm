@@ -12,12 +12,12 @@ use Illuminate\Support\Facades\Schema;
  * Converts every legacy money-movement into a single Income (money in) or
  * Expense (money out) row so the bank balance can be derived purely from those
  * two tables:
- *   - project_services.advance          -> service Expense (paid)
- *   - project_service_payments rows     -> service Expense (paid)
+ *   - trip_services.advance          -> service Expense (paid)
+ *   - trip_service_payments rows     -> service Expense (paid)
  *   - bank_transactions (reference_type='manual') credit -> Income (other)
  *   - bank_transactions (reference_type='manual') debit  -> Expense (general, paid)
  *
- * BankTransaction rows for income/expense/project_service are NOT migrated:
+ * BankTransaction rows for income/expense/trip_service are NOT migrated:
  * they were mirrors of records that already exist, and the whole
  * bank_transactions table is dropped in the following migration.
  */
@@ -27,9 +27,9 @@ return new class extends Migration
     {
         DB::transaction(function () {
             // 1. Service advances -> service Expense, then zero the column so
-            //    ProjectService::paid_amount has a single source of truth.
-            if (Schema::hasTable('project_services')) {
-                $advances = DB::table('project_services')
+            //    TripService::paid_amount has a single source of truth.
+            if (Schema::hasTable('trip_services')) {
+                $advances = DB::table('trip_services')
                     ->whereNull('deleted_at')
                     ->where('advance', '>', 0)
                     ->get();
@@ -38,8 +38,8 @@ return new class extends Migration
                     Expense::create([
                         'expense_type' => 'service',
                         'expense_date' => $ps->created_at ? substr($ps->created_at, 0, 10) : now()->toDateString(),
-                        'project_id' => $ps->project_id,
-                        'project_service_id' => $ps->id,
+                        'trip_id' => $ps->trip_id,
+                        'trip_service_id' => $ps->id,
                         'bank_id' => $ps->advance_bank_id,
                         'sub_total' => $ps->advance,
                         'gst_percentage' => 0,
@@ -51,24 +51,24 @@ return new class extends Migration
                     ]);
                 }
 
-                DB::table('project_services')
+                DB::table('trip_services')
                     ->where('advance', '>', 0)
                     ->update(['advance' => 0, 'advance_bank_id' => null]);
             }
 
             // 2. Service payments -> service Expense.
-            if (Schema::hasTable('project_service_payments')) {
-                $payments = DB::table('project_service_payments as p')
-                    ->join('project_services as s', 's.id', '=', 'p.project_service_id')
-                    ->select('p.*', 's.project_id')
+            if (Schema::hasTable('trip_service_payments')) {
+                $payments = DB::table('trip_service_payments as p')
+                    ->join('trip_services as s', 's.id', '=', 'p.trip_service_id')
+                    ->select('p.*', 's.trip_id')
                     ->get();
 
                 foreach ($payments as $pay) {
                     Expense::create([
                         'expense_type' => 'service',
                         'expense_date' => $pay->payment_date ?: now()->toDateString(),
-                        'project_id' => $pay->project_id,
-                        'project_service_id' => $pay->project_service_id,
+                        'trip_id' => $pay->trip_id,
+                        'trip_service_id' => $pay->trip_service_id,
                         'bank_id' => $pay->bank_id,
                         'sub_total' => $pay->amount,
                         'gst_percentage' => 0,

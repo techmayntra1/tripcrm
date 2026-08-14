@@ -11,7 +11,7 @@ use App\Models\MeetingPurpose;
 use App\Models\UpdateType;
 use App\Models\WorkType;
 use App\Models\WorkLead;
-use App\Models\Project;
+use App\Models\Trip;
 use App\Models\Task;
 use App\Models\CustomerUpdate;
 use App\Models\Income;
@@ -24,7 +24,7 @@ class CustomerController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Customer::with(['city', 'projects:id,customer_id,name'])->withCount('projects');
+        $query = Customer::with(['city', 'trips:id,customer_id,name'])->withCount('trips');
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -62,7 +62,7 @@ class CustomerController extends Controller
 
     public function trashed(Request $request)
     {
-        $query = Customer::onlyTrashed()->with(['city', 'projects:id,customer_id,name'])->withCount('projects');
+        $query = Customer::onlyTrashed()->with(['city', 'trips:id,customer_id,name'])->withCount('trips');
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -107,13 +107,13 @@ class CustomerController extends Controller
 
     public function showTrashed($id)
     {
-        $customer = Customer::onlyTrashed()->with(['meetings.purpose', 'projects', 'updates.updateType', 'updates.user'])->findOrFail($id);
+        $customer = Customer::onlyTrashed()->with(['meetings.purpose', 'trips', 'updates.updateType', 'updates.user'])->findOrFail($id);
 
         $upcomingMeetings = collect();
         $updateTypes = collect();
         $leadStatuses = collect();
         $meetingPurposes = collect();
-        $availableProjects = collect();
+        $availableTrips = collect();
 
         $activities = collect();
 
@@ -138,10 +138,10 @@ class CustomerController extends Controller
         $activities = $activities->sortByDesc('date');
         $isTrashed = true;
 
-        $projectIds = $customer->projects->pluck('id')->toArray();
-        $tasks = Task::whereIn('project_id', $projectIds)
+        $tripIds = $customer->trips->pluck('id')->toArray();
+        $tasks = Task::whereIn('trip_id', $tripIds)
             ->whereNull('deleted_at')
-            ->with(['project', 'status'])
+            ->with(['trip', 'status'])
             ->orderBy('due_at')
             ->get();
 
@@ -152,7 +152,7 @@ class CustomerController extends Controller
             'updateTypes',
             'leadStatuses',
             'meetingPurposes',
-            'availableProjects',
+            'availableTrips',
             'isTrashed',
             'tasks'
         ));
@@ -163,8 +163,8 @@ class CustomerController extends Controller
         $cities = City::active()->orderBy('name')->get();
         $workTypes = WorkType::active()->ordered()->get();
         $workLeads = WorkLead::active()->ordered()->get();
-        $projects = Project::orderBy('project_number', 'desc')->get();
-        return view('admin.customers.create', compact('cities', 'workTypes', 'workLeads', 'projects'));
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
+        return view('admin.customers.create', compact('cities', 'workTypes', 'workLeads', 'trips'));
     }
 
     public function store(Request $request)
@@ -201,8 +201,8 @@ class CustomerController extends Controller
 
         $customer = Customer::create($validated);
 
-        if ($request->filled('project_ids')) {
-            Project::whereIn('id', $request->project_ids)->update(['customer_id' => $customer->id]);
+        if ($request->filled('trip_ids')) {
+            Trip::whereIn('id', $request->trip_ids)->update(['customer_id' => $customer->id]);
         }
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer created successfully.');
@@ -210,16 +210,16 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
-        $customer->load(['meetings.purpose', 'projects', 'quotations', 'invoices', 'updates.updateType', 'updates.user']);
+        $customer->load(['meetings.purpose', 'trips', 'quotations', 'invoices', 'updates.updateType', 'updates.user']);
 
         $upcomingMeetings = $customer->upcomingMeetings()->with('purpose')->get();
         $updateTypes = UpdateType::active()->get();
         $leadStatuses = LeadStatus::active()->get();
         $meetingPurposes = MeetingPurpose::active()->ordered()->get();
 
-        $availableProjects = Project::whereNull('customer_id')
+        $availableTrips = Trip::whereNull('customer_id')
             ->orWhere('customer_id', '!=', $customer->id)
-            ->orderBy('project_number', 'desc')
+            ->orderBy('trip_number', 'desc')
             ->get();
 
         $activities = collect();
@@ -244,19 +244,19 @@ class CustomerController extends Controller
 
         $activities = $activities->sortByDesc('date');
 
-        $projectIds = $customer->projects->pluck('id')->toArray();
-        $tasks = Task::whereIn('project_id', $projectIds)
+        $tripIds = $customer->trips->pluck('id')->toArray();
+        $tasks = Task::whereIn('trip_id', $tripIds)
             ->whereNull('deleted_at')
-            ->with(['project', 'status'])
+            ->with(['trip', 'status'])
             ->orderBy('due_at')
             ->get();
 
         // Lifetime income for this customer (no financial-year filter) so the
         // ledger total matches the lifetime "Total Income" summary card above it.
-        $incomes = Income::with(['project', 'paymentMode', 'invoice'])
-            ->where(function ($q) use ($customer, $projectIds) {
+        $incomes = Income::with(['trip', 'paymentMode', 'invoice'])
+            ->where(function ($q) use ($customer, $tripIds) {
                 $q->where('customer_id', $customer->id)
-                    ->orWhereIn('project_id', $projectIds);
+                    ->orWhereIn('trip_id', $tripIds);
             })
             ->orderBy('income_date', 'desc')->orderBy('id', 'desc')->get();
 
@@ -267,7 +267,7 @@ class CustomerController extends Controller
             'updateTypes',
             'leadStatuses',
             'meetingPurposes',
-            'availableProjects',
+            'availableTrips',
             'tasks',
             'incomes'
         ));
@@ -284,12 +284,12 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer)
     {
-        $customer->load('projects');
+        $customer->load('trips');
         $cities = City::active()->orderBy('name')->get();
         $workTypes = WorkType::active()->ordered()->get();
         $workLeads = WorkLead::active()->ordered()->get();
-        $projects = Project::orderBy('project_number', 'desc')->get();
-        return view('admin.customers.edit', compact('customer', 'cities', 'workTypes', 'workLeads', 'projects'));
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
+        return view('admin.customers.edit', compact('customer', 'cities', 'workTypes', 'workLeads', 'trips'));
     }
 
     public function update(Request $request, Customer $customer)
@@ -326,12 +326,12 @@ class CustomerController extends Controller
 
         $customer->update($validated);
 
-        Project::where('customer_id', $customer->id)
-            ->whereNotIn('id', $request->project_ids ?? [])
+        Trip::where('customer_id', $customer->id)
+            ->whereNotIn('id', $request->trip_ids ?? [])
             ->update(['customer_id' => null]);
 
-        if ($request->filled('project_ids')) {
-            Project::whereIn('id', $request->project_ids)->update(['customer_id' => $customer->id]);
+        if ($request->filled('trip_ids')) {
+            Trip::whereIn('id', $request->trip_ids)->update(['customer_id' => $customer->id]);
         }
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer updated successfully.');
@@ -388,15 +388,15 @@ class CustomerController extends Controller
         return redirect()->route('admin.customers.show', $customer)->with('success', 'Update added successfully.');
     }
 
-    public function linkProject(Request $request, Customer $customer)
+    public function linkTrip(Request $request, Customer $customer)
     {
         $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
+            'trip_id' => 'required|exists:trips,id',
         ]);
 
-        $project = Project::findOrFail($validated['project_id']);
-        $project->update(['customer_id' => $customer->id]);
+        $trip = Trip::findOrFail($validated['trip_id']);
+        $trip->update(['customer_id' => $customer->id]);
 
-        return redirect()->route('admin.customers.show', $customer)->with('success', 'Project linked successfully.');
+        return redirect()->route('admin.customers.show', $customer)->with('success', 'Trip linked successfully.');
     }
 }

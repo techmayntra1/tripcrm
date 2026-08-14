@@ -13,7 +13,7 @@ use App\Models\LeadStatus;
 use App\Models\Unit;
 use App\Models\PaymentMode;
 use App\Models\GstRate;
-use App\Models\ProjectStatus;
+use App\Models\TripStatus;
 use App\Models\ExpenseType;
 use App\Models\TaskStatus;
 use App\Models\StaffPosition;
@@ -509,52 +509,52 @@ class MasterController extends Controller
         }
     }
 
-    public function projectStatuses(Request $request)
+    public function tripStatuses(Request $request)
     {
-        $query = ProjectStatus::orderBy('created_at', 'desc');
+        $query = TripStatus::orderBy('created_at', 'desc');
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
         $items = $query->get();
-        $inactiveCount = ProjectStatus::onlyTrashed()->count();
-        return view('admin.masters.project-statuses', compact('items', 'inactiveCount'));
+        $inactiveCount = TripStatus::onlyTrashed()->count();
+        return view('admin.masters.trip-statuses', compact('items', 'inactiveCount'));
     }
 
-    public function projectStatusesTrashed(Request $request)
+    public function tripStatusesTrashed(Request $request)
     {
-        $query = ProjectStatus::onlyTrashed()->orderBy('created_at', 'desc');
+        $query = TripStatus::onlyTrashed()->orderBy('created_at', 'desc');
         if ($request->filled('search')) {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
         $items = $query->get();
-        $activeCount = ProjectStatus::count();
-        return view('admin.masters.project-statuses-trashed', compact('items', 'activeCount'));
+        $activeCount = TripStatus::count();
+        return view('admin.masters.trip-statuses-trashed', compact('items', 'activeCount'));
     }
 
-    public function storeProjectStatus(Request $request)
+    public function storeTripStatus(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:20|unique:project_statuses,name', 'slug' => 'nullable|string|max:30', 'color' => 'nullable|string|max:20']);
+        $request->validate(['name' => 'required|string|max:20|unique:trip_statuses,name', 'slug' => 'nullable|string|max:30', 'color' => 'nullable|string|max:20']);
         $slug = $request->slug ?: \Str::slug($request->name, '_');
-        ProjectStatus::create(['name' => $request->name, 'slug' => $slug, 'color' => $request->color ?? 'secondary', 'sort_order' => ProjectStatus::withTrashed()->max('sort_order') + 1]);
-        return redirect()->route('admin.masters.project-statuses')->with('success', 'Project status added successfully.');
+        TripStatus::create(['name' => $request->name, 'slug' => $slug, 'color' => $request->color ?? 'secondary', 'sort_order' => TripStatus::withTrashed()->max('sort_order') + 1]);
+        return redirect()->route('admin.masters.trip-statuses')->with('success', 'Trip status added successfully.');
     }
 
-    public function updateProjectStatus(Request $request, ProjectStatus $projectStatus)
+    public function updateTripStatus(Request $request, TripStatus $tripStatus)
     {
-        $request->validate(['name' => 'required|string|max:20|unique:project_statuses,name,' . $projectStatus->id, 'slug' => 'nullable|string|max:30', 'color' => 'nullable|string|max:20']);
-        $projectStatus->update(['name' => $request->name, 'slug' => $request->slug ?: $projectStatus->slug, 'color' => $request->color ?? 'secondary']);
-        return redirect()->route('admin.masters.project-statuses')->with('success', 'Project status updated successfully.');
+        $request->validate(['name' => 'required|string|max:20|unique:trip_statuses,name,' . $tripStatus->id, 'slug' => 'nullable|string|max:30', 'color' => 'nullable|string|max:20']);
+        $tripStatus->update(['name' => $request->name, 'slug' => $request->slug ?: $tripStatus->slug, 'color' => $request->color ?? 'secondary']);
+        return redirect()->route('admin.masters.trip-statuses')->with('success', 'Trip status updated successfully.');
     }
 
-    public function toggleProjectStatus($id)
+    public function toggleTripStatus($id)
     {
-        $projectStatus = ProjectStatus::withTrashed()->findOrFail($id);
-        if ($projectStatus->trashed()) {
-            $projectStatus->restore();
-            return redirect()->back()->with('success', 'Project status restored.');
+        $tripStatus = TripStatus::withTrashed()->findOrFail($id);
+        if ($tripStatus->trashed()) {
+            $tripStatus->restore();
+            return redirect()->back()->with('success', 'Trip status restored.');
         } else {
-            $projectStatus->delete();
-            return redirect()->back()->with('success', 'Project status deleted.');
+            $tripStatus->delete();
+            return redirect()->back()->with('success', 'Trip status deleted.');
         }
     }
 

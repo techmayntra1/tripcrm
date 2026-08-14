@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('project_addons', function (Blueprint $table) {
+        Schema::create('trip_addons', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('project_id');
+            $table->unsignedBigInteger('trip_id');
             $table->string('title', 200);
             $table->text('description')->nullable();
             $table->decimal('amount', 12, 2)->default(0);
@@ -25,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('project_addons');
+        Schema::dropIfExists('trip_addons');
     }
 };

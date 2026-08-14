@@ -35,7 +35,7 @@
                     <div class="widget-subheading">All Trips</div>
                 </div>
                 <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ $totalProjects }}</span></div>
+                    <div class="widget-numbers text-white"><span>{{ $totalTrips }}</span></div>
                 </div>
             </div>
         </div>
@@ -223,20 +223,20 @@
                 <i class="bi bi-calendar-check me-2"></i> Trip Deadlines
             </div>
             <div class="list-group list-group-flush">
-                @forelse($projectDeadlines as $project)
+                @forelse($tripDeadlines as $trip)
                 <div class="list-group-item py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>{{ $project->project_number }}</strong> - {{ \Str::limit($project->name, 25) }}
-                            <br><small class="text-muted">{{ $project->customer->name ?? 'N/A' }}</small>
+                            <strong>{{ $trip->trip_number }}</strong> - {{ \Str::limit($trip->name, 25) }}
+                            <br><small class="text-muted">{{ $trip->customer->name ?? 'N/A' }}</small>
                         </div>
                         <div class="text-end">
                             @php
-                                $daysLeft = \Carbon\Carbon::today()->diffInDays($project->expected_end_date, false);
+                                $daysLeft = \Carbon\Carbon::today()->diffInDays($trip->expected_end_date, false);
                                 $badgeClass = $daysLeft <= 3 ? 'bg-danger' : ($daysLeft <= 7 ? 'bg-warning text-dark' : ($daysLeft <= 15 ? 'bg-info' : 'bg-secondary'));
                             @endphp
                             <span class="badge {{ $badgeClass }}">{{ $daysLeft }} Days Left</span>
-                            <br><small class="text-muted">{{ $project->expected_end_date->format('d-m-Y') }}</small>
+                            <br><small class="text-muted">{{ $trip->expected_end_date->format('d-m-Y') }}</small>
                         </div>
                     </div>
                 </div>
@@ -253,22 +253,22 @@
 
 <div class="row">
     <div class="col-md-12">
-        <div class="main-card mb-3 card" id="projectChartCard" style="scroll-margin-top: 90px;">
+        <div class="main-card mb-3 card" id="tripChartCard" style="scroll-margin-top: 90px;">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span><i class="bi bi-bar-chart-fill me-2"></i> Trip Budget vs Expense</span>
                 <form method="GET" action="{{ route('admin.dashboard') }}" class="mb-0">
-                    <select name="chart_project" class="form-select form-select-sm" style="min-width: 240px;" onchange="window.location.href = this.form.action + (this.value ? '?chart_project=' + encodeURIComponent(this.value) : '') + '#projectChartCard';">
+                    <select name="chart_trip" class="form-select form-select-sm" style="min-width: 240px;" onchange="window.location.href = this.form.action + (this.value ? '?chart_trip=' + encodeURIComponent(this.value) : '') + '#tripChartCard';">
                         <option value="">Top 5 Trips</option>
-                        @foreach($chartProjects as $cp)
-                            <option value="{{ $cp->id }}" {{ (string) $selectedChartProject === (string) $cp->id ? 'selected' : '' }}>
-                                {{ $cp->project_number }} - {{ \Str::limit($cp->name, 30) }}
+                        @foreach($chartTrips as $cp)
+                            <option value="{{ $cp->id }}" {{ (string) $selectedChartTrip === (string) $cp->id ? 'selected' : '' }}>
+                                {{ $cp->trip_number }} - {{ \Str::limit($cp->name, 30) }}
                             </option>
                         @endforeach
                     </select>
                 </form>
             </div>
             <div class="card-body" style="height: 350px;">
-                <canvas id="projectExpenseChart"></canvas>
+                <canvas id="tripExpenseChart"></canvas>
             </div>
         </div>
     </div>
@@ -277,14 +277,14 @@
 <script src="{{ asset('assets/scripts/chart.min.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    var ctx = document.getElementById('projectExpenseChart').getContext('2d');
-    var projects = @json($projectsForChart->pluck('name'));
-    var budgets = @json($projectsForChart->pluck('budget'));
-    var expenses = @json($projectsForChart->pluck('spent'));
-    var incomes = @json($projectsForChart->pluck('income'));
+    var ctx = document.getElementById('tripExpenseChart').getContext('2d');
+    var trips = @json($tripsForChart->pluck('name'));
+    var budgets = @json($tripsForChart->pluck('budget'));
+    var expenses = @json($tripsForChart->pluck('spent'));
+    var incomes = @json($tripsForChart->pluck('income'));
 
-    if (projects.length === 0) {
-        document.getElementById('projectExpenseChart').parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted"><div class="text-center"><i class="bi bi-bar-chart fs-1 d-block mb-2"></i>No trip data available</div></div>';
+    if (trips.length === 0) {
+        document.getElementById('tripExpenseChart').parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted"><div class="text-center"><i class="bi bi-bar-chart fs-1 d-block mb-2"></i>No trip data available</div></div>';
         return;
     }
 
@@ -297,8 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return pct > 75 ? '#dc3545' : '#28a745';
     });
 
-    var shortLabels = projects.map(function(name) {
-        var s = String(name).replace(/^PRJ-\d{4}-\d+\s*-\s*/, '').trim();
+    var shortLabels = trips.map(function(name) {
+        var s = String(name).replace(/^TRP-\d{4}-\d+\s*-\s*/, '').trim();
         return s.length > 18 ? s.substring(0, 18) + '…' : s;
     });
     new Chart(ctx, {
@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: {
                     callbacks: {
                         title: function(context) {
-                            return projects[context[0].dataIndex];
+                            return trips[context[0].dataIndex];
                         },
                         label: function(context) {
                             return context.dataset.label + ': ₹' + context.raw + 'L';

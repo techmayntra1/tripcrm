@@ -15,7 +15,7 @@ return new class extends Migration
             $table->date('due_date')->nullable();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('trip_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('quotation_id')->nullable()->constrained()->nullOnDelete();
             $table->string('subject', 200)->nullable();
             $table->enum('invoice_type', ['pdf', 'items'])->default('items');

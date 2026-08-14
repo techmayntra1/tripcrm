@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->json('assigned_vendor_ids')->nullable()->after('assigned_staff_ids');
         });
     }
 
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->dropColumn('assigned_vendor_ids');
         });
     }

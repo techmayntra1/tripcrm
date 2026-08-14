@@ -1,0 +1,287 @@
+/* ============================================================
+   Velzon compatibility shim
+   Loaded AFTER custom.css. Two jobs:
+   1. Re-point the trip's palette variables to Velzon's default
+      navy (#405189) so every `var(--primary-color)` rule in
+      custom.css adopts the Velzon look automatically.
+   2. Neutralize leftover ArchitectUI layout hacks and provide
+      shims for old content classes still present on un-converted
+      pages during the rollout.
+   No markup or backend logic is touched here.
+   ============================================================ */
+
+/* ---- 1. Palette: teal -> Velzon navy --------------------- */
+:root {
+    --primary-color: #405189;   /* Velzon --vz-primary */
+    --primary-dark:  #333f6b;   /* darker navy for hovers   */
+}
+
+/* ---- 2a. Kill ArchitectUI scroll/height hacks ------------ */
+/* custom.css locked html/body to overflow:hidden and pinned
+   .app-* heights for the old shell. Velzon scrolls the document
+   normally, so these must be released or the page gets clipped. */
+html,
+body {
+    overflow: visible !important;
+    height: auto !important;
+}
+.app-container,
+.app-main,
+.app-main__outer {
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* ---- 2b. Shims for leftover ArchitectUI content classes --- */
+/* Old page-title bar -> Velzon-style page title block. */
+.app-page-title {
+    padding: 0 0 4px;
+    margin: -4px 0 20px;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.app-page-title .page-title-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.app-page-title .page-title-heading {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+.app-page-title .page-title-icon {
+    background: var(--primary-color) !important;
+    color: #fff;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    box-shadow: 0 4px 10px rgba(64, 81, 137, 0.25);
+}
+.app-page-title .page-title-subheading {
+    font-size: 0.8rem;
+    color: #878a99;
+    margin: 2px 0 0;
+}
+
+/* Old solid gradient card helpers used on the dashboard tiles.
+   Keep them readable under Velzon until pages are converted. */
+.bg-mean-fruit    { background-image: linear-gradient(135deg, #405189 0%, #333f6b 100%) !important; color: #fff !important; }
+.bg-midnight-bloom{ background-image: linear-gradient(135deg, #2a2f56 0%, #405189 100%) !important; color: #fff !important; }
+.bg-purple        { background-image: linear-gradient(135deg, #6559cc 0%, #405189 100%) !important; color: #fff !important; }
+
+/* icon-gradient text helper -> flat navy so it never disappears */
+.icon-gradient {
+    -webkit-text-fill-color: currentColor;
+    background: none;
+}
+
+/* ---- 2c. Velzon topbar tidy-ups -------------------------- */
+/* Give the header profile placeholder a fixed size. */
+.topbar-user .header-profile-user {
+    width: 36px;
+    height: 36px;
+}
+/* Drop Velzon's grey box behind the user dropdown (--vz-topbar-user-bg). */
+.topbar-user {
+    background-color: transparent !important;
+}
+
+/* ---- 2d. Card headers: black -> navy --------------------- */
+/* custom.css paints every .card-header with a near-black gradient
+   (var(--dark-color) #1a1a1a). Repaint it in the Velzon navy so
+   the dark tiles/headers match the rest of the theme. */
+.card-header {
+    background: linear-gradient(135deg, #405189 0%, #333f6b 100%) !important;
+}
+
+/* ---- 2e. Remove underline under icon-only links ---------- */
+/* Anchor links that wrap just an icon (e.g. the card-header "->"
+   arrows) inherit the default underline. Kill it site-wide while
+   leaving text links untouched. */
+a > i:only-child { text-decoration: none; }
+a:hover > i { text-decoration: none; }
+
+/* ---- 2f. Kill stray select2 arrows / clear icon ----------- */
+/* Three sources of stray marks on a select2 field, all removed so
+   only the theme's single right-side chevron shows:
+   1. The native <select class="form-select"> keeps its own chevron
+      background-image. select2 only *clips* it (.select2-hidden-
+      accessible, 1px), and some browsers still bleed a faint grey
+      arrow at the field's bottom-left. display:none hides it fully
+      (the select still submits its value normally).
+   2. select2's default triangle <b> element.
+   3. The allowClear ✕ button. */
+select.select2-hidden-accessible {
+    display: none !important;
+}
+.select2-container--bootstrap-5 .select2-selection__arrow,
+.select2-container--bootstrap-5 .select2-selection__arrow b {
+    display: none !important;
+}
+.select2-selection__clear,
+.select2-selection__rendered .select2-selection__clear {
+    display: none !important;
+}
+
+/* ---- 2g. Remove yellow: warning colour -> navy ----------- */
+/* Every yellow accent (the "+" add buttons = .btn-warning, the
+   .bg-warning icon chips, .text-warning) is repainted navy so no
+   yellow survives anywhere. Re-point Bootstrap's warning token
+   too, so components that read the variable follow suit. */
+:root {
+    --vz-warning: #405189;
+    --vz-warning-rgb: 64, 81, 137;
+    --bs-warning: #405189;
+    --bs-warning-rgb: 64, 81, 137;
+}
+.btn-warning,
+.bg-warning,
+.badge.bg-warning {
+    background-color: #405189 !important;
+    border-color: #405189 !important;
+    color: #fff !important;
+}
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active,
+.btn-warning.active {
+    background-color: #333f6b !important;
+    border-color: #333f6b !important;
+    color: #fff !important;
+}
+.bg-warning *,
+.badge.bg-warning * {
+    color: #fff !important;
+}
+.text-warning {
+    color: #405189 !important;
+}
+.btn-outline-warning {
+    color: #405189 !important;
+    border-color: #405189 !important;
+}
+.btn-outline-warning:hover,
+.btn-outline-warning:active {
+    background-color: #405189 !important;
+    border-color: #405189 !important;
+    color: #fff !important;
+}
+.border-warning {
+    border-color: #405189 !important;
+}
+/* Solid warning badge/chip helper (Bootstrap 5.3 text-bg-*). */
+.text-bg-warning {
+    background-color: #405189 !important;
+    color: #fff !important;
+}
+/* Soft / subtle warning tints -> soft navy. */
+.bg-warning-subtle,
+.bg-soft-warning {
+    background-color: #eaecf4 !important;
+}
+.text-warning-emphasis {
+    color: #333f6b !important;
+}
+/* Warning alert box -> soft navy, no yellow. */
+.alert-warning {
+    --bs-alert-color: #333f6b;
+    --bs-alert-bg: #eaecf4;
+    --bs-alert-border-color: #c6cbe0;
+    --bs-alert-link-color: #2a3358;
+    background-color: #eaecf4 !important;
+    border-color: #c6cbe0 !important;
+    color: #333f6b !important;
+}
+.alert-warning .alert-link { color: #2a3358 !important; }
+
+/* ---- 2h. Active tab underline -> white -------------------- */
+/* The .lead-tabs active tab draws a 3px bottom border in the
+   primary colour. Now the tab strip sits on a navy header, navy
+   on navy is invisible, so paint the active underline solid white
+   and make it a touch thicker so it clearly reads. */
+.card-header .lead-tabs .nav-link.active {
+    border-bottom: 3px solid #fff !important;
+}
+.card-header .lead-tabs .nav-link.active i {
+    border-bottom-color: transparent !important;
+}
+
+/* ---- 2i. Action icons: theme navy, delete stays red ------- */
+/* Row action toolbars (.btn-group-actions) mix info-blue, teal-
+   success and yellow-warning outlines. Unify every action to the
+   navy theme colour so they read as one set; only the delete
+   (danger) button keeps its red so it stays distinct. */
+.btn-group-actions .btn-outline-info,
+.btn-group-actions .btn-outline-success,
+.btn-group-actions .btn-outline-secondary,
+.btn-group-actions .btn-outline-warning,
+.btn-group-actions .btn-outline-primary {
+    color: #405189 !important;
+    border-color: #405189 !important;
+    background-color: transparent !important;
+}
+.btn-group-actions .btn-outline-info:hover,
+.btn-group-actions .btn-outline-info:focus,
+.btn-group-actions .btn-outline-success:hover,
+.btn-group-actions .btn-outline-success:focus,
+.btn-group-actions .btn-outline-secondary:hover,
+.btn-group-actions .btn-outline-secondary:focus,
+.btn-group-actions .btn-outline-warning:hover,
+.btn-group-actions .btn-outline-warning:focus,
+.btn-group-actions .btn-outline-primary:hover,
+.btn-group-actions .btn-outline-primary:focus {
+    color: #fff !important;
+    background-color: #405189 !important;
+    border-color: #405189 !important;
+}
+/* Enlarge only the glyph, not the button box: bump the icon font
+   size and keep the button padding as-is so the boxes stay the
+   same size across the whole project. */
+.btn-group-actions .btn i,
+.btn-group-actions .btn .bi {
+    font-size: 1.15rem !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+}
+
+/* Delete/danger action keeps red (unchanged), just ensure it wins. */
+.btn-group-actions .btn-outline-danger {
+    color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+.btn-group-actions .btn-outline-danger:hover,
+.btn-group-actions .btn-outline-danger:focus {
+    color: #fff !important;
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+/* ---- 2j. Remove the full-width line under tab strips ------- */
+/* The horizontal border running the whole width under the
+   Active/Deleted (and trip) tab rows is disliked. Remove it on
+   every page: the card-header's own bottom edge AND the
+   ul.nav-tabs strip border. The white active-tab underline (2h)
+   is a per-link border on .nav-link.active and is untouched. */
+.card-header.has-tabs,
+.card-header:has(.lead-tabs),
+.card-header:has(.nav-tabs),
+.card-header:has(.trip-tabs) {
+    border-bottom: 0 !important;
+}
+.card-header .nav-tabs,
+.card-header .lead-tabs,
+.card-header .trip-tabs,
+ul.nav-tabs.lead-tabs,
+ul.nav-tabs.trip-tabs {
+    border-bottom: 0 !important;
+}

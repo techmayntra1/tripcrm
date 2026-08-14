@@ -9,16 +9,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('expenses', function (Blueprint $table) {
-            $table->unsignedBigInteger('project_service_id')->nullable()->after('project_id');
-            $table->index('project_service_id');
+            $table->unsignedBigInteger('trip_service_id')->nullable()->after('trip_id');
+            $table->index('trip_service_id');
         });
     }
 
     public function down(): void
     {
         Schema::table('expenses', function (Blueprint $table) {
-            $table->dropIndex(['project_service_id']);
-            $table->dropColumn('project_service_id');
+            $table->dropIndex(['trip_service_id']);
+            $table->dropColumn('trip_service_id');
         });
     }
 };

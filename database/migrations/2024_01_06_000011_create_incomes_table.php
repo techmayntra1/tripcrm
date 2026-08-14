@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create('incomes', function (Blueprint $table) {
             $table->id();
             $table->string('receipt_number', 20)->unique();
-            $table->enum('income_type', ['project', 'advance', 'other']);
+            $table->enum('income_type', ['trip', 'advance', 'other']);
             $table->date('income_date');
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('trip_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('invoice_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->enum('payment_mode', ['cash', 'bank_transfer', 'upi', 'cheque', 'card']);

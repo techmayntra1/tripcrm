@@ -16,9 +16,9 @@
                 <a href="{{ route('admin.quotations.show', $selectedQuotationId) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Back to Quotation
                 </a>
-            @elseif(isset($selectedProjectId) && $selectedProjectId)
-                <a href="{{ route('admin.projects.show', $selectedProjectId) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @elseif(isset($selectedTripId) && $selectedTripId)
+                <a href="{{ route('admin.trips.show', $selectedTripId) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
             @elseif(isset($selectedCustomerId) && $selectedCustomerId)
                 <a href="{{ route('admin.customers.show', $selectedCustomerId) }}" class="btn btn-outline-secondary">
@@ -108,16 +108,16 @@
             <div class="row">
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="project" class="form-label">Project <span class="text-danger">*</span></label>
-                        <select class="form-select" id="project" name="project_id" {{ isset($selectedProjectId) && $selectedProjectId ? 'disabled' : '' }} required>
-                            <option value="">Select Project</option>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}" data-customer="{{ $project->customer_id }}" {{ (old('project_id', $selectedProjectId ?? '') == $project->id) ? 'selected' : '' }}>{{ $project->project_number }} - {{ $project->name }}</option>
+                        <label for="trip" class="form-label">Trip <span class="text-danger">*</span></label>
+                        <select class="form-select" id="trip" name="trip_id" {{ isset($selectedTripId) && $selectedTripId ? 'disabled' : '' }} required>
+                            <option value="">Select Trip</option>
+                            @foreach($trips as $trip)
+                                <option value="{{ $trip->id }}" data-customer="{{ $trip->customer_id }}" {{ (old('trip_id', $selectedTripId ?? '') == $trip->id) ? 'selected' : '' }}>{{ $trip->trip_number }} - {{ $trip->name }}</option>
                             @endforeach
                         </select>
-                        <div class="invalid-feedback">Please select a project</div>
-                        @if(isset($selectedProjectId) && $selectedProjectId)
-                            <input type="hidden" name="project_id" value="{{ $selectedProjectId }}">
+                        <div class="invalid-feedback">Please select a trip</div>
+                        @if(isset($selectedTripId) && $selectedTripId)
+                            <input type="hidden" name="trip_id" value="{{ $selectedTripId }}">
                         @endif
                     </div>
                 </div>
@@ -321,8 +321,8 @@
         </div>
     </div>
     <div class="d-flex justify-content-end gap-2 mb-4">
-        @if(isset($selectedProjectId) && $selectedProjectId)
-            <a href="{{ route('admin.projects.show', $selectedProjectId) }}" class="btn btn-outline-secondary">Cancel</a>
+        @if(isset($selectedTripId) && $selectedTripId)
+            <a href="{{ route('admin.trips.show', $selectedTripId) }}" class="btn btn-outline-secondary">Cancel</a>
         @elseif(isset($selectedCustomerId) && $selectedCustomerId)
             <a href="{{ route('admin.customers.show', $selectedCustomerId) }}" class="btn btn-outline-secondary">Cancel</a>
         @else
@@ -346,21 +346,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const manualItemsSection = document.getElementById('manualItemsSection');
     const pdfUploadSection = document.getElementById('pdfUploadSection');
     const addItemBtn = document.getElementById('addItemBtn');
-    const projectSelect = document.getElementById('project');
+    const tripSelect = document.getElementById('trip');
     let itemIndex = 1;
 
-    // ----- Customer <-> Project linking -----
-    const projectOptions = Array.from(projectSelect.options);
+    // ----- Customer <-> Trip linking -----
+    const tripOptions = Array.from(tripSelect.options);
 
-    function filterProjectsByCustomer(customerId) {
+    function filterTripsByCustomer(customerId) {
         let currentStillValid = false;
-        projectOptions.forEach(function(opt) {
+        tripOptions.forEach(function(opt) {
             if (!opt.value) { opt.hidden = false; return; }
             const belongs = !customerId || opt.getAttribute('data-customer') === String(customerId);
             opt.hidden = !belongs;
-            if (belongs && opt.value === projectSelect.value) currentStillValid = true;
+            if (belongs && opt.value === tripSelect.value) currentStillValid = true;
         });
-        if (projectSelect.value && !currentStillValid) projectSelect.value = '';
+        if (tripSelect.value && !currentStillValid) tripSelect.value = '';
     }
 
     function lockCustomer(customerId) {
@@ -386,10 +386,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     customerSelect.addEventListener('change', function() {
-        filterProjectsByCustomer(this.value);
+        filterTripsByCustomer(this.value);
     });
 
-    projectSelect.addEventListener('change', function() {
+    tripSelect.addEventListener('change', function() {
         if (this.value) {
             const opt = this.options[this.selectedIndex];
             lockCustomer(opt.getAttribute('data-customer'));
@@ -621,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (customerId) {
                 unlockCustomer();
                 customerSelect.value = customerId;
-                filterProjectsByCustomer(customerId);
+                filterTripsByCustomer(customerId);
             }
             if (companyId) companySelect.value = companyId;
 
@@ -688,16 +688,16 @@ document.addEventListener('DOMContentLoaded', function() {
     updateGstVisibility();
     calculateTotals();
 
-    // Initial customer <-> project sync
-    if (projectSelect.disabled && projectSelect.value) {
-        // Project preselected & locked (came from a project page)
-        const opt = projectSelect.options[projectSelect.selectedIndex];
+    // Initial customer <-> trip sync
+    if (tripSelect.disabled && tripSelect.value) {
+        // Trip preselected & locked (came from a trip page)
+        const opt = tripSelect.options[tripSelect.selectedIndex];
         lockCustomer(opt.getAttribute('data-customer'));
-    } else if (projectSelect.value) {
-        const opt = projectSelect.options[projectSelect.selectedIndex];
+    } else if (tripSelect.value) {
+        const opt = tripSelect.options[tripSelect.selectedIndex];
         lockCustomer(opt.getAttribute('data-customer'));
     } else if (customerSelect.value) {
-        filterProjectsByCustomer(customerSelect.value);
+        filterTripsByCustomer(customerSelect.value);
     }
 
     function validateForm() {
@@ -726,9 +726,9 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
 
-        const projectInput = document.getElementById('project');
-        if ((projectInput.selectedIndex === 0 || !projectInput.value) && !projectInput.disabled) {
-            projectInput.classList.add('is-invalid');
+        const tripInput = document.getElementById('trip');
+        if ((tripInput.selectedIndex === 0 || !tripInput.value) && !tripInput.disabled) {
+            tripInput.classList.add('is-invalid');
             isValid = false;
         }
 

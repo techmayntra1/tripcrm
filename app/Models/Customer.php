@@ -46,9 +46,9 @@ class Customer extends Model
         return $this->hasMany(Meeting::class);
     }
 
-    public function projects(): HasMany
+    public function trips(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Trip::class);
     }
 
     public function quotations(): HasMany
@@ -85,26 +85,26 @@ class Customer extends Model
     }
 
     /**
-     * Total value billed to the customer, taken from the budget of their projects.
+     * Total value billed to the customer, taken from the budget of their trips.
      * Used for the "Total Invoiced" card. Falls back to invoice totals only where
-     * no projects exist is intentionally not applied — projects are the source of truth.
+     * no trips exist is intentionally not applied — trips are the source of truth.
      */
     public function getTotalInvoicedAttribute(): float
     {
-        return (float) $this->projects()->sum('budget');
+        return (float) $this->trips()->sum('budget');
     }
 
     /**
      * Money actually received, taken from the Income ledger (the real money-in record),
-     * reached via the customer's projects as well as any income booked directly to the
+     * reached via the customer's trips as well as any income booked directly to the
      * customer. Distinct income rows so a row carrying both links is not counted twice.
      */
     public function getTotalReceivedAttribute(): float
     {
-        $projectIds = $this->projects()->pluck('id');
+        $tripIds = $this->trips()->pluck('id');
 
-        return (float) Income::where(function ($query) use ($projectIds) {
-            $query->whereIn('project_id', $projectIds)
+        return (float) Income::where(function ($query) use ($tripIds) {
+            $query->whereIn('trip_id', $tripIds)
                 ->orWhere('customer_id', $this->id);
         })->sum('amount');
     }
@@ -120,30 +120,30 @@ class Customer extends Model
 
     /**
      * Total money actually received from this customer, taken from the Income
-     * table (matched by customer_id OR by the customer's projects). Lifetime.
+     * table (matched by customer_id OR by the customer's trips). Lifetime.
      */
     public function getTotalIncomeAttribute(): float
     {
-        $projectIds = $this->projects()->pluck('id');
+        $tripIds = $this->trips()->pluck('id');
 
         return Income::where('customer_id', $this->id)
-            ->orWhereIn('project_id', $projectIds)
+            ->orWhereIn('trip_id', $tripIds)
             ->sum('amount');
     }
 
     /**
-     * Agreed value of all the customer's projects (budget + add-ons). Lifetime.
+     * Agreed value of all the customer's trips (budget + add-ons). Lifetime.
      */
-    public function getProjectValueAttribute(): float
+    public function getTripValueAttribute(): float
     {
-        return $this->projects->sum(fn($project) => $project->total_budget);
+        return $this->trips->sum(fn($trip) => $trip->total_budget);
     }
 
     /**
-     * Still to be collected: project value minus income received.
+     * Still to be collected: trip value minus income received.
      */
     public function getIncomeReceivableAttribute(): float
     {
-        return $this->project_value - $this->total_income;
+        return $this->trip_value - $this->total_income;
     }
 }

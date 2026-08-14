@@ -10,9 +10,16 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
-    <link href="{{ asset('assets/styles/main.css') }}" rel="stylesheet">
+    {{-- Velzon core theme --}}
+    <link href="{{ asset('velzon/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('velzon/css/icons.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('velzon/css/app.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('velzon/css/custom.min.css') }}" rel="stylesheet" type="text/css">
+    {{-- Trip styles --}}
     <link href="{{ asset('assets/styles/bootstrap-icons.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/styles/auth.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/styles/custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/styles/velzon-compat.css') }}" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     @if(session('success') || session('error') || session('warning') || session('info'))
@@ -31,8 +38,7 @@
         @yield('content')
     </div>
     <script src="{{ asset('assets/scripts/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/scripts/vendors.js') }}"></script>
-    <script src="{{ asset('assets/scripts/carousel_slider.js') }}"></script>
+    <script src="{{ asset('velzon/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/scripts/custom.js') }}"></script>
     @stack('scripts')
 </body>

@@ -13,13 +13,13 @@
             </div>
         </div>
         <div class="page-title-actions">
-            @if(isset($fromProject) && $fromProject)
-                <a href="{{ route('admin.projects.show', $fromProject) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @if(isset($fromTrip) && $fromTrip)
+                <a href="{{ route('admin.trips.show', $fromTrip) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
-            @elseif($invoice->project_id)
-                <a href="{{ route('admin.projects.show', $invoice->project_id) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @elseif($invoice->trip_id)
+                <a href="{{ route('admin.trips.show', $invoice->trip_id) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
             @else
                 <a href="{{ route('admin.invoices.show', $invoice) }}" class="btn btn-outline-secondary">
@@ -59,8 +59,8 @@
 <form action="{{ route('admin.invoices.update', $invoice) }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
     @csrf
     @method('PUT')
-    @if(isset($fromProject))
-    <input type="hidden" name="from_project" value="{{ $fromProject }}">
+    @if(isset($fromTrip))
+    <input type="hidden" name="from_trip" value="{{ $fromTrip }}">
     @endif
     <div class="main-card mb-3 card">
         <div class="card-header">
@@ -112,11 +112,11 @@
                 </div>
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="project" class="form-label">Project</label>
-                        <select class="form-select" id="project" name="project_id">
-                            <option value="">Select Project (Optional)</option>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}" data-customer="{{ $project->customer_id }}" {{ old('project_id', $invoice->project_id) == $project->id ? 'selected' : '' }}>{{ $project->project_number }} - {{ $project->name }}</option>
+                        <label for="trip" class="form-label">Trip</label>
+                        <select class="form-select" id="trip" name="trip_id">
+                            <option value="">Select Trip (Optional)</option>
+                            @foreach($trips as $trip)
+                                <option value="{{ $trip->id }}" data-customer="{{ $trip->customer_id }}" {{ old('trip_id', $invoice->trip_id) == $trip->id ? 'selected' : '' }}>{{ $trip->trip_number }} - {{ $trip->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -369,21 +369,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const pdfUploadSection = document.getElementById('pdfUploadSection');
     const addItemBtn = document.getElementById('addItemBtn');
     const customerSelect = document.getElementById('customer');
-    const projectSelect = document.getElementById('project');
+    const tripSelect = document.getElementById('trip');
     let itemIndex = itemsTableBody.querySelectorAll('tr').length;
 
-    // ----- Customer <-> Project linking -----
-    const projectOptions = Array.from(projectSelect.options);
+    // ----- Customer <-> Trip linking -----
+    const tripOptions = Array.from(tripSelect.options);
 
-    function filterProjectsByCustomer(customerId) {
+    function filterTripsByCustomer(customerId) {
         let currentStillValid = false;
-        projectOptions.forEach(function(opt) {
+        tripOptions.forEach(function(opt) {
             if (!opt.value) { opt.hidden = false; return; }
             const belongs = !customerId || opt.getAttribute('data-customer') === String(customerId);
             opt.hidden = !belongs;
-            if (belongs && opt.value === projectSelect.value) currentStillValid = true;
+            if (belongs && opt.value === tripSelect.value) currentStillValid = true;
         });
-        if (projectSelect.value && !currentStillValid) projectSelect.value = '';
+        if (tripSelect.value && !currentStillValid) tripSelect.value = '';
     }
 
     function lockCustomer(customerId) {
@@ -409,10 +409,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     customerSelect.addEventListener('change', function() {
-        filterProjectsByCustomer(this.value);
+        filterTripsByCustomer(this.value);
     });
 
-    projectSelect.addEventListener('change', function() {
+    tripSelect.addEventListener('change', function() {
         if (this.value) {
             const opt = this.options[this.selectedIndex];
             lockCustomer(opt.getAttribute('data-customer'));
@@ -421,12 +421,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initial customer <-> project sync
-    if (projectSelect.value) {
-        const opt = projectSelect.options[projectSelect.selectedIndex];
+    // Initial customer <-> trip sync
+    if (tripSelect.value) {
+        const opt = tripSelect.options[tripSelect.selectedIndex];
         lockCustomer(opt.getAttribute('data-customer'));
     } else if (customerSelect.value) {
-        filterProjectsByCustomer(customerSelect.value);
+        filterTripsByCustomer(customerSelect.value);
     }
 
     function updateGstVisibility() {
@@ -666,9 +666,9 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
 
-        const projectInput = document.getElementById('project');
-        if ((projectInput.selectedIndex === 0 || !projectInput.value) && !projectInput.disabled) {
-            projectInput.classList.add('is-invalid');
+        const tripInput = document.getElementById('trip');
+        if ((tripInput.selectedIndex === 0 || !tripInput.value) && !tripInput.disabled) {
+            tripInput.classList.add('is-invalid');
             isValid = false;
         }
 

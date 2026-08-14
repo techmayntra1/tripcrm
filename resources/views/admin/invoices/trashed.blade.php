@@ -68,7 +68,7 @@
                             <th>Invoice #</th>
                             <th>Date</th>
                             <th>Customer</th>
-                            <th>Project</th>
+                            <th>Trip</th>
                             <th>Total</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -82,8 +82,8 @@
                             <td>{{ formatDate($invoice->date) }}</td>
                             <td><span class="name-truncate" title="{{ $invoice->customer->name ?? '-' }}">{{ $invoice->customer->name ?? '-' }}</span></td>
                             <td>
-                                @if($invoice->project)
-                                    {{ $invoice->project->project_number }}
+                                @if($invoice->trip)
+                                    {{ $invoice->trip->trip_number }}
                                 @else
                                     -
                                 @endif

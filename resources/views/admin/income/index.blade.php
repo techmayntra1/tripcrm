@@ -80,7 +80,7 @@
         <form method="GET" action="{{ route('admin.income.index') }}" class="d-flex align-items-center gap-2">
             <select class="form-select form-select-sm" style="width: 130px;" name="income_type" onchange="this.form.submit()">
                 <option value="">All Types</option>
-                <option value="project" {{ request('income_type') == 'project' ? 'selected' : '' }}>Project</option>
+                <option value="trip" {{ request('income_type') == 'trip' ? 'selected' : '' }}>Trip</option>
                 <option value="advance" {{ request('income_type') == 'advance' ? 'selected' : '' }}>Advance</option>
                 <option value="other" {{ request('income_type') == 'other' ? 'selected' : '' }}>Other</option>
             </select>
@@ -111,7 +111,7 @@
                 <th>Receipt No.</th>
                 <th>Date</th>
                 <th>Type</th>
-                <th>Project/Customer</th>
+                <th>Trip/Customer</th>
                 <th>Payment</th>
                 <th>Amount</th>
                 <th>Actions</th>
@@ -126,7 +126,7 @@
                 <td>
                     @php
                         $typeColors = [
-                            'project' => 'bg-primary',
+                            'trip' => 'bg-primary',
                             'advance' => 'bg-info',
                             'other' => 'bg-secondary',
                         ];
@@ -134,8 +134,8 @@
                     <span class="badge {{ $typeColors[$income->income_type] ?? 'bg-secondary' }}">{{ ucfirst($income->income_type) }}</span>
                 </td>
                 <td>
-                    @if($income->project)
-                        <a href="{{ route('admin.projects.show', $income->project) }}" title="{{ $income->project->name }}">{{ $income->project->name }}</a>
+                    @if($income->trip)
+                        <a href="{{ route('admin.trips.show', $income->trip) }}" title="{{ $income->trip->name }}">{{ $income->trip->name }}</a>
                         @if($income->customer)
                             - <span class="name-truncate" title="{{ $income->customer->name }}">{{ $income->customer->name }}</span>
                         @endif

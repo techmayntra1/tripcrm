@@ -13,13 +13,13 @@
             </div>
         </div>
         <div class="page-title-actions">
-            @if(isset($fromProject) && $fromProject)
-                <a href="{{ route('admin.projects.show', $fromProject) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @if(isset($fromTrip) && $fromTrip)
+                <a href="{{ route('admin.trips.show', $fromTrip) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
-            @elseif($invoice->project_id)
-                <a href="{{ route('admin.projects.show', $invoice->project_id) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @elseif($invoice->trip_id)
+                <a href="{{ route('admin.trips.show', $invoice->trip_id) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
             @else
                 <a href="{{ route('admin.invoices.index') }}" class="btn btn-outline-secondary">
@@ -28,7 +28,7 @@
             @endif
             @can('invoices.edit')
             @if($invoice->status !== 'paid')
-            <a href="{{ route('admin.invoices.edit', $invoice) }}{{ isset($fromProject) && $fromProject ? '?from_project='.$fromProject : '' }}" class="btn btn-primary">
+            <a href="{{ route('admin.invoices.edit', $invoice) }}{{ isset($fromTrip) && $fromTrip ? '?from_trip='.$fromTrip : '' }}" class="btn btn-primary">
                 <i class="bi bi-pencil me-1"></i> Edit
             </a>
             @endif
@@ -68,7 +68,7 @@
                         @endif
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <h2 class="text-primary mb-1" style="color: #0EA5A4 !important;">TAX INVOICE</h2>
+                        <h2 class="text-primary mb-1" style="color: #405189 !important;">TAX INVOICE</h2>
                         <p class="mb-0"><strong>Invoice #:</strong> {{ $invoice->invoice_number }}</p>
                         <p class="mb-0"><strong>Date:</strong> {{ formatDate($invoice->date) }}</p>
                         @if($invoice->due_date)
@@ -95,9 +95,9 @@
                         @endif
                     </div>
                     <div class="col-md-6 text-md-end">
-                        @if($invoice->project)
-                        <h6 class="text-muted mb-2">PROJECT:</h6>
-                        <p class="mb-0"><a href="{{ route('admin.projects.show', $invoice->project) }}">{{ $invoice->project->project_number }} - {{ $invoice->project->name }}</a></p>
+                        @if($invoice->trip)
+                        <h6 class="text-muted mb-2">TRIP:</h6>
+                        <p class="mb-0"><a href="{{ route('admin.trips.show', $invoice->trip) }}">{{ $invoice->trip->trip_number }} - {{ $invoice->trip->name }}</a></p>
                         @endif
                         @if($invoice->quotation)
                         <h6 class="text-muted mb-2 mt-2">FROM QUOTATION:</h6>
@@ -106,7 +106,7 @@
                     </div>
                 </div>
                 @if($invoice->invoice_type == 'pdf')
-                <div class="card mb-4" style="border-left: 3px solid #0EA5A4;">
+                <div class="card mb-4" style="border-left: 3px solid #405189;">
                     <div class="card-body d-flex align-items-center justify-content-between">
                         <div>
                             <h6 class="mb-1"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF Invoice Uploaded</h6>
@@ -134,20 +134,20 @@
                     };
                 @endphp
                 <table class="table mb-4" style="border-collapse: collapse;">
-                    <thead style="background-color: #0EA5A4; color: #fff;">
+                    <thead style="background-color: #405189; color: #fff;">
                         <tr>
-                            <th width="40" style="border: 1px solid #0EA5A4; padding: 10px;">#</th>
-                            <th style="border: 1px solid #0EA5A4; padding: 10px;">DESCRIPTION</th>
-                            <th width="80" style="border: 1px solid #0EA5A4; padding: 10px;">HSN</th>
-                            <th width="60" class="text-center" style="border: 1px solid #0EA5A4; padding: 10px;">UNIT</th>
+                            <th width="40" style="border: 1px solid #405189; padding: 10px;">#</th>
+                            <th style="border: 1px solid #405189; padding: 10px;">DESCRIPTION</th>
+                            <th width="80" style="border: 1px solid #405189; padding: 10px;">HSN</th>
+                            <th width="60" class="text-center" style="border: 1px solid #405189; padding: 10px;">UNIT</th>
                             @if($hasDimensions)
-                            <th width="70" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">HEIGHT</th>
-                            <th width="70" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">WIDTH</th>
-                            <th width="70" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">SQFT</th>
+                            <th width="70" class="text-end" style="border: 1px solid #405189; padding: 10px;">HEIGHT</th>
+                            <th width="70" class="text-end" style="border: 1px solid #405189; padding: 10px;">WIDTH</th>
+                            <th width="70" class="text-end" style="border: 1px solid #405189; padding: 10px;">SQFT</th>
                             @endif
-                            <th width="60" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">QTY</th>
-                            <th width="100" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">RATE (₹)</th>
-                            <th width="120" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">AMOUNT (₹)</th>
+                            <th width="60" class="text-end" style="border: 1px solid #405189; padding: 10px;">QTY</th>
+                            <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE (₹)</th>
+                            <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT (₹)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -264,7 +264,7 @@
     </div>
     <div class="col-md-4">
         <div class="main-card mb-3 card">
-            <div class="card-header" style="background-color: #0EA5A4; color: #fff;">
+            <div class="card-header" style="background-color: #405189; color: #fff;">
                 <i class="bi bi-cash-stack me-2"></i> Payment Summary
             </div>
             <div class="card-body">

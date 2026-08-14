@@ -1,21 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-layout="vertical" data-topbar="light" data-sidebar="dark" data-sidebar-size="lg" data-sidebar-image="none" data-preloader="disable" data-theme="default" data-theme-colors="default" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Language" content="en">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>@yield('title', 'Dashboard') - {{ config('app.name') }}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, shrink-to-fit=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="@yield('description', 'CRM & Accounts Management System')">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
     <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
-    <link href="{{ asset('assets/styles/main.css') }}" rel="stylesheet">
+
+    {{-- Velzon layout config (must run before paint) --}}
+    <script src="{{ asset('velzon/js/layout.js') }}"></script>
+
+    {{-- Velzon core theme --}}
+    <link href="{{ asset('velzon/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('velzon/css/icons.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('velzon/css/app.min.css') }}" rel="stylesheet" type="text/css">
+    <link href="{{ asset('velzon/css/custom.min.css') }}" rel="stylesheet" type="text/css">
+
+    {{-- Trip plugin styles (kept) --}}
     <link href="{{ asset('assets/styles/bootstrap-icons.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/styles/select2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/styles/select2-bootstrap-5-theme.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/styles/flatpickr.min.css') }}" rel="stylesheet">
+
+    {{-- Trip-specific tweaks + Velzon compatibility shims --}}
     <link href="{{ asset('assets/styles/custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/styles/velzon-compat.css') }}" rel="stylesheet">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     @if(session('success') || session('error') || session('warning') || session('info'))
@@ -29,29 +42,54 @@
     </script>
     @endif
 </head>
-<body class="app-loaded">
-    <div class="app-container app-theme-white body-tabs-shadow fixed-header fixed-sidebar">
+<body>
+    <div id="layout-wrapper">
+
         @include('partials.header')
-        <div class="app-main MainAnimation-appear">
-            @include('partials.sidebar')
-            <div class="app-main__outer">
-                <div class="app-main__inner">
+
+        @include('partials.sidebar')
+
+        {{-- Stub for Velzon app.js: its layout setter y() does
+             getElementById('two-column-menu').innerHTML='' unguarded and
+             throws (this app has no two-column menu). An empty hidden node
+             satisfies it so the console stays clean. --}}
+        <div id="two-column-menu" class="d-none"></div>
+
+        <div class="vertical-overlay"></div>
+
+        <div class="main-content">
+            <div class="page-content">
+                <div class="container-fluid">
                     @yield('content')
                 </div>
-                @include('partials.footer')
             </div>
+            @include('partials.footer')
         </div>
+
     </div>
+    <!-- END layout-wrapper -->
+
     @stack('modals')
+
+    {{-- jQuery (trip) --}}
     <script src="{{ asset('assets/scripts/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets/scripts/vendors.js') }}"></script>
+
+    {{-- Velzon core scripts --}}
+    <script src="{{ asset('velzon/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('velzon/libs/simplebar/simplebar.min.js') }}"></script>
+    <script src="{{ asset('velzon/libs/node-waves/waves.min.js') }}"></script>
+    <script src="{{ asset('velzon/libs/feather-icons/feather.min.js') }}"></script>
+    {{-- velzon/js/plugins.js removed: it document.write()s unused demo libs
+         (choices.js, flatpickr, toastify) with relative paths that 404 on
+         every page. This app loads its own select2/flatpickr below. --}}
+    <script src="{{ asset('velzon/js/app.js') }}"></script>
+
+    {{-- Trip plugins & logic (kept) --}}
     <script src="{{ asset('assets/scripts/select2.min.js') }}"></script>
     <script src="{{ asset('assets/scripts/indian-cities.js') }}"></script>
-    <script src="{{ asset('assets/scripts/main.js') }}"></script>
-    <script src="{{ asset('assets/scripts/demo.js') }}"></script>
-    <script src="{{ asset('assets/scripts/scrollbar.js') }}"></script>
-    <script src="{{ asset('assets/scripts/custom.js') }}"></script>
     <script src="{{ asset('assets/scripts/flatpickr.js') }}"></script>
+    <script src="{{ asset('assets/scripts/custom.js') }}"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('input[type="date"]').forEach(function(el) {

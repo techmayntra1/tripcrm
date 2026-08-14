@@ -9,7 +9,7 @@ use App\Models\MeetingPurpose;
 use App\Models\Lead;
 use App\Models\Customer;
 use App\Models\Vendor;
-use App\Models\Project;
+use App\Models\Trip;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -106,13 +106,13 @@ class MeetingController extends Controller
 
     public function show(Meeting $meeting)
     {
-        $meeting->load(['lead', 'customer', 'vendor', 'project', 'purpose', 'assignedUser', 'updates.user']);
+        $meeting->load(['lead', 'customer', 'vendor', 'trip', 'purpose', 'assignedUser', 'updates.user']);
 
         $meetingPurposes = MeetingPurpose::active()->ordered()->get();
         $leads = Lead::whereNull('deleted_at')->orderBy('name')->get();
         $customers = Customer::whereNull('deleted_at')->orderBy('name')->get();
         $vendors = Vendor::whereNull('deleted_at')->orderBy('name')->get();
-        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
+        $trips = Trip::whereNull('deleted_at')->orderBy('name')->get();
 
         $previousUrl = url()->previous();
         if ($meeting->customer_id && str_contains($previousUrl, '/customers/' . $meeting->customer_id)) {
@@ -130,20 +130,20 @@ class MeetingController extends Controller
             'customers',
             'vendors',
             'backUrl',
-            'projects'
+            'trips'
         ));
     }
 
     public function showTrashed($id)
     {
-        $meeting = Meeting::onlyTrashed()->with(['lead', 'customer', 'vendor', 'project', 'purpose', 'assignedUser', 'updates.user'])->findOrFail($id);
+        $meeting = Meeting::onlyTrashed()->with(['lead', 'customer', 'vendor', 'trip', 'purpose', 'assignedUser', 'updates.user'])->findOrFail($id);
         $isTrashed = true;
 
         $meetingPurposes = MeetingPurpose::active()->ordered()->get();
         $leads = Lead::whereNull('deleted_at')->orderBy('name')->get();
         $customers = Customer::whereNull('deleted_at')->orderBy('name')->get();
         $vendors = Vendor::whereNull('deleted_at')->orderBy('name')->get();
-        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
+        $trips = Trip::whereNull('deleted_at')->orderBy('name')->get();
 
         $previousUrl = url()->previous();
         if ($meeting->customer_id && str_contains($previousUrl, '/customers/' . $meeting->customer_id)) {
@@ -161,7 +161,7 @@ class MeetingController extends Controller
             'leads',
             'customers',
             'vendors',
-            'projects',
+            'trips',
             'backUrl'
         ));
     }

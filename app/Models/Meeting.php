@@ -52,7 +52,7 @@ class Meeting extends Model
         'lead_id',
         'customer_id',
         'vendor_id',
-        'project_id',
+        'trip_id',
         'purpose_id',
         'title',
         'meeting_at',
@@ -83,9 +83,9 @@ class Meeting extends Model
         return $this->belongsTo(Vendor::class);
     }
 
-    public function project(): BelongsTo
+    public function trip(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Trip::class);
     }
 
     public function purpose(): BelongsTo

@@ -144,13 +144,9 @@ $(document).ready(function() {
             $(this).val($(this).val().substring(0, max));
         }
     });
-    if ($.fn.select2) {
-        $('.select2-city').select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Select City',
-            allowClear: true
-        });
-    }
+    // NOTE: .select2-city is initialised per-page (each page passes its own
+    // city data/placeholder/tags). Initialising it here too double-wraps the
+    // element and leaves a stray extra dropdown arrow, so it is not done here.
     $('#city_id').on('change', function() {
         var otherCityDiv = $('#otherCityDiv');
         var otherCityInput = $('#other_city');

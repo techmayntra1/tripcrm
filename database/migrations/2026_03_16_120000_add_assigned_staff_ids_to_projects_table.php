@@ -9,23 +9,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasColumn('projects', 'assigned_staff_ids')) {
-            Schema::table('projects', function (Blueprint $table) {
+        if (!Schema::hasColumn('trips', 'assigned_staff_ids')) {
+            Schema::table('trips', function (Blueprint $table) {
                 $table->json('assigned_staff_ids')->nullable()->after('assigned_staff_id');
             });
         }
 
        
-        DB::table('projects')->whereNotNull('assigned_staff_id')->whereNull('assigned_staff_ids')->orderBy('id')->each(function ($project) {
-            DB::table('projects')->where('id', $project->id)->update([
-                'assigned_staff_ids' => json_encode([$project->assigned_staff_id])
+        DB::table('trips')->whereNotNull('assigned_staff_id')->whereNull('assigned_staff_ids')->orderBy('id')->each(function ($trip) {
+            DB::table('trips')->where('id', $trip->id)->update([
+                'assigned_staff_ids' => json_encode([$trip->assigned_staff_id])
             ]);
         });
     }
 
     public function down(): void
     {
-        Schema::table('projects', function (Blueprint $table) {
+        Schema::table('trips', function (Blueprint $table) {
             $table->dropColumn('assigned_staff_ids');
         });
     }

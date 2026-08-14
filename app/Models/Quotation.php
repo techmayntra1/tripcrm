@@ -17,7 +17,7 @@ class Quotation extends Model
         'valid_until',
         'company_id',
         'customer_id',
-        'project_id',
+        'trip_id',
         'subject',
         'quotation_type',
         'quotation_pdf',
@@ -100,18 +100,18 @@ class Quotation extends Model
         return $this->hasMany(Invoice::class);
     }
 
-    public function project(): HasOne
+    public function trip(): HasOne
     {
-        return $this->hasOne(Project::class);
+        return $this->hasOne(Trip::class);
     }
 
     /**
-     * The project this quotation was raised for (chosen on the form).
-     * Distinct from project() above, which is the project created FROM this quotation.
+     * The trip this quotation was raised for (chosen on the form).
+     * Distinct from trip() above, which is the trip created FROM this quotation.
      */
-    public function selectedProject(): BelongsTo
+    public function selectedTrip(): BelongsTo
     {
-        return $this->belongsTo(Project::class, 'project_id');
+        return $this->belongsTo(Trip::class, 'trip_id');
     }
 
     public function getStatusColorAttribute(): string

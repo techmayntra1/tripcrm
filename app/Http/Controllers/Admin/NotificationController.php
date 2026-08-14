@@ -55,7 +55,7 @@ class NotificationController extends Controller
         // Upcoming tasks in next 2 hours (any active status — exclude Completed/Cancelled)
         $inactiveStatusIds = TaskStatus::whereIn('name', ['Completed', 'Cancelled'])->pluck('id')->toArray();
 
-        $tasks = Task::with('project')
+        $tasks = Task::with('trip')
             ->whereNotIn('status_id', $inactiveStatusIds)
             ->whereNotNull('start_at')
             ->where('start_at', '>', $now)
@@ -70,7 +70,7 @@ class NotificationController extends Controller
                 'id' => 'task_' . $task->id . '_' . $task->start_at->timestamp,
                 'type' => 'task',
                 'title' => $task->title,
-                'subtitle' => $task->project->name ?? 'No Project',
+                'subtitle' => $task->trip->name ?? 'No Trip',
                 'time' => $task->start_at->toIso8601String(),
                 'time_formatted' => $task->start_at->format('h:i A'),
                 'link' => route('admin.tasks.show', $task),

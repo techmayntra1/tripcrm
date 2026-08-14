@@ -14,8 +14,8 @@ class Expense extends Model
         'expense_type',
         'expense_date',
         'payment_mode_id',
-        'project_id',
-        'project_service_id',
+        'trip_id',
+        'trip_service_id',
         'vendor_id',
         'staff_id',
         'category_id',
@@ -63,14 +63,14 @@ class Expense extends Model
         return 'EXP-' . $year . '-' . str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
 
-    public function project(): BelongsTo
+    public function trip(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Trip::class);
     }
 
-    public function projectService(): BelongsTo
+    public function tripService(): BelongsTo
     {
-        return $this->belongsTo(ProjectService::class);
+        return $this->belongsTo(TripService::class);
     }
 
     public function vendor(): BelongsTo
@@ -101,7 +101,7 @@ class Expense extends Model
     public function getExpenseTypeDisplayAttribute(): string
     {
         return match ($this->expense_type) {
-            'project' => 'Project Expense',
+            'trip' => 'Trip Expense',
             'vendor' => 'Vendor Payment',
             'general' => 'General Expense',
             'salary' => 'Salary Payment',

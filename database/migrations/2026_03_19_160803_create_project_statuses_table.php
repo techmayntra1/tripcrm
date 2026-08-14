@@ -9,7 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('project_statuses', function (Blueprint $table) {
+        Schema::create('trip_statuses', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
             $table->string('slug', 50)->nullable();
@@ -19,7 +19,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::table('project_statuses')->insert([
+        DB::table('trip_statuses')->insert([
             ['name' => 'Planning', 'slug' => 'planning', 'color' => 'info', 'is_active' => true, 'sort_order' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'In Progress', 'slug' => 'in_progress', 'color' => 'primary', 'is_active' => true, 'sort_order' => 2, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'On Hold', 'slug' => 'on_hold', 'color' => 'warning', 'is_active' => true, 'sort_order' => 3, 'created_at' => now(), 'updated_at' => now()],
@@ -30,6 +30,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('project_statuses');
+        Schema::dropIfExists('trip_statuses');
     }
 };

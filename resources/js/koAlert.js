@@ -1,6 +1,6 @@
 import Swal from 'sweetalert2';
 
-const GOLD = '#f7b924';
+const GOLD = '#405189';
 const DARK = '#1a1a1a';
 const DANGER = '#dc3545';
 const SUCCESS = '#28a745';

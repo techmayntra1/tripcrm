@@ -16,9 +16,9 @@
                 <a href="{{ route('admin.staff.salary', $prefillStaffId) }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left me-1"></i> Back to Salary Records
                 </a>
-            @elseif(isset($selectedProjectId) && $selectedProjectId)
-                <a href="{{ route('admin.projects.show', $selectedProjectId) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @elseif(isset($selectedTripId) && $selectedTripId)
+                <a href="{{ route('admin.trips.show', $selectedTripId) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
             @elseif(str_contains(url()->previous(), '/vendors/'))
                 <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
@@ -137,20 +137,20 @@
                     </div>
                 </div>
             </div>
-            <div class="row" id="project_vendor_row" style="{{ (isset($selectedProjectId) && $selectedProjectId) || (isset($selectedExpenseType) && in_array($selectedExpenseType, ['project', 'vendor'])) ? 'display: flex;' : 'display: none;' }}">
-                <div class="col-md-4" id="project_section">
+            <div class="row" id="trip_vendor_row" style="{{ (isset($selectedTripId) && $selectedTripId) || (isset($selectedExpenseType) && in_array($selectedExpenseType, ['trip', 'vendor'])) ? 'display: flex;' : 'display: none;' }}">
+                <div class="col-md-4" id="trip_section">
                     <div class="mb-3">
-                        <label for="project_id" class="form-label">Project <span class="text-danger project-required-star" style="display: none;">*</span></label>
-                        <select class="form-select" id="project_id" name="project_id" {{ isset($selectedProjectId) && $selectedProjectId ? 'disabled' : '' }}>
-                            <option value="">Select Project</option>
-                            @foreach($projects as $project)
-                                <option value="{{ $project->id }}" data-vendors="{{ json_encode($project->assigned_vendor_ids ?? []) }}" {{ (isset($selectedProjectId) && $selectedProjectId == $project->id) ? 'selected' : '' }}>{{ $project->project_number }} - {{ $project->name }}</option>
+                        <label for="trip_id" class="form-label">Trip <span class="text-danger trip-required-star" style="display: none;">*</span></label>
+                        <select class="form-select" id="trip_id" name="trip_id" {{ isset($selectedTripId) && $selectedTripId ? 'disabled' : '' }}>
+                            <option value="">Select Trip</option>
+                            @foreach($trips as $trip)
+                                <option value="{{ $trip->id }}" data-vendors="{{ json_encode($trip->assigned_vendor_ids ?? []) }}" {{ (isset($selectedTripId) && $selectedTripId == $trip->id) ? 'selected' : '' }}>{{ $trip->trip_number }} - {{ $trip->name }}</option>
                             @endforeach
                         </select>
-                        @if(isset($selectedProjectId) && $selectedProjectId)
-                            <input type="hidden" name="project_id" value="{{ $selectedProjectId }}">
+                        @if(isset($selectedTripId) && $selectedTripId)
+                            <input type="hidden" name="trip_id" value="{{ $selectedTripId }}">
                         @endif
-                        <div class="invalid-feedback">Please select a project</div>
+                        <div class="invalid-feedback">Please select a trip</div>
                     </div>
                 </div>
                 <div class="col-md-4" id="vendor_section" style="{{ (isset($selectedExpenseType) && $selectedExpenseType == 'vendor') ? '' : 'display: none;' }}">
@@ -168,7 +168,7 @@
                             <input type="hidden" name="vendor_id" value="{{ $selectedVendorId }}">
                         @endif
                         <div class="invalid-feedback">Please select a vendor</div>
-                        <small class="text-muted vendor-filter-hint" style="display: none;">Showing vendors assigned to selected project</small>
+                        <small class="text-muted vendor-filter-hint" style="display: none;">Showing vendors assigned to selected trip</small>
                     </div>
                 </div>
             </div>
@@ -383,51 +383,51 @@ document.addEventListener('DOMContentLoaded', function() {
     }));
 
     document.getElementById('expense_type').addEventListener('change', function() {
-        var projectVendorRow = document.getElementById('project_vendor_row');
+        var tripVendorRow = document.getElementById('trip_vendor_row');
         var vendorSection = document.getElementById('vendor_section');
-        var projectSelect = document.getElementById('project_id');
-        var projectRequiredStar = document.querySelector('.project-required-star');
+        var tripSelect = document.getElementById('trip_id');
+        var tripRequiredStar = document.querySelector('.trip-required-star');
         var vendorFilterHint = document.querySelector('.vendor-filter-hint');
 
-        if (projectVendorRow) projectVendorRow.style.display = 'none';
+        if (tripVendorRow) tripVendorRow.style.display = 'none';
         if (vendorSection) vendorSection.style.display = 'none';
-        if (projectRequiredStar) projectRequiredStar.style.display = 'none';
+        if (tripRequiredStar) tripRequiredStar.style.display = 'none';
         if (vendorFilterHint) vendorFilterHint.style.display = 'none';
-        if (projectSelect) projectSelect.removeAttribute('required');
+        if (tripSelect) tripSelect.removeAttribute('required');
 
-        if (this.value === 'project') {
-            if (projectVendorRow) projectVendorRow.style.display = 'flex';
-            if (projectRequiredStar) projectRequiredStar.style.display = 'inline';
-            if (projectSelect) projectSelect.setAttribute('required', 'required');
+        if (this.value === 'trip') {
+            if (tripVendorRow) tripVendorRow.style.display = 'flex';
+            if (tripRequiredStar) tripRequiredStar.style.display = 'inline';
+            if (tripSelect) tripSelect.setAttribute('required', 'required');
         } else if (this.value === 'vendor') {
-            if (projectVendorRow) projectVendorRow.style.display = 'flex';
+            if (tripVendorRow) tripVendorRow.style.display = 'flex';
             if (vendorSection) vendorSection.style.display = 'block';
-            // Project is required for vendor payment
-            if (projectRequiredStar) projectRequiredStar.style.display = 'inline';
-            if (projectSelect) projectSelect.setAttribute('required', 'required');
-            // Filter vendor dropdown based on selected project
-            filterVendorsByProject();
+            // Trip is required for vendor payment
+            if (tripRequiredStar) tripRequiredStar.style.display = 'inline';
+            if (tripSelect) tripSelect.setAttribute('required', 'required');
+            // Filter vendor dropdown based on selected trip
+            filterVendorsByTrip();
         }
     });
 
-    // Filter vendors based on selected project
-    document.getElementById('project_id').addEventListener('change', function() {
+    // Filter vendors based on selected trip
+    document.getElementById('trip_id').addEventListener('change', function() {
         var expenseType = document.getElementById('expense_type').value;
         if (expenseType === 'vendor') {
-            filterVendorsByProject();
+            filterVendorsByTrip();
         }
     });
 
-    function filterVendorsByProject() {
-        var projectSelect = document.getElementById('project_id');
+    function filterVendorsByTrip() {
+        var tripSelect = document.getElementById('trip_id');
         var vendorSelect = document.getElementById('vendor_id');
         var vendorFilterHint = document.querySelector('.vendor-filter-hint');
-        var selectedOption = projectSelect.options[projectSelect.selectedIndex];
+        var selectedOption = tripSelect.options[tripSelect.selectedIndex];
 
         // Clear current options
         vendorSelect.innerHTML = '<option value="">Select Vendor</option>';
 
-        if (!projectSelect.value || !selectedOption) {
+        if (!tripSelect.value || !selectedOption) {
             if (vendorFilterHint) vendorFilterHint.style.display = 'none';
             return;
         }
@@ -454,7 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             if (vendorFilterHint) vendorFilterHint.style.display = 'block';
         } else {
-            // No vendors assigned to this project - show ALL vendors as fallback
+            // No vendors assigned to this trip - show ALL vendors as fallback
             allVendorOptions.forEach(function(opt) {
                 if (opt.value) {
                     var option = document.createElement('option');
@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize filtering based on current expense type on page load
     var initialExpenseType = document.getElementById('expense_type').value;
     if (initialExpenseType === 'vendor') {
-        filterVendorsByProject();
+        filterVendorsByTrip();
     }
 
     document.getElementById('exp_sub_total').addEventListener('input', calcExpenseTotal);
@@ -567,12 +567,12 @@ function validateExpenseForm(form) {
         }
     });
 
-    // Check project required for 'project' and 'vendor' expense types
+    // Check trip required for 'trip' and 'vendor' expense types
     const expenseType = document.getElementById('expense_type').value;
-    const projectSelect = document.getElementById('project_id');
-    if ((expenseType === 'project' || expenseType === 'vendor') && projectSelect && !projectSelect.disabled && !projectSelect.value) {
-        projectSelect.classList.add('is-invalid');
-        errors.push('project_id is required');
+    const tripSelect = document.getElementById('trip_id');
+    if ((expenseType === 'trip' || expenseType === 'vendor') && tripSelect && !tripSelect.disabled && !tripSelect.value) {
+        tripSelect.classList.add('is-invalid');
+        errors.push('trip_id is required');
         isValid = false;
     }
 
@@ -721,14 +721,14 @@ document.getElementById('expenseForm').addEventListener('submit', function(e) {
     };
 
     const expenseDate = form.querySelector('[name="expense_date"]')?.value || '';
-    const projectId = form.querySelector('[name="project_id"]')?.value || '';
+    const tripId = form.querySelector('[name="trip_id"]')?.value || '';
     const vendorId = form.querySelector('[name="vendor_id"]')?.value || '';
     const grandTotal = form.querySelector('[name="grand_total"]')?.value || '';
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
     const payload = new FormData();
     payload.append('expense_date', expenseDate);
-    if (projectId) payload.append('project_id', projectId);
+    if (tripId) payload.append('trip_id', tripId);
     if (vendorId) payload.append('vendor_id', vendorId);
     payload.append('grand_total', grandTotal);
 
@@ -745,7 +745,7 @@ document.getElementById('expenseForm').addEventListener('submit', function(e) {
     .then(data => {
         if (data.duplicate) {
             window.koAlert.duplicateConfirm(
-                'An expense with the same date, project, vendor, and amount already exists.<br><br>Do you still want to add it?'
+                'An expense with the same date, trip, vendor, and amount already exists.<br><br>Do you still want to add it?'
             ).then(ok => {
                 if (ok) {
                     form.dataset.dupConfirmed = '1';

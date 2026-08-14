@@ -60,7 +60,7 @@
                 <th width="90">Date</th>
                 <th width="120">Receipt No.</th>
                 <th width="90" class="text-center">Type</th>
-                <th>Project/Customer</th>
+                <th>Trip/Customer</th>
                 <th width="100" class="text-end">Amount</th>
                 <th width="130">Deleted At</th>
                 <th width="80" class="text-center">Actions</th>
@@ -75,7 +75,7 @@
                 <td class="text-center">
                     @php
                         $typeColors = [
-                            'project' => 'bg-primary',
+                            'trip' => 'bg-primary',
                             'advance' => 'bg-info',
                             'other' => 'bg-secondary',
                         ];
@@ -83,8 +83,8 @@
                     <span class="badge {{ $typeColors[$income->income_type] ?? 'bg-secondary' }}">{{ ucfirst($income->income_type) }}</span>
                 </td>
                 <td>
-                    @if($income->project)
-                        {{ $income->project->name }}
+                    @if($income->trip)
+                        {{ $income->trip->name }}
                         @if($income->customer)
                             - <span class="name-truncate" title="{{ $income->customer->name }}">{{ $income->customer->name }}</span>
                         @endif

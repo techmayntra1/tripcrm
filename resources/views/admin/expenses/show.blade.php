@@ -13,13 +13,13 @@
             </div>
         </div>
         <div class="page-title-actions">
-            @if(isset($fromProject) && $fromProject)
-                <a href="{{ route('admin.projects.show', $fromProject) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @if(isset($fromTrip) && $fromTrip)
+                <a href="{{ route('admin.trips.show', $fromTrip) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
-            @elseif($expense->project_id)
-                <a href="{{ route('admin.projects.show', $expense->project_id) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left me-1"></i> Back to Project
+            @elseif($expense->trip_id)
+                <a href="{{ route('admin.trips.show', $expense->trip_id) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Trip
                 </a>
             @elseif($expense->vendor_id)
                 <a href="{{ route('admin.vendors.show', $expense->vendor_id) }}" class="btn btn-outline-secondary">
@@ -32,7 +32,7 @@
             @endif
             @can('expenses.edit')
             @if($expense->payment_status !== 'paid')
-            <a href="{{ route('admin.expenses.edit', $expense) }}{{ isset($fromProject) && $fromProject ? '?from_project='.$fromProject : '' }}" class="btn btn-primary">
+            <a href="{{ route('admin.expenses.edit', $expense) }}{{ isset($fromTrip) && $fromTrip ? '?from_trip='.$fromTrip : '' }}" class="btn btn-primary">
                 <i class="bi bi-pencil me-1"></i> Edit
             </a>
             @endif
@@ -52,7 +52,7 @@
                         <small class="text-muted d-block">Expense Type</small>
                         @php
                             $typeColors = [
-                                'project' => 'bg-warning',
+                                'trip' => 'bg-warning',
                                 'vendor' => 'bg-info',
                                 'general' => 'bg-secondary',
                                 'salary' => 'bg-primary',
@@ -80,11 +80,11 @@
                         </a>
                     </div>
                     @endif
-                    @if($expense->project)
+                    @if($expense->trip)
                     <div class="col-md-4">
-                        <small class="text-muted d-block">Project</small>
-                        <a href="{{ route('admin.projects.show', $expense->project) }}">
-                            <strong>{{ $expense->project->project_number }} - {{ $expense->project->name }}</strong>
+                        <small class="text-muted d-block">Trip</small>
+                        <a href="{{ route('admin.trips.show', $expense->trip) }}">
+                            <strong>{{ $expense->trip->trip_number }} - {{ $expense->trip->name }}</strong>
                         </a>
                     </div>
                     @endif

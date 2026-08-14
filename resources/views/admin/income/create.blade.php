@@ -37,8 +37,8 @@
         <div>
             <strong><i class="bi bi-receipt me-2"></i>Invoice #{{ $selectedInvoice->invoice_number }}</strong>
             <span class="ms-3">Customer: {{ $selectedInvoice->customer->name ?? '-' }}</span>
-            @if($selectedInvoice->project)
-            <span class="ms-3">Project: {{ $selectedInvoice->project->project_number }}</span>
+            @if($selectedInvoice->trip)
+            <span class="ms-3">Trip: {{ $selectedInvoice->trip->trip_number }}</span>
             @endif
         </div>
         <div>
@@ -81,7 +81,7 @@
                                 <label for="income_type" class="form-label">Income Type <span class="text-danger">*</span></label>
                                 <select class="form-select" id="income_type" name="income_type" required>
                                     <option value="">Select Type</option>
-                                    <option value="project" {{ (isset($selectedProjectId) && $selectedProjectId) || (isset($selectedInvoiceId) && $selectedInvoiceId) ? 'selected' : '' }}>Project Payment</option>
+                                    <option value="trip" {{ (isset($selectedTripId) && $selectedTripId) || (isset($selectedInvoiceId) && $selectedInvoiceId) ? 'selected' : '' }}>Trip Payment</option>
                                     <option value="advance">Advance Payment</option>
                                     <option value="other">Other Income</option>
                                 </select>
@@ -96,15 +96,15 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row" id="project_section" style="{{ (isset($selectedProjectId) && $selectedProjectId) || (isset($selectedInvoiceId) && $selectedInvoiceId) ? 'display: flex;' : 'display: none;' }}">
+                    <div class="row" id="trip_section" style="{{ (isset($selectedTripId) && $selectedTripId) || (isset($selectedInvoiceId) && $selectedInvoiceId) ? 'display: flex;' : 'display: none;' }}">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="project_id" class="form-label">Project</label>
-                                <select class="form-select" id="project_id" name="project_id">
-                                    <option value="">Select Project (Optional)</option>
-                                    @foreach($projects as $project)
-                                        <option value="{{ $project->id }}" {{ (isset($selectedProjectId) && $selectedProjectId == $project->id) ? 'selected' : '' }}>
-                                            {{ $project->project_number }} - {{ $project->name }}{{ $project->customer ? ' - '.$project->customer->name : '' }}
+                                <label for="trip_id" class="form-label">Trip</label>
+                                <select class="form-select" id="trip_id" name="trip_id">
+                                    <option value="">Select Trip (Optional)</option>
+                                    @foreach($trips as $trip)
+                                        <option value="{{ $trip->id }}" {{ (isset($selectedTripId) && $selectedTripId == $trip->id) ? 'selected' : '' }}>
+                                            {{ $trip->trip_number }} - {{ $trip->name }}{{ $trip->customer ? ' - '.$trip->customer->name : '' }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -119,7 +119,7 @@
                                         <option value="{{ $invoice->id }}"
                                             data-balance="{{ $invoice->balance_due }}"
                                             data-customer="{{ $invoice->customer_id }}"
-                                            data-project="{{ $invoice->project_id }}"
+                                            data-trip="{{ $invoice->trip_id }}"
                                             {{ (isset($selectedInvoiceId) && $selectedInvoiceId == $invoice->id) ? 'selected' : '' }}>
                                             {{ $invoice->invoice_number }} - ₹{{ number_format($invoice->balance_due, 0) }} due
                                         </option>
@@ -234,7 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const incomeType = document.getElementById('income_type');
     const paymentMode = document.getElementById('payment_mode_id');
     const invoiceSelect = document.getElementById('invoice_id');
-    const projectSection = document.getElementById('project_section');
+    const tripSection = document.getElementById('trip_section');
     const clientSection = document.getElementById('client_section');
     const chequeSection = document.getElementById('cheque_section');
     const bankSection = document.getElementById('bank_section');
@@ -244,14 +244,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function toggleIncomeTypeSections() {
         const type = incomeType.value;
-        if (type === 'project') {
-            projectSection.style.display = 'flex';
+        if (type === 'trip') {
+            tripSection.style.display = 'flex';
             clientSection.style.display = 'none';
         } else if (type === 'advance') {
-            projectSection.style.display = 'flex';
+            tripSection.style.display = 'flex';
             clientSection.style.display = 'flex';
         } else {
-            projectSection.style.display = 'none';
+            tripSection.style.display = 'none';
             clientSection.style.display = 'none';
         }
     }

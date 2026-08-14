@@ -5,7 +5,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\LeadController;
 use App\Http\Controllers\Admin\MeetingController;
-use App\Http\Controllers\Admin\ProjectController;
+use App\Http\Controllers\Admin\TripController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VendorController;
@@ -19,8 +19,8 @@ use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\BankController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\TaskController;
-use App\Http\Controllers\Admin\ProjectAddonController;
-use App\Http\Controllers\Admin\ProjectServiceController;
+use App\Http\Controllers\Admin\TripAddonController;
+use App\Http\Controllers\Admin\TripServiceController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\FollowUpController;
 use Illuminate\Support\Facades\Route;
@@ -94,7 +94,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::patch('/customers/{customer}', [CustomerController::class, 'update']);
         Route::post('/customers/{customer}/meetings', [CustomerController::class, 'storeMeeting'])->name('customers.meetings.store');
         Route::post('/customers/{customer}/updates', [CustomerController::class, 'storeUpdate'])->name('customers.updates.store');
-        Route::post('/customers/{customer}/projects/link', [CustomerController::class, 'linkProject'])->name('customers.projects.link');
+        Route::post('/customers/{customer}/trips/link', [CustomerController::class, 'linkTrip'])->name('customers.trips.link');
     });
     Route::middleware(['permission:customers,delete'])->group(function () {
         Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
@@ -126,7 +126,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware(['permission:tasks,view'])->group(function () {
         Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
         Route::get('/tasks/trashed/{id}', [TaskController::class, 'showTrashed'])->name('tasks.trashed.show');
-        Route::get('/tasks/project/{project}/address', [TaskController::class, 'getProjectAddress'])->name('tasks.project.address');
+        Route::get('/tasks/trip/{trip}/address', [TaskController::class, 'getTripAddress'])->name('tasks.trip.address');
         Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show')->where('task', '[0-9]+');
     });
     Route::middleware(['permission:tasks,create'])->group(function () {
@@ -212,37 +212,37 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
 
 
-    Route::middleware(['permission:projects,view'])->group(function () {
-        Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
-        Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show')->where('project', '[0-9]+');
-        Route::get('/projects/{project}/export', [ProjectController::class, 'export'])->name('projects.export')->where('project', '[0-9]+');
+    Route::middleware(['permission:trips,view'])->group(function () {
+        Route::get('/trips', [TripController::class, 'index'])->name('trips.index');
+        Route::get('/trips/{trip}', [TripController::class, 'show'])->name('trips.show')->where('trip', '[0-9]+');
+        Route::get('/trips/{trip}/export', [TripController::class, 'export'])->name('trips.export')->where('trip', '[0-9]+');
     });
-    Route::middleware(['permission:projects,create'])->group(function () {
-        Route::get('/projects/create', [ProjectController::class, 'create'])->name('projects.create');
-        Route::post('/projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::middleware(['permission:trips,create'])->group(function () {
+        Route::get('/trips/create', [TripController::class, 'create'])->name('trips.create');
+        Route::post('/trips', [TripController::class, 'store'])->name('trips.store');
     });
-    Route::middleware(['permission:projects,edit'])->group(function () {
-        Route::get('/projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
-        Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
-        Route::patch('/projects/{project}', [ProjectController::class, 'update']);
-        // Project Files
-        Route::delete('/project-files/{projectFile}', [ProjectController::class, 'deleteFile'])->name('projects.files.destroy');
-        // Project Addons
-        Route::post('/projects/{project}/addons', [ProjectAddonController::class, 'store'])->name('projects.addons.store');
-        Route::put('/projects/{project}/addons/{addon}', [ProjectAddonController::class, 'update'])->name('projects.addons.update');
-        Route::delete('/projects/{project}/addons/{addon}', [ProjectAddonController::class, 'destroy'])->name('projects.addons.destroy');
-        // Project Services
-        Route::post('/projects/{project}/services', [ProjectServiceController::class, 'store'])->name('projects.services.store');
-        Route::put('/projects/{project}/services/{service}', [ProjectServiceController::class, 'update'])->name('projects.services.update');
-        Route::delete('/projects/{project}/services/{service}', [ProjectServiceController::class, 'destroy'])->name('projects.services.destroy');
-        Route::post('/projects/{project}/services/{service}/payment', [ProjectServiceController::class, 'addPayment'])->name('projects.services.payment');
-        Route::post('/projects/{project}/expenses/{expense}/payment', [ProjectController::class, 'recordExpensePayment'])->name('projects.expenses.payment');
-        Route::post('/projects/{project}/services/{service}/addon', [ProjectServiceController::class, 'addAddon'])->name('projects.services.addon');
-        Route::delete('/projects/{project}/services/{service}/addon/{addon}', [ProjectServiceController::class, 'deleteAddon'])->name('projects.services.addon.destroy');
+    Route::middleware(['permission:trips,edit'])->group(function () {
+        Route::get('/trips/{trip}/edit', [TripController::class, 'edit'])->name('trips.edit');
+        Route::put('/trips/{trip}', [TripController::class, 'update'])->name('trips.update');
+        Route::patch('/trips/{trip}', [TripController::class, 'update']);
+        // Trip Files
+        Route::delete('/trip-files/{tripFile}', [TripController::class, 'deleteFile'])->name('trips.files.destroy');
+        // Trip Addons
+        Route::post('/trips/{trip}/addons', [TripAddonController::class, 'store'])->name('trips.addons.store');
+        Route::put('/trips/{trip}/addons/{addon}', [TripAddonController::class, 'update'])->name('trips.addons.update');
+        Route::delete('/trips/{trip}/addons/{addon}', [TripAddonController::class, 'destroy'])->name('trips.addons.destroy');
+        // Trip Services
+        Route::post('/trips/{trip}/services', [TripServiceController::class, 'store'])->name('trips.services.store');
+        Route::put('/trips/{trip}/services/{service}', [TripServiceController::class, 'update'])->name('trips.services.update');
+        Route::delete('/trips/{trip}/services/{service}', [TripServiceController::class, 'destroy'])->name('trips.services.destroy');
+        Route::post('/trips/{trip}/services/{service}/payment', [TripServiceController::class, 'addPayment'])->name('trips.services.payment');
+        Route::post('/trips/{trip}/expenses/{expense}/payment', [TripController::class, 'recordExpensePayment'])->name('trips.expenses.payment');
+        Route::post('/trips/{trip}/services/{service}/addon', [TripServiceController::class, 'addAddon'])->name('trips.services.addon');
+        Route::delete('/trips/{trip}/services/{service}/addon/{addon}', [TripServiceController::class, 'deleteAddon'])->name('trips.services.addon.destroy');
     });
-    Route::middleware(['permission:projects,delete'])->group(function () {
-        Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
-        Route::post('/projects/{id}/restore', [ProjectController::class, 'restore'])->name('projects.restore');
+    Route::middleware(['permission:trips,delete'])->group(function () {
+        Route::delete('/trips/{trip}', [TripController::class, 'destroy'])->name('trips.destroy');
+        Route::post('/trips/{id}/restore', [TripController::class, 'restore'])->name('trips.restore');
     });
 
    
@@ -341,8 +341,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/masters/payment-modes/trashed', [MasterController::class, 'paymentModesTrashed'])->name('masters.payment-modes.trashed');
         Route::get('/masters/gst-rates', [MasterController::class, 'gstRates'])->name('masters.gst-rates');
         Route::get('/masters/gst-rates/trashed', [MasterController::class, 'gstRatesTrashed'])->name('masters.gst-rates.trashed');
-        Route::get('/masters/project-statuses', [MasterController::class, 'projectStatuses'])->name('masters.project-statuses');
-        Route::get('/masters/project-statuses/trashed', [MasterController::class, 'projectStatusesTrashed'])->name('masters.project-statuses.trashed');
+        Route::get('/masters/trip-statuses', [MasterController::class, 'tripStatuses'])->name('masters.trip-statuses');
+        Route::get('/masters/trip-statuses/trashed', [MasterController::class, 'tripStatusesTrashed'])->name('masters.trip-statuses.trashed');
         Route::get('/masters/expense-types', [MasterController::class, 'expenseTypes'])->name('masters.expense-types');
         Route::get('/masters/expense-types/trashed', [MasterController::class, 'expenseTypesTrashed'])->name('masters.expense-types.trashed');
         Route::get('/masters/task-statuses', [MasterController::class, 'taskStatuses'])->name('masters.task-statuses');
@@ -363,7 +363,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/masters/units', [MasterController::class, 'storeUnit'])->name('masters.units.store');
         Route::post('/masters/payment-modes', [MasterController::class, 'storePaymentMode'])->name('masters.payment-modes.store');
         Route::post('/masters/gst-rates', [MasterController::class, 'storeGstRate'])->name('masters.gst-rates.store');
-        Route::post('/masters/project-statuses', [MasterController::class, 'storeProjectStatus'])->name('masters.project-statuses.store');
+        Route::post('/masters/trip-statuses', [MasterController::class, 'storeTripStatus'])->name('masters.trip-statuses.store');
         Route::post('/masters/expense-types', [MasterController::class, 'storeExpenseType'])->name('masters.expense-types.store');
         Route::post('/masters/task-statuses', [MasterController::class, 'storeTaskStatus'])->name('masters.task-statuses.store');
         Route::post('/masters/staff-positions', [MasterController::class, 'storeStaffPosition'])->name('masters.staff-positions.store');
@@ -390,8 +390,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/masters/payment-modes/{paymentMode}/toggle', [MasterController::class, 'togglePaymentMode'])->name('masters.payment-modes.toggle');
         Route::put('/masters/gst-rates/{gstRate}', [MasterController::class, 'updateGstRate'])->name('masters.gst-rates.update');
         Route::post('/masters/gst-rates/{gstRate}/toggle', [MasterController::class, 'toggleGstRate'])->name('masters.gst-rates.toggle');
-        Route::put('/masters/project-statuses/{projectStatus}', [MasterController::class, 'updateProjectStatus'])->name('masters.project-statuses.update');
-        Route::post('/masters/project-statuses/{projectStatus}/toggle', [MasterController::class, 'toggleProjectStatus'])->name('masters.project-statuses.toggle');
+        Route::put('/masters/trip-statuses/{tripStatus}', [MasterController::class, 'updateTripStatus'])->name('masters.trip-statuses.update');
+        Route::post('/masters/trip-statuses/{tripStatus}/toggle', [MasterController::class, 'toggleTripStatus'])->name('masters.trip-statuses.toggle');
         Route::put('/masters/expense-types/{expenseType}', [MasterController::class, 'updateExpenseType'])->name('masters.expense-types.update');
         Route::post('/masters/expense-types/{expenseType}/toggle', [MasterController::class, 'toggleExpenseType'])->name('masters.expense-types.toggle');
         Route::put('/masters/task-statuses/{taskStatus}', [MasterController::class, 'updateTaskStatus'])->name('masters.task-statuses.update');

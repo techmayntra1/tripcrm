@@ -9,14 +9,14 @@ use App\Models\Customer;
 use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentMode;
-use App\Models\Project;
+use App\Models\Trip;
 use Illuminate\Http\Request;
 
 class IncomeController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Income::with(['project', 'customer', 'invoice', 'bank']);
+        $query = Income::with(['trip', 'customer', 'invoice', 'bank']);
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -31,9 +31,9 @@ class IncomeController extends Controller
                     ->orWhereHas('customer', function ($cq) use ($search) {
                         $cq->where('name', 'like', "%{$search}%");
                     })
-                    ->orWhereHas('project', function ($pq) use ($search) {
+                    ->orWhereHas('trip', function ($pq) use ($search) {
                         $pq->where('name', 'like', "%{$search}%")
-                            ->orWhere('project_number', 'like', "%{$search}%");
+                            ->orWhere('trip_number', 'like', "%{$search}%");
                     });
             });
         }
@@ -74,41 +74,41 @@ class IncomeController extends Controller
 
     public function create(Request $request)
     {
-        $projects = Project::orderBy('project_number', 'desc')->get();
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
         $customers = Customer::orderBy('name')->get();
         $invoices = Invoice::whereIn('status', ['sent', 'partial', 'overdue'])->orderBy('invoice_number', 'desc')->get();
         $banks = Bank::where('is_protected', false)->orderBy('bank_name')->get();
         $cashAccount = Bank::where('is_protected', true)->first();
         $paymentModes = PaymentMode::active()->get();
 
-        $selectedProjectId = $request->project_id;
+        $selectedTripId = $request->trip_id;
         $selectedCustomerId = $request->customer_id;
         $selectedInvoiceId = $request->invoice_id;
         $selectedInvoice = null;
 
         if ($selectedInvoiceId) {
-            $selectedInvoice = Invoice::with(['customer', 'project'])->find($selectedInvoiceId);
+            $selectedInvoice = Invoice::with(['customer', 'trip'])->find($selectedInvoiceId);
             if ($selectedInvoice) {
                 $selectedCustomerId = $selectedInvoice->customer_id;
-                $selectedProjectId = $selectedInvoice->project_id;
+                $selectedTripId = $selectedInvoice->trip_id;
             }
         }
 
-        if ($selectedProjectId && !$selectedCustomerId) {
-            $project = Project::find($selectedProjectId);
-            if ($project && $project->customer_id) {
-                $selectedCustomerId = $project->customer_id;
+        if ($selectedTripId && !$selectedCustomerId) {
+            $trip = Trip::find($selectedTripId);
+            if ($trip && $trip->customer_id) {
+                $selectedCustomerId = $trip->customer_id;
             }
         }
 
         return view('admin.income.create', compact(
-            'projects',
+            'trips',
             'customers',
             'invoices',
             'banks',
             'cashAccount',
             'paymentModes',
-            'selectedProjectId',
+            'selectedTripId',
             'selectedCustomerId',
             'selectedInvoiceId',
             'selectedInvoice'
@@ -121,9 +121,9 @@ class IncomeController extends Controller
         $isCash = $paymentMode && $paymentMode->slug === 'cash';
 
         $validated = $request->validate([
-            'income_type' => 'required|in:project,advance,other',
+            'income_type' => 'required|in:trip,advance,other',
             'income_date' => 'required|date',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'invoice_id' => 'nullable|exists:invoices,id',
             'customer_id' => 'nullable|exists:customers,id',
             'payment_mode_id' => 'required|exists:payment_modes,id',
@@ -160,20 +160,20 @@ class IncomeController extends Controller
 
     public function show(Income $income)
     {
-        $income->load(['project', 'customer', 'invoice', 'bank']);
+        $income->load(['trip', 'customer', 'invoice', 'bank']);
         return view('admin.income.show', compact('income'));
     }
 
     public function edit(Income $income)
     {
-        $projects = Project::orderBy('project_number', 'desc')->get();
+        $trips = Trip::orderBy('trip_number', 'desc')->get();
         $customers = Customer::orderBy('name')->get();
         $invoices = Invoice::whereIn('status', ['sent', 'partial', 'overdue', 'paid'])->orderBy('invoice_number', 'desc')->get();
         $banks = Bank::where('is_protected', false)->orderBy('bank_name')->get();
         $cashAccount = Bank::where('is_protected', true)->first();
         $paymentModes = PaymentMode::active()->get();
 
-        return view('admin.income.edit', compact('income', 'projects', 'customers', 'invoices', 'banks', 'cashAccount', 'paymentModes'));
+        return view('admin.income.edit', compact('income', 'trips', 'customers', 'invoices', 'banks', 'cashAccount', 'paymentModes'));
     }
 
     public function update(Request $request, Income $income)
@@ -182,9 +182,9 @@ class IncomeController extends Controller
         $isCash = $paymentMode && $paymentMode->slug === 'cash';
 
         $validated = $request->validate([
-            'income_type' => 'required|in:project,advance,other',
+            'income_type' => 'required|in:trip,advance,other',
             'income_date' => 'required|date',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'invoice_id' => 'nullable|exists:invoices,id',
             'customer_id' => 'nullable|exists:customers,id',
             'payment_mode_id' => 'required|exists:payment_modes,id',
@@ -252,7 +252,7 @@ class IncomeController extends Controller
 
     public function trashed(Request $request)
     {
-        $query = Income::onlyTrashed()->with(['project', 'customer', 'invoice', 'bank']);
+        $query = Income::onlyTrashed()->with(['trip', 'customer', 'invoice', 'bank']);
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {

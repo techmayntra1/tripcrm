@@ -25,7 +25,7 @@ class Permission extends Model
             'vendors' => ['name' => 'Vendors', 'icon' => 'bi-shop', 'color' => 'bg-warning'],
             'meetings' => ['name' => 'Meetings', 'icon' => 'bi-calendar-event', 'color' => 'bg-purple'],
             'tasks' => ['name' => 'Tasks', 'icon' => 'bi-list-task', 'color' => 'bg-warning'],
-            'projects' => ['name' => 'Projects', 'icon' => 'bi-kanban', 'color' => 'bg-primary'],
+            'trips' => ['name' => 'Trips', 'icon' => 'bi-kanban', 'color' => 'bg-primary'],
             'quotations' => ['name' => 'Quotations', 'icon' => 'bi-file-earmark-text', 'color' => 'bg-info'],
             'invoices' => ['name' => 'Invoices', 'icon' => 'bi-receipt', 'color' => 'bg-success'],
             'income' => ['name' => 'Income', 'icon' => 'bi-cash-stack', 'color' => 'bg-success'],

@@ -23,7 +23,7 @@ class ExpenseExport implements FromCollection, WithHeadings, WithMapping, WithEv
     public function collection()
     {
         $r = $this->request;
-        $query = Expense::with(['vendor', 'staff', 'project', 'category', 'paymentMode', 'bank']);
+        $query = Expense::with(['vendor', 'staff', 'trip', 'category', 'paymentMode', 'bank']);
 
         $fyDates = getFinancialYearDates();
         if ($fyDates) {
@@ -39,8 +39,8 @@ class ExpenseExport implements FromCollection, WithHeadings, WithMapping, WithEv
         if ($r->filled('payment_status')) {
             $query->where('payment_status', $r->payment_status);
         }
-        if ($r->filled('project_id')) {
-            $query->where('project_id', $r->project_id);
+        if ($r->filled('trip_id')) {
+            $query->where('trip_id', $r->trip_id);
         }
 
         return $query->orderBy('expense_type')->orderBy('expense_date', 'desc')->orderBy('id', 'desc')->get();
@@ -48,7 +48,7 @@ class ExpenseExport implements FromCollection, WithHeadings, WithMapping, WithEv
 
     public function headings(): array
     {
-        return ['Date', 'Expense #', 'Type', 'Category', 'Project', 'Vendor / Staff', 'Description', 'Amount', 'Paid', 'Unpaid', 'Status', 'Payment Mode', 'Bank'];
+        return ['Date', 'Expense #', 'Type', 'Category', 'Trip', 'Vendor / Staff', 'Description', 'Amount', 'Paid', 'Unpaid', 'Status', 'Payment Mode', 'Bank'];
     }
 
     public function map($expense): array
@@ -62,7 +62,7 @@ class ExpenseExport implements FromCollection, WithHeadings, WithMapping, WithEv
             $expense->expense_number,
             $expense->expense_type_display,
             $expense->category->name ?? '-',
-            $expense->project->name ?? '-',
+            $expense->trip->name ?? '-',
             $party,
             $expense->description ?? '-',
             (float) $expense->grand_total,

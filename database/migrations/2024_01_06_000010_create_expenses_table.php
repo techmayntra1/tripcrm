@@ -33,10 +33,10 @@ return new class extends Migration
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
             $table->string('expense_number', 20)->unique();
-            $table->enum('expense_type', ['project', 'vendor', 'general', 'salary']);
+            $table->enum('expense_type', ['trip', 'vendor', 'general', 'salary']);
             $table->date('expense_date');
             $table->enum('payment_mode', ['cash', 'bank_transfer', 'upi', 'cheque', 'card', 'credit']);
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('trip_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('vendor_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('staff_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('category_id')->nullable()->constrained('expense_categories')->nullOnDelete();

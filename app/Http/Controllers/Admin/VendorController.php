@@ -85,7 +85,7 @@ class VendorController extends Controller
         $tasks = Task::where('assignee_type', 'vendor')
             ->where('assignee_id', $vendor->id)
             ->whereNull('deleted_at')
-            ->with(['project', 'status'])
+            ->with(['trip', 'status'])
             ->orderBy('due_at')
             ->get();
 
@@ -143,7 +143,7 @@ class VendorController extends Controller
         $tasks = Task::where('assignee_type', 'vendor')
             ->where('assignee_id', $vendor->id)
             ->whereNull('deleted_at')
-            ->with(['project', 'status'])
+            ->with(['trip', 'status'])
             ->orderBy('due_at')
             ->get();
 

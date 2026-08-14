@@ -14,7 +14,7 @@ return new class extends Migration
             $table->date('date');
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('invoice_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('trip_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('amount', 12, 2);
             $table->enum('payment_mode', ['cash', 'cheque', 'bank_transfer', 'upi', 'card']);
             $table->foreignId('bank_id')->nullable()->constrained()->nullOnDelete();

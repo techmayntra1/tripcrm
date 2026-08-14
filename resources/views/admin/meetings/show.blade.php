@@ -113,9 +113,9 @@
                         @endif
                     </div>
                     <div class="col-md-3">
-                        <small class="text-muted d-block">Project</small>
-                        @if($meeting->project)
-                        <a href="{{ route('admin.projects.show', $meeting->project) }}">{{ $meeting->project->name }}</a>
+                        <small class="text-muted d-block">Trip</small>
+                        @if($meeting->trip)
+                        <a href="{{ route('admin.trips.show', $meeting->trip) }}">{{ $meeting->trip->name }}</a>
                         @else
                         <strong>-</strong>
                         @endif

@@ -8,9 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('project_services', function (Blueprint $table) {
+        Schema::create('trip_services', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('trip_id')->constrained()->cascadeOnDelete();
             $table->json('service_ids')->nullable();
             $table->decimal('amount', 12, 2)->default(0);
             $table->decimal('advance', 12, 2)->default(0);
@@ -21,17 +21,17 @@ return new class extends Migration
             $table->softDeletes();
         });
 
-        Schema::create('project_service_addons', function (Blueprint $table) {
+        Schema::create('trip_service_addons', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_service_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('trip_service_id')->constrained()->cascadeOnDelete();
             $table->string('description', 255);
             $table->decimal('amount', 12, 2)->default(0);
             $table->timestamps();
         });
 
-        Schema::create('project_service_payments', function (Blueprint $table) {
+        Schema::create('trip_service_payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('project_service_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('trip_service_id')->constrained()->cascadeOnDelete();
             $table->foreignId('bank_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
             $table->date('payment_date');
@@ -42,8 +42,8 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('project_service_payments');
-        Schema::dropIfExists('project_service_addons');
-        Schema::dropIfExists('project_services');
+        Schema::dropIfExists('trip_service_payments');
+        Schema::dropIfExists('trip_service_addons');
+        Schema::dropIfExists('trip_services');
     }
 };

@@ -42,9 +42,9 @@ class Company extends Model
         return $this->hasMany(Bank::class);
     }
 
-    public function projects(): HasMany
+    public function trips(): HasMany
     {
-        return $this->hasMany(Project::class);
+        return $this->hasMany(Trip::class);
     }
 
     public function activeBanks(): HasMany

@@ -27,7 +27,7 @@
         .header {
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 3px solid #0EA5A4;
+            border-bottom: 3px solid #405189;
         }
         .company-section {
             float: left;
@@ -51,7 +51,7 @@
         .quotation-title {
             font-size: 28px;
             font-weight: bold;
-            color: #0EA5A4;
+            color: #405189;
             margin-bottom: 8px;
         }
         .quotation-details {
@@ -62,7 +62,7 @@
             display: inline-block;
             margin-top: 10px;
             padding: 5px 15px;
-            background-color: #0EA5A4;
+            background-color: #405189;
             color: #fff;
             font-size: 11px;
             font-weight: bold;
@@ -120,13 +120,13 @@
             margin-bottom: 25px;
         }
         .items-table th {
-            background-color: #0EA5A4;
+            background-color: #405189;
             color: #fff;
             padding: 10px 8px;
             font-size: 11px;
             font-weight: bold;
             text-align: left;
-            border: 1px solid #0EA5A4;
+            border: 1px solid #405189;
         }
         .items-table th.center { text-align: center; }
         .items-table th.right { text-align: right; }
@@ -218,7 +218,7 @@
         .signature-company {
             font-size: 12px;
             font-weight: bold;
-            color: #0EA5A4;
+            color: #405189;
         }
         .signature-text {
             font-size: 11px;
@@ -230,7 +230,7 @@
         .pdf-info {
             background-color: #f8f9fa;
             border: 1px solid #ddd;
-            border-left: 3px solid #0EA5A4;
+            border-left: 3px solid #405189;
             padding: 15px;
             margin-bottom: 25px;
         }
@@ -304,7 +304,7 @@
     @endphp
     <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border-color: #ccc;">
         <thead>
-            <tr style="background-color: #0EA5A4; color: #fff;">
+            <tr style="background-color: #405189; color: #fff;">
                 <th style="width: {{ $hasDimensions ? '5%' : '6%' }}; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">#</th>
                 <th style="width: {{ $hasDimensions ? '31%' : '44%' }}; text-align: left; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
                 <th style="width: {{ $hasDimensions ? '8%' : '10%' }}; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">UNIT</th>

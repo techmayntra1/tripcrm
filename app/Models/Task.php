@@ -14,7 +14,7 @@ class Task extends Model
     protected $fillable = [
         'title',
         'description',
-        'project_id',
+        'trip_id',
         'assignee_type',
         'assignee_id',
         'start_at',
@@ -28,9 +28,9 @@ class Task extends Model
         'due_at' => 'datetime',
     ];
 
-    public function project(): BelongsTo
+    public function trip(): BelongsTo
     {
-        return $this->belongsTo(Project::class);
+        return $this->belongsTo(Trip::class);
     }
 
     public function status(): BelongsTo

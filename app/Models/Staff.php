@@ -40,9 +40,9 @@ class Staff extends Model
         'overtime_rate' => 'decimal:2',
     ];
 
-    public function projects(): HasMany
+    public function trips(): HasMany
     {
-        return $this->hasMany(Project::class, 'assigned_staff_id');
+        return $this->hasMany(Trip::class, 'assigned_staff_id');
     }
 
     public function position(): BelongsTo

@@ -75,7 +75,7 @@
                     <td class="text-center">
                         @php
                             $typeColors = [
-                                'project' => 'bg-warning',
+                                'trip' => 'bg-warning',
                                 'vendor' => 'bg-info',
                                 'general' => 'bg-secondary',
                                 'salary' => 'bg-primary',
@@ -89,14 +89,14 @@
                         <div>{{ $expense->expense_type_display }}</div>
                         @if($expense->expense_type === 'vendor' && $expense->vendor)
                             <span class="small text-muted d-block name-truncate" title="{{ $expense->vendor->name }}">{{ $expense->vendor->name }}</span>
-                        @elseif($expense->expense_type === 'project' && $expense->project)
-                            <span class="small text-muted d-block name-truncate" title="{{ $expense->project->name }}">{{ $expense->project->name }}</span>
+                        @elseif($expense->expense_type === 'trip' && $expense->trip)
+                            <span class="small text-muted d-block name-truncate" title="{{ $expense->trip->name }}">{{ $expense->trip->name }}</span>
                         @elseif($expense->expense_type === 'salary' && $expense->staff)
                             <span class="small text-muted d-block name-truncate" title="{{ $expense->staff->name }}">{{ $expense->staff->name }}</span>
                         @elseif($expense->vendor)
                             <span class="small text-muted d-block name-truncate" title="{{ $expense->vendor->name }}">{{ $expense->vendor->name }}</span>
-                        @elseif($expense->project)
-                            <span class="small text-muted d-block name-truncate" title="{{ $expense->project->name }}">{{ $expense->project->name }}</span>
+                        @elseif($expense->trip)
+                            <span class="small text-muted d-block name-truncate" title="{{ $expense->trip->name }}">{{ $expense->trip->name }}</span>
                         @elseif($expense->staff)
                             <span class="small text-muted d-block name-truncate" title="{{ $expense->staff->name }}">{{ $expense->staff->name }}</span>
                         @endif

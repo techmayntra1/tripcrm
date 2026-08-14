@@ -117,19 +117,19 @@
             };
         @endphp
         <table class="table mb-4" style="border-collapse: collapse;">
-            <thead style="background-color: #0EA5A4; color: #fff;">
+            <thead style="background-color: #405189; color: #fff;">
                 <tr>
-                    <th width="40" style="border: 1px solid #0EA5A4; padding: 10px;">#</th>
-                    <th style="border: 1px solid #0EA5A4; padding: 10px;">DESCRIPTION</th>
-                    <th width="80" class="text-center" style="border: 1px solid #0EA5A4; padding: 10px;">UNIT</th>
+                    <th width="40" style="border: 1px solid #405189; padding: 10px;">#</th>
+                    <th style="border: 1px solid #405189; padding: 10px;">DESCRIPTION</th>
+                    <th width="80" class="text-center" style="border: 1px solid #405189; padding: 10px;">UNIT</th>
                     @if($hasDimensions)
-                    <th width="80" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">HEIGHT</th>
-                    <th width="80" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">WIDTH</th>
-                    <th width="80" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">SQFT</th>
+                    <th width="80" class="text-end" style="border: 1px solid #405189; padding: 10px;">HEIGHT</th>
+                    <th width="80" class="text-end" style="border: 1px solid #405189; padding: 10px;">WIDTH</th>
+                    <th width="80" class="text-end" style="border: 1px solid #405189; padding: 10px;">SQFT</th>
                     @endif
-                    <th width="100" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">QTY</th>
-                    <th width="120" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">RATE (₹)</th>
-                    <th width="130" class="text-end" style="border: 1px solid #0EA5A4; padding: 10px;">AMOUNT (₹)</th>
+                    <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">QTY</th>
+                    <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE (₹)</th>
+                    <th width="130" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT (₹)</th>
                 </tr>
             </thead>
             <tbody>
@@ -159,7 +159,7 @@
             </tbody>
         </table>
         @elseif($quotation->quotation_type == 'pdf')
-        <div class="card mb-4" style="border-left: 3px solid #0EA5A4;">
+        <div class="card mb-4" style="border-left: 3px solid #405189;">
             <div class="card-body d-flex align-items-center justify-content-between">
                 <div>
                     <h6 class="mb-1"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>PDF Quotation Uploaded</h6>

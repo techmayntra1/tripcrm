@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\TaskUpdate;
-use App\Models\Project;
+use App\Models\Trip;
 use App\Models\Staff;
 use App\Models\Vendor;
 use App\Models\TaskStatus;
@@ -15,7 +15,7 @@ class TaskController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Task::with(['project', 'status']);
+        $query = Task::with(['trip', 'status']);
         $today = now()->toDateString();
 
        
@@ -56,7 +56,7 @@ class TaskController extends Controller
                 $q->where('title', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('project', function ($pq) use ($search) {
+                    ->orWhereHas('trip', function ($pq) use ($search) {
                         $pq->where('name', 'like', "%{$search}%");
                     });
             });
@@ -86,7 +86,7 @@ class TaskController extends Controller
         }
         $deletedCount = $deletedQuery->count();
 
-        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
+        $trips = Trip::whereNull('deleted_at')->orderBy('name')->get();
         $staffMembers = Staff::whereNull('deleted_at')->orderBy('name')->get();
         $vendors = Vendor::whereNull('deleted_at')->orderBy('name')->get();
         $taskStatuses = TaskStatus::active()->ordered()->get();
@@ -100,7 +100,7 @@ class TaskController extends Controller
             'inProgressCount',
             'completedCount',
             'deletedCount',
-            'projects',
+            'trips',
             'staffMembers',
             'vendors',
             'taskStatuses'
@@ -109,23 +109,23 @@ class TaskController extends Controller
 
     public function show(Task $task)
     {
-        $task->load(['project', 'status', 'updates.user']);
+        $task->load(['trip', 'status', 'updates.user']);
 
-        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
+        $trips = Trip::whereNull('deleted_at')->orderBy('name')->get();
         $staffMembers = Staff::whereNull('deleted_at')->orderBy('name')->get();
         $vendors = Vendor::whereNull('deleted_at')->orderBy('name')->get();
         $taskStatuses = TaskStatus::active()->ordered()->get();
 
         $previousUrl = url()->previous();
-        if ($task->project_id && str_contains($previousUrl, '/projects/' . $task->project_id)) {
-            $backUrl = route('admin.projects.show', $task->project_id);
+        if ($task->trip_id && str_contains($previousUrl, '/trips/' . $task->trip_id)) {
+            $backUrl = route('admin.trips.show', $task->trip_id);
         } else {
             $backUrl = route('admin.tasks.index');
         }
 
         return view('admin.tasks.show', compact(
             'task',
-            'projects',
+            'trips',
             'staffMembers',
             'vendors',
             'taskStatuses',
@@ -135,17 +135,17 @@ class TaskController extends Controller
 
     public function showTrashed($id)
     {
-        $task = Task::onlyTrashed()->with(['project', 'status', 'updates.user'])->findOrFail($id);
+        $task = Task::onlyTrashed()->with(['trip', 'status', 'updates.user'])->findOrFail($id);
         $isTrashed = true;
 
-        $projects = Project::whereNull('deleted_at')->orderBy('name')->get();
+        $trips = Trip::whereNull('deleted_at')->orderBy('name')->get();
         $staffMembers = Staff::whereNull('deleted_at')->orderBy('name')->get();
         $vendors = Vendor::whereNull('deleted_at')->orderBy('name')->get();
         $taskStatuses = TaskStatus::active()->ordered()->get();
 
         $previousUrl = url()->previous();
-        if ($task->project_id && str_contains($previousUrl, '/projects/' . $task->project_id)) {
-            $backUrl = route('admin.projects.show', $task->project_id);
+        if ($task->trip_id && str_contains($previousUrl, '/trips/' . $task->trip_id)) {
+            $backUrl = route('admin.trips.show', $task->trip_id);
         } else {
             $backUrl = route('admin.tasks.index');
         }
@@ -153,7 +153,7 @@ class TaskController extends Controller
         return view('admin.tasks.show', compact(
             'task',
             'isTrashed',
-            'projects',
+            'trips',
             'staffMembers',
             'vendors',
             'taskStatuses',
@@ -166,7 +166,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:100',
             'description' => 'nullable|string|max:200',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'assignee_type' => 'required|in:staff,vendor',
             'staff_id' => 'nullable|exists:staff,id',
             'vendor_id' => 'nullable|exists:vendors,id',
@@ -215,7 +215,7 @@ class TaskController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:100',
             'description' => 'nullable|string|max:200',
-            'project_id' => 'nullable|exists:projects,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'assignee_type' => 'required|in:staff,vendor',
             'staff_id' => 'nullable|exists:staff,id',
             'vendor_id' => 'nullable|exists:vendors,id',
@@ -368,10 +368,10 @@ class TaskController extends Controller
             ->with('success', 'Task restored successfully.');
     }
 
-    public function getProjectAddress(Project $project)
+    public function getTripAddress(Trip $trip)
     {
         return response()->json([
-            'address' => $project->site_address
+            'address' => $trip->site_address
         ]);
     }
 }

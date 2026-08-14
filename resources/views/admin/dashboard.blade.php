@@ -33,9 +33,9 @@
     </div>
 </div>
 <div class="summary-row mb-3">
-    <div class="summary-item bg-midnight-bloom text-white" data-bs-toggle="tooltip" title="{{ $activeProjects }}">
+    <div class="summary-item bg-midnight-bloom text-white" data-bs-toggle="tooltip" title="{{ $activeTrips }}">
         <span class="summary-label">Trips</span>
-        <span class="summary-value">{{ $activeProjects }}</span>
+        <span class="summary-value">{{ $activeTrips }}</span>
     </div>
     <div class="summary-item bg-info text-white" data-bs-toggle="tooltip" title="{{ $totalCustomers }}">
         <span class="summary-label">Customers</span>
@@ -59,7 +59,7 @@
         <div class="main-card mb-3 card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-calendar-event me-2"></i> Upcoming Meetings</span>
-                <a href="{{ route('admin.meetings.index') }}" class="text-warning"><i class="bi bi-arrow-right-circle-fill fs-5"></i></a>
+                <a href="{{ route('admin.meetings.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #fff !important;"></i></a>
             </div>
             <div class="list-group list-group-flush">
                 @forelse($upcomingMeetings as $meeting)
@@ -98,7 +98,7 @@
         <div class="main-card mb-3 card">
             <div class="card-header d-flex justify-content-between align-items-center bg-warning">
                 <span><i class="bi bi-list-task me-2" style="color: #fff !important;"></i> Upcoming Tasks</span>
-                <a href="{{ route('admin.tasks.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #0EA5A4 !important;"></i></a>
+                <a href="{{ route('admin.tasks.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #fff !important;"></i></a>
             </div>
             <div class="list-group list-group-flush">
                 @forelse($upcomingTasks as $task)
@@ -134,7 +134,7 @@
         <div class="main-card mb-3 card">
             <div class="card-header d-flex justify-content-between align-items-center bg-info text-white">
                 <span><i class="bi bi-telephone-forward me-2"></i> Upcoming Follow-ups</span>
-                <a href="{{ route('admin.follow-ups.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #0EA5A4 !important;"></i></a>
+                <a href="{{ route('admin.follow-ups.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #fff !important;"></i></a>
             </div>
             <div class="list-group list-group-flush">
                 @forelse($upcomingFollowUps as $followUp)
@@ -170,23 +170,23 @@
         <div class="main-card mb-3 card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-calendar-check me-2"></i> Trip Deadlines</span>
-                <a href="{{ route('admin.projects.index') }}" class="text-warning"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #0EA5A4 !important;"></i></a>
+                <a href="{{ route('admin.trips.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #fff !important;"></i></a>
             </div>
             <div class="list-group list-group-flush">
-                @forelse($projectDeadlines as $project)
-                <a href="{{ route('admin.projects.show', $project) }}" class="list-group-item list-group-item-action py-2">
+                @forelse($tripDeadlines as $trip)
+                <a href="{{ route('admin.trips.show', $trip) }}" class="list-group-item list-group-item-action py-2">
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="text-truncate" style="max-width: 120px;">
-                            <strong>{{ $project->project_number }}</strong>
-                            <br><small class="text-muted">{{ $project->customer->name ?? 'N/A' }}</small>
+                            <strong>{{ $trip->trip_number }}</strong>
+                            <br><small class="text-muted">{{ $trip->customer->name ?? 'N/A' }}</small>
                         </div>
                         <div class="text-end">
                             @php
-                                $daysLeft = \Carbon\Carbon::today()->diffInDays($project->expected_end_date, false);
+                                $daysLeft = \Carbon\Carbon::today()->diffInDays($trip->expected_end_date, false);
                                 $badgeClass = $daysLeft <= 3 ? 'bg-danger' : ($daysLeft <= 7 ? 'bg-warning text-dark' : ($daysLeft <= 15 ? 'bg-info' : 'bg-secondary'));
                             @endphp
                             <span class="badge {{ $badgeClass }}">{{ $daysLeft }} Days</span>
-                            <br><small class="text-muted">{{ $project->expected_end_date->format('d-m') }}</small>
+                            <br><small class="text-muted">{{ $trip->expected_end_date->format('d-m') }}</small>
                         </div>
                     </div>
                 </a>
@@ -232,7 +232,7 @@
         <div class="main-card card">
             <div class="card-header bg-success text-white py-2 d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-bank me-2"></i> Bank Balances</span>
-                <a href="{{ route('admin.banks.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #0EA5A4 !important;"></i></a>
+                <a href="{{ route('admin.banks.index') }}"><i class="bi bi-arrow-right-circle-fill fs-5" style="color: #fff !important;"></i></a>
             </div>
             <div class="card-body py-2">
                 <div class="row text-center">
@@ -265,7 +265,7 @@
                             <tbody>
                                 <tr>
                                     <td>Trip Income</td>
-                                    <td class="text-end text-success">{{ formatMoney($incomeByType['project']) }}</td>
+                                    <td class="text-end text-success">{{ formatMoney($incomeByType['trip']) }}</td>
                                 </tr>
                                 <tr>
                                     <td>Advance Payments</td>
@@ -288,7 +288,7 @@
                             <tbody>
                                 <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#dashExpenseModal1">
                                     <td>Material & Trip</td>
-                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['project']) }}</td>
+                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['trip']) }}</td>
                                 </tr>
                                 <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#dashExpenseModal3">
                                     <td>Staff Salary</td>
@@ -326,22 +326,22 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="main-card mb-3 card" id="projectChartCard" style="scroll-margin-top: 90px;">
+        <div class="main-card mb-3 card" id="tripChartCard" style="scroll-margin-top: 90px;">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span><i class="bi bi-bar-chart-fill me-2"></i> Trip Budget vs Expense</span>
                 <form method="GET" action="{{ route('admin.dashboard') }}" class="mb-0">
-                    <select name="chart_project" class="form-select form-select-sm" style="min-width: 240px;" onchange="window.location.href = this.form.action + (this.value ? '?chart_project=' + encodeURIComponent(this.value) : '') + '#projectChartCard';">
+                    <select name="chart_trip" class="form-select form-select-sm" style="min-width: 240px;" onchange="window.location.href = this.form.action + (this.value ? '?chart_trip=' + encodeURIComponent(this.value) : '') + '#tripChartCard';">
                         <option value="">Top 5 Trips</option>
-                        @foreach($chartProjects as $cp)
-                            <option value="{{ $cp->id }}" {{ (string) $selectedChartProject === (string) $cp->id ? 'selected' : '' }}>
-                                {{ $cp->project_number }} - {{ \Str::limit($cp->name, 30) }}
+                        @foreach($chartTrips as $cp)
+                            <option value="{{ $cp->id }}" {{ (string) $selectedChartTrip === (string) $cp->id ? 'selected' : '' }}>
+                                {{ $cp->trip_number }} - {{ \Str::limit($cp->name, 30) }}
                             </option>
                         @endforeach
                     </select>
                 </form>
             </div>
             <div class="card-body" style="height: 350px;">
-                <canvas id="projectExpenseChart"></canvas>
+                <canvas id="tripExpenseChart"></canvas>
             </div>
         </div>
     </div>
@@ -365,11 +365,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($recentProjectExpenses as $expense)
+                        @forelse($recentTripExpenses as $expense)
                         <tr>
                             <td>{{ $expense->expense_date->format('d-m') }}</td>
-                            <td>{{ \Str::limit($expense->description ?? 'Project Expense', 50) }}</td>
-                            <td>{{ $expense->project->project_number ?? ($expense->vendor->name ?? '-') }}</td>
+                            <td>{{ \Str::limit($expense->description ?? 'Trip Expense', 50) }}</td>
+                            <td>{{ $expense->trip->trip_number ?? ($expense->vendor->name ?? '-') }}</td>
                             <td class="text-end">{{ formatMoney($expense->grand_total) }}</td>
                         </tr>
                         @empty
@@ -381,13 +381,13 @@
                     <tfoot class="table-danger">
                         <tr>
                             <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                            <td class="text-end"><strong>{{ formatMoney($expenseByType['project']) }}</strong></td>
+                            <td class="text-end"><strong>{{ formatMoney($expenseByType['trip']) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
             <div class="modal-footer">
-                <a href="{{ route('admin.expenses.index') }}?expense_type=project" class="btn btn-outline-primary">View All Expenses</a>
+                <a href="{{ route('admin.expenses.index') }}?expense_type=trip" class="btn btn-outline-primary">View All Expenses</a>
             </div>
         </div>
     </div>
@@ -540,14 +540,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    var ctx = document.getElementById('projectExpenseChart').getContext('2d');
-    var projects = @json($projectsForChart->pluck('name'));
-    var budgets = @json($projectsForChart->pluck('budget'));
-    var expenses = @json($projectsForChart->pluck('spent'));
-    var incomes = @json($projectsForChart->pluck('income'));
+    var ctx = document.getElementById('tripExpenseChart').getContext('2d');
+    var trips = @json($tripsForChart->pluck('name'));
+    var budgets = @json($tripsForChart->pluck('budget'));
+    var expenses = @json($tripsForChart->pluck('spent'));
+    var incomes = @json($tripsForChart->pluck('income'));
 
-    if (projects.length === 0) {
-        document.getElementById('projectExpenseChart').parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted"><div class="text-center"><i class="bi bi-bar-chart fs-1 d-block mb-2"></i>No trip data available</div></div>';
+    if (trips.length === 0) {
+        document.getElementById('tripExpenseChart').parentElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted"><div class="text-center"><i class="bi bi-bar-chart fs-1 d-block mb-2"></i>No trip data available</div></div>';
         return;
     }
 
@@ -558,8 +558,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var pct = budget > 0 ? (expenses[i] / budget) * 100 : 0;
         return pct > 75 ? '#dc3545' : '#28a745';
     });
-    var shortLabels = projects.map(function(name) {
-        var s = String(name).replace(/^PRJ-\d{4}-\d+\s*-\s*/, '').trim();
+    var shortLabels = trips.map(function(name) {
+        var s = String(name).replace(/^TRP-\d{4}-\d+\s*-\s*/, '').trim();
         return s.length > 18 ? s.substring(0, 18) + '…' : s;
     });
     new Chart(ctx, {
@@ -609,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 tooltip: {
                     callbacks: {
                         title: function(context) {
-                            return projects[context[0].dataIndex];
+                            return trips[context[0].dataIndex];
                         },
                         label: function(context) {
                             return context.dataset.label + ': ₹' + context.raw + 'L';

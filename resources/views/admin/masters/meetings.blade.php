@@ -204,7 +204,7 @@
                                     </tr>
                                     <tr class="table-light">
                                         <td colspan="7" class="py-2 ps-5">
-                                            <span class="font-09">Converted to customer. Project value: 5.5 Lakhs. Work starts from 15th March.</span>
+                                            <span class="font-09">Converted to customer. Trip value: 5.5 Lakhs. Work starts from 15th March.</span>
                                         </td>
                                     </tr>
                                 </tbody>

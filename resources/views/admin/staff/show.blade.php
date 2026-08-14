@@ -137,25 +137,25 @@
         </div>
         <div class="main-card mb-3 card">
             <div class="card-header">
-                <i class="bi bi-kanban me-2"></i> Assigned Projects
+                <i class="bi bi-kanban me-2"></i> Assigned Trips
             </div>
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Project</th>
+                        <th>Trip</th>
                         <th>Customer</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                     <tbody>
-                        @forelse($projects as $project)
+                        @forelse($trips as $trip)
                         <tr>
                             <td>
-                                <a href="{{ route('admin.projects.show', $project) }}">
-                                    <strong>{{ $project->project_code }}</strong> - {{ $project->name }}
+                                <a href="{{ route('admin.trips.show', $trip) }}">
+                                    <strong>{{ $trip->trip_code }}</strong> - {{ $trip->name }}
                                 </a>
                             </td>
-                            <td>{{ $project->customer?->name ?? '-' }}</td>
+                            <td>{{ $trip->customer?->name ?? '-' }}</td>
                             <td>
                                 @php
                                     $statusColors = [
@@ -166,8 +166,8 @@
                                         'cancelled' => 'danger',
                                     ];
                                 @endphp
-                                <span class="badge bg-{{ $statusColors[$project->status] ?? 'secondary' }}">
-                                    {{ ucfirst(str_replace('_', ' ', $project->status)) }}
+                                <span class="badge bg-{{ $statusColors[$trip->status] ?? 'secondary' }}">
+                                    {{ ucfirst(str_replace('_', ' ', $trip->status)) }}
                                 </span>
                             </td>
                         </tr>
@@ -175,7 +175,7 @@
                         <tr>
                             <td colspan="3" class="text-center py-4 text-muted">
                                 <i class="bi bi-folder fs-1 d-block mb-2"></i>
-                                No projects assigned
+                                No trips assigned
                             </td>
                         </tr>
                         @endforelse
@@ -191,7 +191,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Title</th>
-                        <th>Project</th>
+                        <th>Trip</th>
                         <th>Start Date</th>
                         <th>Due Date</th>
                         <th>Location</th>
@@ -203,9 +203,9 @@
                     <tr class="{{ $task->is_overdue ? 'table-danger' : '' }}">
                         <td><strong>{{ $task->title }}</strong></td>
                         <td>
-                            @if($task->project)
-                                <a href="{{ route('admin.projects.show', $task->project) }}">
-                                    {{ $task->project->project_code }}
+                            @if($task->trip)
+                                <a href="{{ route('admin.trips.show', $task->trip) }}">
+                                    {{ $task->trip->trip_code }}
                                 </a>
                             @else
                                 -
