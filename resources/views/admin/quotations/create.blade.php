@@ -159,12 +159,9 @@
                 <thead class="table-light">
                     <tr>
                         <th width="40">#</th>
+                        <th width="170">Service</th>
                         <th>Description <span class="text-danger">*</span></th>
                         <th width="130">Passenger Type</th>
-                        <th width="110">Unit</th>
-                        <th width="110" class="sqft-col" style="display:none;">Height</th>
-                        <th width="110" class="sqft-col" style="display:none;">Width</th>
-                        <th width="110" class="sqft-col" style="display:none;">Total Sqft</th>
                         <th width="95">Qty <span class="text-danger">*</span></th>
                         <th width="100">Rate (₹)</th>
                         <th width="120">Amount (₹)</th>
@@ -176,7 +173,16 @@
                     <tbody id="itemsBody">
                         <tr>
                             <td>1</td>
-                            <td><textarea class="form-control form-control-sm" name="items[0][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
+                            <td>
+                                <select class="form-select form-select-sm service-select" name="items[0][service_id]">
+                                    <option value="">— Custom —</option>
+                                    @foreach($services as $svc)
+                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" class="service-name" name="items[0][service_name]" value="">
+                            </td>
+                            <td><textarea class="form-control form-control-sm item-description" name="items[0][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
                             <td>
                                 <select class="form-select form-select-sm" name="items[0][passenger_type]">
                                     <option value="">—</option>
@@ -185,16 +191,6 @@
                                     @endforeach
                                 </select>
                             </td>
-                            <td>
-                                <select class="form-select form-select-sm unit-select" name="items[0][unit]">
-                                    @foreach($units as $unit)
-                                    <option value="{{ $unit->short_name }}">{{ $unit->name }}</option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td class="sqft-col" style="display:none;"><input type="number" class="form-control form-control-sm item-height" name="items[0][height]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                            <td class="sqft-col" style="display:none;"><input type="number" class="form-control form-control-sm item-width" name="items[0][width]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                            <td class="sqft-col" style="display:none;"><input type="number" class="form-control form-control-sm item-total" name="items[0][total]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
                             <td><input type="number" class="form-control form-control-sm qty" name="items[0][qty]" value="1" min="1" max="99999" step="1" required inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm rate" name="items[0][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm amount" name="items[0][amount]" placeholder="0" min="0" step="1" inputmode="numeric"></td>
@@ -600,7 +596,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const newRow = `
             <tr>
                 <td>${itemIndex + 1}</td>
-                <td><textarea class="form-control form-control-sm" name="items[${itemIndex}][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
+                <td>
+                    <select class="form-select form-select-sm service-select" name="items[${itemIndex}][service_id]">
+                        <option value="">— Custom —</option>
+                        @foreach($services as $svc)
+                        <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" class="service-name" name="items[${itemIndex}][service_name]" value="">
+                </td>
+                <td><textarea class="form-control form-control-sm item-description" name="items[${itemIndex}][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
                 <td>
                     <select class="form-select form-select-sm" name="items[${itemIndex}][passenger_type]">
                         <option value="">—</option>
@@ -609,16 +614,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         @endforeach
                     </select>
                 </td>
-                <td>
-                    <select class="form-select form-select-sm unit-select" name="items[${itemIndex}][unit]">
-                        @foreach($units as $unit)
-                        <option value="{{ $unit->short_name }}">{{ $unit->name }}</option>
-                        @endforeach
-                    </select>
-                </td>
-                <td class="sqft-col" style="${showSqft ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-height" name="items[${itemIndex}][height]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                <td class="sqft-col" style="${showSqft ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-width" name="items[${itemIndex}][width]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                <td class="sqft-col" style="${showSqft ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-total" name="items[${itemIndex}][total]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
                 <td><input type="number" class="form-control form-control-sm qty" name="items[${itemIndex}][qty]" value="1" min="1" max="99999" step="1" required inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm rate" name="items[${itemIndex}][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm amount" name="items[${itemIndex}][amount]" placeholder="0" min="0" step="1" inputmode="numeric"></td>
@@ -672,6 +667,24 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSqftColumns();
             const row = e.target.closest('tr');
             calculateRowAmount(row);
+            calculateTotals();
+        }
+        if (e.target.classList.contains('service-select')) {
+            const row = e.target.closest('tr');
+            const opt = e.target.options[e.target.selectedIndex];
+            const nameInput = row.querySelector('.service-name');
+            if (nameInput) nameInput.value = e.target.value ? (opt.getAttribute('data-name') || '') : '';
+            if (e.target.value) {
+                const price = opt.getAttribute('data-price');
+                const desc = opt.getAttribute('data-description');
+                if (price !== null && price !== '') {
+                    const rateEl = row.querySelector('.rate');
+                    if (rateEl) rateEl.value = Math.round(parseFloat(price));
+                }
+                const descEl = row.querySelector('.item-description');
+                if (descEl && desc) descEl.value = desc;
+                calculateRowAmount(row);
+            }
             calculateTotals();
         }
         if (e.target.classList.contains('tax-type')) {

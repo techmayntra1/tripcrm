@@ -195,6 +195,7 @@
                     <thead class="table-light">
                         <tr>
                             <th width="40">#</th>
+                            <th width="160">Service</th>
                             <th>Description <span class="text-danger">*</span></th>
                             <th width="100">HSN/SAC</th>
                             <th width="110">Unit</th>
@@ -212,7 +213,16 @@
                     <tbody>
                         <tr>
                             <td class="text-center">1</td>
-                            <td><textarea class="form-control form-control-sm" name="items[0][description]" placeholder="Item description" minlength="3" maxlength="150" rows="1"></textarea></td>
+                            <td>
+                                <select class="form-select form-select-sm service-select" name="items[0][service_id]">
+                                    <option value="">— None —</option>
+                                    @foreach($services as $svc)
+                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" class="service-name" name="items[0][service_name]" value="">
+                            </td>
+                            <td><textarea class="form-control form-control-sm item-description" name="items[0][description]" placeholder="Item description" minlength="3" maxlength="150" rows="1"></textarea></td>
                             <td><input type="text" class="form-control form-control-sm" name="items[0][hsn]" placeholder="HSN" maxlength="8"></td>
                             <td>
                                 <select class="form-select form-select-sm unit-select" name="items[0][unit]">
@@ -607,7 +617,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const newRow = `
             <tr>
                 <td class="text-center">${itemIndex + 1}</td>
-                <td><textarea class="form-control form-control-sm" name="items[${itemIndex}][description]" placeholder="Item description" maxlength="150" rows="1"></textarea></td>
+                <td>
+                    <select class="form-select form-select-sm service-select" name="items[${itemIndex}][service_id]">
+                        <option value="">— None —</option>
+                        @foreach($services as $svc)
+                        <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                        @endforeach
+                    </select>
+                    <input type="hidden" class="service-name" name="items[${itemIndex}][service_name]" value="">
+                </td>
+                <td><textarea class="form-control form-control-sm item-description" name="items[${itemIndex}][description]" placeholder="Item description" maxlength="150" rows="1"></textarea></td>
                 <td><input type="text" class="form-control form-control-sm" name="items[${itemIndex}][hsn]" placeholder="HSN"></td>
                 <td>
                     <select class="form-select form-select-sm unit-select" name="items[${itemIndex}][unit]">
@@ -680,6 +699,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('tax-type')) {
             calculateTotals();
         }
+        if (e.target.classList.contains('service-select')) {
+            const row = e.target.closest('tr');
+            const opt = e.target.options[e.target.selectedIndex];
+            const nameInput = row.querySelector('.service-name');
+            if (nameInput) nameInput.value = e.target.value ? (opt.getAttribute('data-name') || '') : '';
+            if (e.target.value) {
+                const price = opt.getAttribute('data-price');
+                const desc = opt.getAttribute('data-description');
+                if (price !== null && price !== '') {
+                    const rateEl = row.querySelector('.rate');
+                    if (rateEl) rateEl.value = Math.round(parseFloat(price));
+                }
+                const descEl = row.querySelector('.item-description');
+                if (descEl && desc) descEl.value = desc;
+                calculateRowAmount(row);
+            }
+            calculateTotals();
+        }
     });
 
     quotationSelect.addEventListener('change', function() {
@@ -727,7 +764,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     itemsHtml += `
                         <tr>
                             <td class="text-center">${index + 1}</td>
-                            <td><textarea class="form-control form-control-sm" name="items[${index}][description]" placeholder="Item description" maxlength="150" rows="1">${item.description || ''}</textarea></td>
+                            <td>
+                                <select class="form-select form-select-sm service-select" name="items[${index}][service_id]">
+                                    <option value="">— None —</option>
+                                    @foreach($services as $svc)
+                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}" ${String(item.service_id || '') === '{{ $svc->id }}' ? 'selected' : ''}>{{ $svc->name }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="hidden" class="service-name" name="items[${index}][service_name]" value="${item.service_name || ''}">
+                            </td>
+                            <td><textarea class="form-control form-control-sm item-description" name="items[${index}][description]" placeholder="Item description" maxlength="150" rows="1">${item.description || ''}</textarea></td>
                             <td><input type="text" class="form-control form-control-sm" name="items[${index}][hsn]" value="${item.hsn || ''}" placeholder="HSN"></td>
                             <td>
                                 <select class="form-select form-select-sm unit-select" name="items[${index}][unit]">

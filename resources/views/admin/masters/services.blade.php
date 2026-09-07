@@ -58,6 +58,8 @@
                 <tr>
                     <th width="50">#</th>
                     <th>Name</th>
+                    <th width="130" class="text-end">Price (₹)</th>
+                    <th width="150" class="text-end">Admin Price (₹)</th>
                     <th width="120" class="text-center">Actions</th>
                 </tr>
             </thead>
@@ -65,7 +67,14 @@
                 @forelse($items->where('is_active', true) as $item)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
-                    <td>{{ $item->name }}</td>
+                    <td>
+                        {{ $item->name }}
+                        @if($item->description)
+                        <div class="small text-muted">{{ Str::limit($item->description, 60) }}</div>
+                        @endif
+                    </td>
+                    <td class="text-end">{{ $item->price !== null ? number_format($item->price, 2) : '-' }}</td>
+                    <td class="text-end">{{ $item->admin_price !== null ? number_format($item->admin_price, 2) : '-' }}</td>
                     <td class="text-center">
                         <div class="d-flex gap-1 justify-content-center">
                             <button class="btn btn-sm btn-outline-primary" onclick="openEditModal({{ json_encode($item) }})" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit">
@@ -82,7 +91,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="3" class="text-center py-4 text-muted">
+                    <td colspan="5" class="text-center py-4 text-muted">
                         <i class="bi bi-tools fs-1 d-block mb-2"></i>
                         No services found.
                     </td>
@@ -111,6 +120,20 @@
                         <label class="form-label">Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="name" required maxlength="100">
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Price (₹)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" name="price">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Admin Price (₹) <small class="text-muted">(internal cost)</small></label>
+                            <input type="number" step="0.01" min="0" class="form-control" name="admin_price">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -133,6 +156,20 @@
                     <div class="mb-3">
                         <label class="form-label">Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="edit_name" name="name" required maxlength="100">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Price (₹)</label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="edit_price" name="price">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Admin Price (₹) <small class="text-muted">(internal cost)</small></label>
+                            <input type="number" step="0.01" min="0" class="form-control" id="edit_admin_price" name="admin_price">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -158,6 +195,9 @@
 function openEditModal(item) {
     document.getElementById('editForm').action = '/admin/masters/services/' + item.id;
     document.getElementById('edit_name').value = item.name;
+    document.getElementById('edit_price').value = item.price ?? '';
+    document.getElementById('edit_admin_price').value = item.admin_price ?? '';
+    document.getElementById('edit_description').value = item.description ?? '';
 }
 </script>
 @endpush

@@ -294,7 +294,7 @@
             @endphp
             <tr>
                 <td style="text-align: center; padding: 10px; font-size: 12px; font-weight: bold; border: 1px solid #ccc;">{{ $index + 1 }}</td>
-                <td style="text-align: left; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $item['description'] ?? '-' }}@if(!empty($item['passenger_type']))<br><span style="font-size: 10px; color: #888;">{{ $item['passenger_type'] }}</span>@endif</td>
+                <td style="text-align: left; padding: 10px; font-size: 12px; border: 1px solid #ccc;">@if(!empty($item['service_name']))<strong>{{ $item['service_name'] }}</strong><br>@endif{{ $item['description'] ?? '-' }}@if(!empty($item['passenger_type']))<br><span style="font-size: 10px; color: #888;">{{ $item['passenger_type'] }}</span>@endif</td>
                 <td style="text-align: center; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $item['hsn'] ?? '-' }}</td>
                 <td style="text-align: center; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ strtoupper($item['unit'] ?? '-') }}</td>
                 @if($hasDimensions)

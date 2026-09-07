@@ -305,6 +305,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/income', [IncomeController::class, 'index'])->name('income.index');
         Route::get('/income/export', [IncomeController::class, 'export'])->name('income.export');
         Route::get('/income/trashed', [IncomeController::class, 'trashed'])->name('income.trashed');
+        Route::get('/income/{income}/receipt', [IncomeController::class, 'downloadReceipt'])->name('income.receipt')->where('income', '[0-9]+');
         Route::get('/income/{income}', [IncomeController::class, 'show'])->name('income.show')->where('income', '[0-9]+');
     });
     Route::middleware(['permission:income,create'])->group(function () {

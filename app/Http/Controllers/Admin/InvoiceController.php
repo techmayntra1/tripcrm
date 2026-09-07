@@ -9,6 +9,7 @@ use App\Models\GstRate;
 use App\Models\Invoice;
 use App\Models\Trip;
 use App\Models\Quotation;
+use App\Models\Service;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -139,6 +140,7 @@ class InvoiceController extends Controller
 
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
+        $services = Service::active()->ordered()->get();
 
         return view('admin.invoices.create', compact(
             'customers',
@@ -149,7 +151,8 @@ class InvoiceController extends Controller
             'selectedCustomerId',
             'selectedQuotationId',
             'units',
-            'gstRates'
+            'gstRates',
+            'services'
         ));
     }
 
@@ -166,6 +169,8 @@ class InvoiceController extends Controller
             'invoice_type' => 'required|in:items,pdf',
             'pdf_description' => 'nullable|string|max:500',
             'items' => 'nullable|array',
+            'items.*.service_id' => 'nullable|exists:services,id',
+            'items.*.service_name' => 'nullable|string|max:100',
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string|max:150',
@@ -249,8 +254,9 @@ class InvoiceController extends Controller
         $fromTrip = $request->from_trip;
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
+        $services = Service::active()->ordered()->get();
 
-        return view('admin.invoices.edit', compact('invoice', 'customers', 'trips', 'companies', 'quotations', 'fromTrip', 'units', 'gstRates'));
+        return view('admin.invoices.edit', compact('invoice', 'customers', 'trips', 'companies', 'quotations', 'fromTrip', 'units', 'gstRates', 'services'));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -272,6 +278,8 @@ class InvoiceController extends Controller
             'invoice_pdf' => 'nullable|file|mimes:pdf|max:10240',
             'pdf_description' => 'nullable|string|max:500',
             'items' => 'nullable|array',
+            'items.*.service_id' => 'nullable|exists:services,id',
+            'items.*.service_name' => 'nullable|string|max:100',
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string|max:150',

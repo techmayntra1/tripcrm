@@ -358,6 +358,7 @@
                             <div class="text-end">
                                 <span class="badge bg-success">{{ ucfirst(str_replace('_', ' ', $income->payment_mode)) }}</span>
                                 <br><small class="text-muted">{{ $income->receipt_number }}</small>
+                                <br><a href="{{ route('admin.income.receipt', $income) }}" class="btn btn-outline-secondary btn-sm mt-1" target="_blank"><i class="bi bi-download me-1"></i> Receipt</a>
                             </div>
                         </div>
                     </li>

@@ -332,8 +332,7 @@
         <thead>
             <tr style="background-color: #405189; color: #fff;">
                 <th style="width: {{ $hasDimensions ? '5%' : '6%' }}; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">#</th>
-                <th style="width: {{ $hasDimensions ? '31%' : '44%' }}; text-align: left; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
-                <th style="width: {{ $hasDimensions ? '8%' : '10%' }}; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">UNIT</th>
+                <th style="width: {{ $hasDimensions ? '39%' : '54%' }}; text-align: left; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
                 @if($hasDimensions)
                 <th style="width: 8%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">HEIGHT</th>
                 <th style="width: 8%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">WIDTH</th>
@@ -359,8 +358,7 @@
             @endphp
             <tr>
                 <td style="text-align: center; padding: 10px; font-size: 12px; font-weight: bold; border: 1px solid #ccc;">{{ $index + 1 }}</td>
-                <td style="text-align: left; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $item['description'] ?? '-' }}@if(!empty($item['passenger_type']))<br><span style="font-size: 10px; color: #888;">{{ $item['passenger_type'] }}</span>@endif</td>
-                <td style="text-align: center; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ strtoupper($item['unit'] ?? '-') }}</td>
+                <td style="text-align: left; padding: 10px; font-size: 12px; border: 1px solid #ccc;">@if(!empty($item['service_name']))<strong>{{ $item['service_name'] }}</strong><br>@endif{{ $item['description'] ?? '-' }}@if(!empty($item['passenger_type']))<br><span style="font-size: 10px; color: #888;">{{ $item['passenger_type'] }}</span>@endif</td>
                 @if($hasDimensions)
                 <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $formatDimension($item['height'] ?? null) }}</td>
                 <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $formatDimension($item['width'] ?? null) }}</td>

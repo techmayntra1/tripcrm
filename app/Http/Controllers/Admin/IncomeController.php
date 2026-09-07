@@ -10,6 +10,7 @@ use App\Models\Income;
 use App\Models\Invoice;
 use App\Models\PaymentMode;
 use App\Models\Trip;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 
 class IncomeController extends Controller
@@ -298,5 +299,31 @@ class IncomeController extends Controller
         $fyLabel = $fyDates ? $fyDates['start']->format('Y') . '_' . $fyDates['end']->format('Y') : 'all';
         $filename = 'income_FY_' . $fyLabel . '_' . now()->format('d_m_Y_His') . '.xlsx';
         return (new IncomeExport($request))->download($filename);
+    }
+
+    public function downloadReceipt(Income $income)
+    {
+        $income->load(['trip', 'customer', 'invoice.company', 'bank', 'paymentMode']);
+        $invoice = $income->invoice;
+
+        // Amount received so far up to and including this receipt (chronological by id).
+        $paidToDate = null;
+        $balanceAfter = null;
+        if ($invoice) {
+            $paidToDate = (float) $invoice->incomes()
+                ->where('id', '<=', $income->id)
+                ->sum('amount');
+            $balanceAfter = max((float) $invoice->grand_total - $paidToDate, 0);
+        }
+
+        $pdf = Pdf::loadView('admin.income.receipt', compact('income', 'invoice', 'paidToDate', 'balanceAfter'))
+            ->setPaper('a4', 'portrait')
+            ->setOptions([
+                'defaultFont' => 'DejaVu Sans',
+                'isRemoteEnabled' => true,
+                'isHtml5ParserEnabled' => true,
+            ]);
+
+        return $pdf->download('Receipt-' . $income->receipt_number . '.pdf');
     }
 }

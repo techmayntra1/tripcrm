@@ -8,12 +8,17 @@ class Service extends Model
 {
     protected $fillable = [
         'name',
+        'price',
+        'admin_price',
+        'description',
         'is_active',
         'sort_order',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'price' => 'decimal:2',
+        'admin_price' => 'decimal:2',
     ];
 
     public function scopeActive($query)

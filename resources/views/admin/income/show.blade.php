@@ -16,6 +16,9 @@
             <a href="{{ route('admin.income.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back
             </a>
+            <a href="{{ route('admin.income.receipt', $income) }}" class="btn btn-success" target="_blank">
+                <i class="bi bi-download me-1"></i> Download Receipt
+            </a>
             @can('income.edit')
             <a href="{{ route('admin.income.edit', $income) }}" class="btn btn-primary">
                 <i class="bi bi-pencil me-1"></i> Edit

@@ -728,15 +728,26 @@ class MasterController extends Controller
 
     public function storeService(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:100|unique:services,name']);
-        Service::create(['name' => $request->name, 'sort_order' => Service::max('sort_order') + 1]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:100|unique:services,name',
+            'price' => 'nullable|numeric|min:0',
+            'admin_price' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string',
+        ]);
+        $validated['sort_order'] = Service::max('sort_order') + 1;
+        Service::create($validated);
         return redirect()->route('admin.masters.services')->with('success', 'Service added successfully.');
     }
 
     public function updateService(Request $request, Service $service)
     {
-        $request->validate(['name' => 'required|string|max:100|unique:services,name,' . $service->id]);
-        $service->update(['name' => $request->name]);
+        $validated = $request->validate([
+            'name' => 'required|string|max:100|unique:services,name,' . $service->id,
+            'price' => 'nullable|numeric|min:0',
+            'admin_price' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string',
+        ]);
+        $service->update($validated);
         return redirect()->route('admin.masters.services')->with('success', 'Service updated successfully.');
     }
 
