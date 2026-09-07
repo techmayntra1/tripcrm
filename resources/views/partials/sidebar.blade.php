@@ -128,7 +128,7 @@
                 </div>
                 @endif
 
-                @if(auth()->user()->hasModuleAccess('income') || auth()->user()->hasModuleAccess('expenses') || auth()->user()->hasModuleAccess('banks'))
+                @if(auth()->user()->hasModuleAccess('income') || auth()->user()->hasModuleAccess('expenses') || auth()->user()->hasModuleAccess('banks') || auth()->user()->hasModuleAccess('companies'))
                 <li class="menu-title sidebar-section-heading" data-section="accounts">
                     <span>Accounts</span> <i class="bi bi-chevron-down section-icon"></i>
                 </li>
@@ -151,6 +151,13 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.banks.index') }}" class="nav-link menu-link {{ request()->routeIs('admin.banks.*') ? 'active' : '' }}">
                             <i class="bi bi-bank"></i> <span>Bank Accounts</span>
+                        </a>
+                    </li>
+                    @endif
+                    @if(auth()->user()->hasModuleAccess('companies'))
+                    <li class="nav-item">
+                        <a href="{{ route('admin.companies.index') }}" class="nav-link menu-link {{ request()->routeIs('admin.companies.*') ? 'active' : '' }}">
+                            <i class="bi bi-building"></i> <span>Companies</span>
                         </a>
                     </li>
                     @endif

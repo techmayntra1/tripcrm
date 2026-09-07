@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
+            PermissionSeeder::class,
         ]);
 
         $adminRole = Role::where('slug', 'admin')->first();

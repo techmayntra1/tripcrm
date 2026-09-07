@@ -32,6 +32,7 @@ class Permission extends Model
             'expenses' => ['name' => 'Expenses', 'icon' => 'bi-cash-coin', 'color' => 'bg-danger'],
             'staff' => ['name' => 'Staff & Salary', 'icon' => 'bi-person-badge', 'color' => 'bg-info'],
             'banks' => ['name' => 'Banks', 'icon' => 'bi-bank', 'color' => 'bg-primary'],
+            'companies' => ['name' => 'Companies', 'icon' => 'bi-building', 'color' => 'bg-secondary'],
             'users' => ['name' => 'Users', 'icon' => 'bi-person-gear', 'color' => 'bg-dark'],
             'roles' => ['name' => 'Roles', 'icon' => 'bi-shield-lock', 'color' => 'bg-danger'],
             'masters' => ['name' => 'Masters', 'icon' => 'bi-gear', 'color' => 'bg-secondary'],

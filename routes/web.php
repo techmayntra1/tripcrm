@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\SalaryPaymentController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\QuotationController;
 use App\Http\Controllers\Admin\BankController;
+use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\MasterController;
 use App\Http\Controllers\Admin\TaskController;
 use App\Http\Controllers\Admin\TripAddonController;
@@ -426,6 +427,24 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::middleware(['permission:banks,delete'])->group(function () {
         Route::delete('/banks/{bank}', [BankController::class, 'destroy'])->name('banks.destroy');
         Route::post('/banks/{id}/restore', [BankController::class, 'restore'])->name('banks.restore');
+    });
+
+    // Companies
+    Route::middleware(['permission:companies,view'])->group(function () {
+        Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+        Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show')->where('company', '[0-9]+');
+    });
+    Route::middleware(['permission:companies,create'])->group(function () {
+        Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
+        Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
+    });
+    Route::middleware(['permission:companies,edit'])->group(function () {
+        Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
+        Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
+        Route::post('/companies/{company}/toggle', [CompanyController::class, 'toggle'])->name('companies.toggle');
+    });
+    Route::middleware(['permission:companies,delete'])->group(function () {
+        Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
     });
 
 
