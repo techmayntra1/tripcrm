@@ -3,6 +3,16 @@
     --primary-dark: #0B8281;
     --dark-color: #1a1a1a;
 }
+/* Make the auth layout fill the viewport so .h-100 panels expand and center */
+html,
+body {
+    height: 100%;
+}
+body > .app-container,
+body > .app-container > .app-container,
+body > .app-container .h-100 {
+    min-height: 100vh;
+}
 .btn-primary {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;

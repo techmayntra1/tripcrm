@@ -178,6 +178,7 @@
                     <tr>
                         <th width="40">#</th>
                         <th>Description <span class="text-danger">*</span></th>
+                        <th width="130">Passenger Type</th>
                         <th width="110">Unit</th>
                         <th width="110" class="sqft-col" style="{{ $hasSqft ? '' : 'display:none;' }}">Height</th>
                         <th width="110" class="sqft-col" style="{{ $hasSqft ? '' : 'display:none;' }}">Width</th>
@@ -185,6 +186,8 @@
                         <th width="95">Qty <span class="text-danger">*</span></th>
                         <th width="100">Rate (₹)</th>
                         <th width="120">Amount (₹)</th>
+                        <th width="110" class="tax-col" style="display:none;">Tax Type</th>
+                        <th width="90" class="tax-col" style="display:none;">Tax %</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -194,6 +197,14 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td><textarea class="form-control form-control-sm" name="items[{{ $index }}][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1">{{ $item['description'] ?? '' }}</textarea></td>
+                                <td>
+                                    <select class="form-select form-select-sm" name="items[{{ $index }}][passenger_type]">
+                                        <option value="">—</option>
+                                        @foreach($passengerTypes as $pt)
+                                        <option value="{{ $pt->name }}" {{ ($item['passenger_type'] ?? '') == $pt->name ? 'selected' : '' }}>{{ $pt->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td>
                                     <select class="form-select form-select-sm unit-select" name="items[{{ $index }}][unit]">
                                         @foreach($units as $unit)
@@ -207,6 +218,14 @@
                                 <td><input type="number" class="form-control form-control-sm qty" name="items[{{ $index }}][qty]" value="{{ $item['qty'] ?? 1 }}" min="1" max="99999" step="1" required inputmode="numeric"></td>
                                 <td><input type="number" class="form-control form-control-sm rate" name="items[{{ $index }}][rate]" value="{{ $item['rate'] ?? 0 }}" min="0" max="999999999" step="1" inputmode="numeric"></td>
                                 <td><input type="number" class="form-control form-control-sm amount" name="items[{{ $index }}][amount]" value="{{ $item['amount'] ?? round(($item['qty'] ?? 0) * ($item['rate'] ?? 0)) }}" min="0" step="1" inputmode="numeric"></td>
+                                <td class="tax-col" style="display:none;">
+                                    <select class="form-select form-select-sm tax-type" name="items[{{ $index }}][tax_type]">
+                                        <option value="none" {{ ($item['tax_type'] ?? 'gst') == 'none' ? 'selected' : '' }}>None</option>
+                                        <option value="gst" {{ ($item['tax_type'] ?? 'gst') == 'gst' ? 'selected' : '' }}>GST</option>
+                                        <option value="vat" {{ ($item['tax_type'] ?? 'gst') == 'vat' ? 'selected' : '' }}>VAT</option>
+                                    </select>
+                                </td>
+                                <td class="tax-col" style="display:none;"><input type="number" class="form-control form-control-sm tax-rate" name="items[{{ $index }}][tax_rate]" value="{{ $item['tax_rate'] ?? 18 }}" min="0" max="100" step="0.01" inputmode="decimal"></td>
                                 <td><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-trash"></i></button></td>
                             </tr>
                             @endforeach
@@ -214,6 +233,14 @@
                             <tr>
                                 <td>1</td>
                                 <td><textarea class="form-control form-control-sm" name="items[0][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
+                                <td>
+                                    <select class="form-select form-select-sm" name="items[0][passenger_type]">
+                                        <option value="">—</option>
+                                        @foreach($passengerTypes as $pt)
+                                        <option value="{{ $pt->name }}">{{ $pt->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td>
                                     <select class="form-select form-select-sm unit-select" name="items[0][unit]">
                                         @foreach($units as $unit)
@@ -227,6 +254,14 @@
                                 <td><input type="number" class="form-control form-control-sm qty" name="items[0][qty]" value="1" min="1" max="99999" step="1" required inputmode="numeric"></td>
                                 <td><input type="number" class="form-control form-control-sm rate" name="items[0][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                                 <td><input type="number" class="form-control form-control-sm amount" name="items[0][amount]" placeholder="0" min="0" step="1" inputmode="numeric"></td>
+                                <td class="tax-col" style="display:none;">
+                                    <select class="form-select form-select-sm tax-type" name="items[0][tax_type]">
+                                        <option value="none">None</option>
+                                        <option value="gst" selected>GST</option>
+                                        <option value="vat">VAT</option>
+                                    </select>
+                                </td>
+                                <td class="tax-col" style="display:none;"><input type="number" class="form-control form-control-sm tax-rate" name="items[0][tax_rate]" value="18" min="0" max="100" step="0.01" inputmode="decimal"></td>
                                 <td><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-trash"></i></button></td>
                             </tr>
                         @endif
@@ -271,9 +306,10 @@
                             </td>
                         </tr>
                         <tr id="gstRow">
-                            <td class="py-2">GST</td>
+                            <td class="py-2" id="gstLabel">GST</td>
                             <td class="py-2">
                                 <div class="input-group">
+                                    <span class="input-group-text d-none" id="gstPerLineNote" style="font-size:12px;">Per line</span>
                                     <select class="form-select" style="max-width: 140px;" name="gst_percent" id="gstPercent">
                                         @foreach($gstRates as $rate)
                                         <option value="{{ $rate->percentage }}" {{ old('gst_percent', $quotation->gst_percent) == $rate->percentage ? 'selected' : '' }}>{{ $rate->name }}</option>
@@ -414,46 +450,77 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calculateTotals() {
-        let subtotal = 0;
         const subtotalInput = document.getElementById('subtotalInput');
         const grandTotalInput = document.getElementById('grandTotalInput');
         const gstInclusive = document.getElementById('gstInclusive').checked;
         const gstSign = document.getElementById('gstSign');
+        const gstVisible = gstRow.style.display !== 'none';
+        const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+        const splitOn = document.getElementById('gstSplit').checked;
+
+        let subtotal = 0;
+        let gst = 0;         // total tax shown in the Tax box
+        let gstPortion = 0;  // GST-type tax only, used for CGST/SGST split
+        let grandTotal;
 
         if (typeItems.checked) {
-            document.querySelectorAll('#itemsTable .amount').forEach(function(el) {
-                subtotal += parseFloat(el.value) || 0;
+            // Per-line tax engine: each line has its own tax type + rate.
+            let gstTax = 0, vatTax = 0;
+            document.querySelectorAll('#itemsBody tr').forEach(function(row) {
+                const amtEl = row.querySelector('.amount');
+                const amt = amtEl ? (parseFloat(amtEl.value) || 0) : 0;
+                subtotal += amt;
+                if (!gstVisible) return;
+                const typeEl = row.querySelector('.tax-type');
+                const rateEl = row.querySelector('.tax-rate');
+                const type = typeEl ? typeEl.value : 'none';
+                const rate = rateEl ? (parseFloat(rateEl.value) || 0) : 0;
+                if (rate <= 0) return;
+                if (type === 'gst') {
+                    gstTax += gstInclusive ? (amt * rate) / (100 + rate) : (amt * rate) / 100;
+                } else if (type === 'vat') {
+                    vatTax += (amt * rate) / 100;
+                }
             });
             subtotal = Math.min(Math.round(subtotal), 99999999);
             subtotalInput.value = subtotal;
+            gstPortion = gstTax;
+            gst = gstTax + vatTax;
+            // Inclusive GST is already embedded in the line amounts (subtotal); don't add it again.
+            const addTax = vatTax + (gstInclusive ? 0 : gstTax);
+            grandTotal = Math.round(subtotal - discount + addTax);
+            if (gstInclusive) {
+                gstSign.textContent = '₹';
+                gstSign.classList.remove('text-success');
+            } else {
+                gstSign.textContent = '+ ₹';
+                gstSign.classList.add('text-success');
+            }
         } else {
+            // Document-level GST (PDF-upload mode, no line items).
             subtotal = parseFloat(subtotalInput.value) || 0;
-        }
-        const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-        const gstVisible = gstRow.style.display !== 'none';
-        const gstPercent = gstVisible ? (parseFloat(document.getElementById('gstPercent').value) || 0) : 0;
-        const afterDiscount = subtotal - discount;
-
-        let gst, grandTotal;
-        if (gstInclusive && gstPercent > 0) {
-            gst = (afterDiscount * gstPercent) / (100 + gstPercent);
-            grandTotal = Math.round(afterDiscount);
-            gstSign.textContent = '₹';
-            gstSign.classList.remove('text-success');
-        } else {
-            gst = (afterDiscount * gstPercent) / 100;
-            grandTotal = Math.round(afterDiscount + gst);
-            gstSign.textContent = '+ ₹';
-            gstSign.classList.add('text-success');
+            const gstPercent = gstVisible ? (parseFloat(document.getElementById('gstPercent').value) || 0) : 0;
+            const afterDiscount = subtotal - discount;
+            if (gstInclusive && gstPercent > 0) {
+                gst = (afterDiscount * gstPercent) / (100 + gstPercent);
+                grandTotal = Math.round(afterDiscount);
+                gstSign.textContent = '₹';
+                gstSign.classList.remove('text-success');
+            } else {
+                gst = (afterDiscount * gstPercent) / 100;
+                grandTotal = Math.round(afterDiscount + gst);
+                gstSign.textContent = '+ ₹';
+                gstSign.classList.add('text-success');
+            }
+            gstPortion = gst;
         }
 
         document.getElementById('gstInput').value = Math.round(gst);
         grandTotalInput.value = grandTotal;
 
-        const splitOn = document.getElementById('gstSplit').checked;
         document.getElementById('gstSplitDisplay').style.display = splitOn ? '' : 'none';
         if (splitOn) {
-            const half = Math.round(gst / 2);
+            const half = Math.round(gstPortion / 2);
             document.getElementById('cgstDisplay').value = half;
             document.getElementById('sgstDisplay').value = half;
         }
@@ -471,10 +538,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function updateTaxColumns() {
+        const show = typeItems.checked && gstRow.style.display !== 'none';
+        document.querySelectorAll('.tax-col').forEach(function(el) {
+            el.style.display = show ? '' : 'none';
+        });
+    }
+
+    function updateSummaryTaxMode() {
+        const itemsMode = typeItems.checked;
+        document.getElementById('gstPercent').classList.toggle('d-none', itemsMode);
+        document.getElementById('gstPerLineNote').classList.toggle('d-none', !itemsMode);
+        document.getElementById('gstLabel').textContent = itemsMode ? 'Tax' : 'GST';
+    }
+
     function updateGstVisibility() {
         const selectedOption = companySelect.options[companySelect.selectedIndex];
         const hasGst = selectedOption && selectedOption.getAttribute('data-has-gst') === '1';
         gstRow.style.display = hasGst ? '' : 'none';
+        updateTaxColumns();
         calculateTotals();
     }
 
@@ -500,6 +582,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!hasExistingPdf) {
                 pdfInput.setAttribute('required', 'required');
             }
+            updateSummaryTaxMode();
+            updateTaxColumns();
+            calculateTotals();
         }
     });
 
@@ -511,6 +596,8 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleItemsRequired(true);
             pdfInput.removeAttribute('required');
             pdfInput.classList.remove('is-invalid');
+            updateSummaryTaxMode();
+            updateTaxColumns();
             calculateTotals();
         }
     });
@@ -561,10 +648,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addItemBtn.addEventListener('click', function() {
         const showSqft = hasSqftSelected();
+        const showTax = gstRow.style.display !== 'none';
         const newRow = `
             <tr>
                 <td>${itemIndex + 1}</td>
                 <td><textarea class="form-control form-control-sm" name="items[${itemIndex}][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
+                <td>
+                    <select class="form-select form-select-sm" name="items[${itemIndex}][passenger_type]">
+                        <option value="">—</option>
+                        @foreach($passengerTypes as $pt)
+                        <option value="{{ $pt->name }}">{{ $pt->name }}</option>
+                        @endforeach
+                    </select>
+                </td>
                 <td>
                     <select class="form-select form-select-sm unit-select" name="items[${itemIndex}][unit]">
                         @foreach($units as $unit)
@@ -578,6 +674,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><input type="number" class="form-control form-control-sm qty" name="items[${itemIndex}][qty]" value="1" min="1" max="99999" step="1" required inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm rate" name="items[${itemIndex}][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm amount" name="items[${itemIndex}][amount]" placeholder="0" min="0" step="1" inputmode="numeric"></td>
+                <td class="tax-col" style="${showTax ? '' : 'display:none;'}">
+                    <select class="form-select form-select-sm tax-type" name="items[${itemIndex}][tax_type]">
+                        <option value="none">None</option>
+                        <option value="gst" selected>GST</option>
+                        <option value="vat">VAT</option>
+                    </select>
+                </td>
+                <td class="tax-col" style="${showTax ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm tax-rate" name="items[${itemIndex}][tax_rate]" value="18" min="0" max="100" step="0.01" inputmode="decimal"></td>
                 <td><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-trash"></i></button></td>
             </tr>
         `;
@@ -610,7 +714,7 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateRowAmount(row);
             calculateTotals();
         }
-        if (e.target.classList.contains('amount')) {
+        if (e.target.classList.contains('amount') || e.target.classList.contains('tax-rate')) {
             calculateTotals();
         }
     });
@@ -620,6 +724,9 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSqftColumns();
             const row = e.target.closest('tr');
             calculateRowAmount(row);
+            calculateTotals();
+        }
+        if (e.target.classList.contains('tax-type')) {
             calculateTotals();
         }
     });
@@ -766,6 +873,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     toggleItemsRequired(typeItems.checked);
+    updateSummaryTaxMode();
     updateGstVisibility();
 });
 </script>

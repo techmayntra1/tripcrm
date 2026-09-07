@@ -125,8 +125,15 @@ class InvoiceController extends Controller
 
         if ($selectedTripId) {
             $trip = Trip::find($selectedTripId);
-            if ($trip && $trip->customer_id) {
-                $selectedCustomerId = $trip->customer_id;
+            if ($trip) {
+                $existingInvoice = $trip->invoices()->first();
+                if ($existingInvoice) {
+                    return redirect()->route('admin.invoices.show', $existingInvoice)
+                        ->with('info', 'This trip already has an invoice. Record additional payments here.');
+                }
+                if ($trip->customer_id) {
+                    $selectedCustomerId = $trip->customer_id;
+                }
             }
         }
 
@@ -159,6 +166,8 @@ class InvoiceController extends Controller
             'invoice_type' => 'required|in:items,pdf',
             'pdf_description' => 'nullable|string|max:500',
             'items' => 'nullable|array',
+            'items.*.tax_type' => 'nullable|in:none,gst,vat',
+            'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string|max:150',
             'subtotal' => 'required|numeric|min:0.01',
             'discount' => 'nullable|numeric|min:0',
@@ -190,6 +199,10 @@ class InvoiceController extends Controller
             if ($trip && (int) $trip->customer_id !== (int) $validated['customer_id']) {
                 return back()->withInput()
                     ->withErrors(['trip_id' => 'The selected trip does not belong to the selected customer.']);
+            }
+            if ($trip && $trip->hasInvoice()) {
+                return redirect()->route('admin.invoices.show', $trip->invoices()->first())
+                    ->with('info', 'This trip already has an invoice. Record additional payments here.');
             }
         }
 
@@ -259,6 +272,8 @@ class InvoiceController extends Controller
             'invoice_pdf' => 'nullable|file|mimes:pdf|max:10240',
             'pdf_description' => 'nullable|string|max:500',
             'items' => 'nullable|array',
+            'items.*.tax_type' => 'nullable|in:none,gst,vat',
+            'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string|max:150',
             'subtotal' => 'nullable|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',

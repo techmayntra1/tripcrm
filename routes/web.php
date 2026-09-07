@@ -247,6 +247,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
    
     Route::middleware(['permission:staff,view'])->group(function () {
+        Route::get('/salary', [SalaryPaymentController::class, 'all'])->name('salary.index');
         Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
         Route::get('/staff/trashed', [StaffController::class, 'trashed'])->name('staff.trashed');
         Route::get('/staff/{staff}', [StaffController::class, 'show'])->name('staff.show')->where('staff', '[0-9]+');
@@ -256,6 +257,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/staff/{staff}/advances/{advance}', [SalaryPaymentController::class, 'showAdvance'])->name('staff.advances.show')->where('advance', '[0-9]+');
     });
     Route::middleware(['permission:staff,create'])->group(function () {
+        Route::get('/salary/create', [SalaryPaymentController::class, 'createGlobal'])->name('salary.create');
         Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
         Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
         Route::get('/staff/{staff}/salary-payments/create', [SalaryPaymentController::class, 'create'])->name('staff.salary-payments.create');
@@ -351,6 +353,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/masters/staff-positions/trashed', [MasterController::class, 'staffPositionsTrashed'])->name('masters.staff-positions.trashed');
         Route::get('/masters/services', [MasterController::class, 'services'])->name('masters.services');
         Route::get('/masters/services/trashed', [MasterController::class, 'servicesTrashed'])->name('masters.services.trashed');
+        Route::get('/masters/passenger-types', [MasterController::class, 'passengerTypes'])->name('masters.passenger-types');
+        Route::get('/masters/passenger-types/trashed', [MasterController::class, 'passengerTypesTrashed'])->name('masters.passenger-types.trashed');
     });
     Route::middleware(['permission:masters,create'])->group(function () {
         Route::post('/masters/work-types', [MasterController::class, 'storeWorkType'])->name('masters.work-types.store');
@@ -368,6 +372,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/masters/task-statuses', [MasterController::class, 'storeTaskStatus'])->name('masters.task-statuses.store');
         Route::post('/masters/staff-positions', [MasterController::class, 'storeStaffPosition'])->name('masters.staff-positions.store');
         Route::post('/masters/services', [MasterController::class, 'storeService'])->name('masters.services.store');
+        Route::post('/masters/passenger-types', [MasterController::class, 'storePassengerType'])->name('masters.passenger-types.store');
     });
     Route::middleware(['permission:masters,edit'])->group(function () {
         Route::put('/masters/work-types/{workType}', [MasterController::class, 'updateWorkType'])->name('masters.work-types.update');
@@ -400,6 +405,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/masters/staff-positions/{staffPosition}/toggle', [MasterController::class, 'toggleStaffPosition'])->name('masters.staff-positions.toggle');
         Route::put('/masters/services/{service}', [MasterController::class, 'updateService'])->name('masters.services.update');
         Route::post('/masters/services/{service}/toggle', [MasterController::class, 'toggleService'])->name('masters.services.toggle');
+        Route::put('/masters/passenger-types/{passengerType}', [MasterController::class, 'updatePassengerType'])->name('masters.passenger-types.update');
+        Route::post('/masters/passenger-types/{passengerType}/toggle', [MasterController::class, 'togglePassengerType'])->name('masters.passenger-types.toggle');
     });
 
 

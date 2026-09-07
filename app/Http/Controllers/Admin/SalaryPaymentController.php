@@ -15,6 +15,77 @@ use Illuminate\Support\Facades\DB;
 
 class SalaryPaymentController extends Controller
 {
+    public function all(Request $request)
+    {
+        $perPage = $request->input('per_page', 20);
+
+        $query = Expense::with(['staff', 'paymentMode', 'bank'])
+            ->where('expense_type', 'salary')
+            ->whereNotNull('staff_id');
+
+        if ($request->filled('staff_id')) {
+            $query->where('staff_id', $request->staff_id);
+        }
+        if ($request->filled('month')) {
+            $query->whereMonth('expense_date', date('m', strtotime($request->month)))
+                ->whereYear('expense_date', date('Y', strtotime($request->month)));
+        }
+
+        $salaryPayments = $query->orderBy('expense_date', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $staffList = Staff::orderBy('name')->get();
+
+        $totalPaidThisYear = Expense::where('expense_type', 'salary')
+            ->whereNotNull('staff_id')
+            ->whereYear('expense_date', now()->year)
+            ->sum('grand_total');
+
+        $totalPaidThisMonth = Expense::where('expense_type', 'salary')
+            ->whereNotNull('staff_id')
+            ->whereMonth('expense_date', now()->month)
+            ->whereYear('expense_date', now()->year)
+            ->sum('grand_total');
+
+        return view('admin.salary.index', compact(
+            'salaryPayments',
+            'staffList',
+            'totalPaidThisYear',
+            'totalPaidThisMonth'
+        ));
+    }
+
+    public function createGlobal(Request $request)
+    {
+        $staffList = Staff::orderBy('name')->get();
+        $paymentModes = PaymentMode::active()->get();
+        $banks = Bank::where('is_protected', false)->orderBy('bank_name')->get();
+        $cashAccount = Bank::where('is_protected', true)->first();
+
+        $staff = null;
+        $pendingAdvances = collect();
+        $totalPendingAdvance = 0;
+
+        if ($request->filled('staff_id')) {
+            $staff = Staff::find($request->staff_id);
+            if ($staff) {
+                $pendingAdvances = $staff->activeAdvances()->get();
+                $totalPendingAdvance = $staff->total_pending_advance;
+            }
+        }
+
+        return view('admin.salary.create', compact(
+            'staffList',
+            'staff',
+            'paymentModes',
+            'banks',
+            'cashAccount',
+            'pendingAdvances',
+            'totalPendingAdvance'
+        ));
+    }
+
     public function index(Request $request, Staff $staff)
     {
         $perPage = $request->input('per_page', 15);

@@ -204,6 +204,8 @@
                             <th width="95">Qty <span class="text-danger">*</span></th>
                             <th width="100">Rate (₹)</th>
                             <th width="120">Amount (₹)</th>
+                            <th width="110" class="tax-col" style="display:none;">Tax Type</th>
+                            <th width="90" class="tax-col" style="display:none;">Tax %</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -225,6 +227,14 @@
                             <td><input type="number" class="form-control form-control-sm qty" name="items[0][qty]" value="1" min="1" max="99999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm rate" name="items[0][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm amount" name="items[0][amount]" value="0" min="0" step="1" inputmode="numeric"></td>
+                            <td class="tax-col" style="display:none;">
+                                <select class="form-select form-select-sm tax-type" name="items[0][tax_type]">
+                                    <option value="none">None</option>
+                                    <option value="gst" selected>GST</option>
+                                    <option value="vat">VAT</option>
+                                </select>
+                            </td>
+                            <td class="tax-col" style="display:none;"><input type="number" class="form-control form-control-sm tax-rate" name="items[0][tax_rate]" value="18" min="0" max="100" step="0.01" inputmode="decimal"></td>
                             <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-trash"></i></button></td>
                         </tr>
                     </tbody>
@@ -269,9 +279,10 @@
                             </td>
                         </tr>
                         <tr id="gstRow">
-                            <td class="py-2">GST</td>
+                            <td class="py-2" id="gstLabel">GST</td>
                             <td class="py-2">
                                 <div class="input-group">
+                                    <span class="input-group-text d-none" id="gstPerLineNote" style="font-size:12px;">Per line</span>
                                     <select class="form-select" style="max-width: 140px;" name="gst_percent" id="gstPercent">
                                         @foreach($gstRates as $rate)
                                         <option value="{{ $rate->percentage }}" {{ $rate->percentage == 18 ? 'selected' : '' }}>{{ $rate->name }}</option>
@@ -402,6 +413,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedOption = companySelect.options[companySelect.selectedIndex];
         const hasGst = selectedOption && selectedOption.getAttribute('data-has-gst') === '1';
         gstRow.style.display = hasGst ? '' : 'none';
+        updateTaxColumns();
+        updateSummaryTaxMode();
         calculateTotals();
     }
 
@@ -411,32 +424,59 @@ document.addEventListener('DOMContentLoaded', function() {
         const grandTotalInput = document.getElementById('grandTotalInput');
         const gstInclusive = document.getElementById('gstInclusive').checked;
         const gstSign = document.getElementById('gstSign');
+        const gstVisible = gstRow.style.display !== 'none';
+
+        let gst, grandTotal, gstPortion;
 
         if (typeItems.checked) {
-            document.querySelectorAll('#itemsTable .amount').forEach(function(el) {
-                subtotal += parseFloat(el.value) || 0;
+            // Items mode: per-line tax (GST/VAT summed across lines).
+            let gstTax = 0, vatTax = 0;
+            document.querySelectorAll('#itemsTable tbody tr').forEach(function(row) {
+                const amt = parseFloat((row.querySelector('.amount') || {}).value) || 0;
+                subtotal += amt;
+                if (!gstVisible) return;
+                const typeEl = row.querySelector('.tax-type');
+                const rateEl = row.querySelector('.tax-rate');
+                if (!typeEl || !rateEl) return;
+                const type = typeEl.value;
+                const rate = parseFloat(rateEl.value) || 0;
+                if (rate <= 0 || type === 'none') return;
+                if (type === 'gst') {
+                    gstTax += gstInclusive ? (amt * rate) / (100 + rate) : (amt * rate) / 100;
+                } else if (type === 'vat') {
+                    vatTax += (amt * rate) / 100;
+                }
             });
             subtotal = Math.min(Math.round(subtotal), 99999999);
             subtotalInput.value = subtotal;
-        } else {
-            subtotal = parseFloat(subtotalInput.value) || 0;
-        }
-        const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-        const gstVisible = gstRow.style.display !== 'none';
-        const gstPercent = gstVisible ? (parseFloat(document.getElementById('gstPercent').value) || 0) : 0;
-        const afterDiscount = subtotal - discount;
 
-        let gst, grandTotal;
-        if (gstInclusive && gstPercent > 0) {
-            gst = (afterDiscount * gstPercent) / (100 + gstPercent);
-            grandTotal = Math.round(afterDiscount);
-            gstSign.textContent = '₹';
-            gstSign.classList.remove('text-success');
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            gstPortion = gstTax;
+            gst = gstTax + vatTax;
+            // Inclusive applies to GST-type lines only; VAT and exclusive GST add on top.
+            const addTax = vatTax + (gstInclusive ? 0 : gstTax);
+            grandTotal = Math.round(subtotal - discount + addTax);
+            gstSign.textContent = gstInclusive ? '₹' : '+ ₹';
+            gstSign.classList.toggle('text-success', !gstInclusive);
         } else {
-            gst = (afterDiscount * gstPercent) / 100;
-            grandTotal = Math.round(afterDiscount + gst);
-            gstSign.textContent = '+ ₹';
-            gstSign.classList.add('text-success');
+            // PDF mode: document-level GST engine.
+            subtotal = parseFloat(subtotalInput.value) || 0;
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            const gstPercent = gstVisible ? (parseFloat(document.getElementById('gstPercent').value) || 0) : 0;
+            const afterDiscount = subtotal - discount;
+
+            if (gstInclusive && gstPercent > 0) {
+                gst = (afterDiscount * gstPercent) / (100 + gstPercent);
+                grandTotal = Math.round(afterDiscount);
+                gstSign.textContent = '₹';
+                gstSign.classList.remove('text-success');
+            } else {
+                gst = (afterDiscount * gstPercent) / 100;
+                grandTotal = Math.round(afterDiscount + gst);
+                gstSign.textContent = '+ ₹';
+                gstSign.classList.add('text-success');
+            }
+            gstPortion = gst;
         }
 
         document.getElementById('gstInput').value = Math.round(gst);
@@ -445,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const splitOn = document.getElementById('gstSplit').checked;
         document.getElementById('gstSplitDisplay').style.display = splitOn ? '' : 'none';
         if (splitOn) {
-            const half = Math.round(gst / 2);
+            const half = Math.round(gstPortion / 2);
             document.getElementById('cgstDisplay').value = half;
             document.getElementById('sgstDisplay').value = half;
         }
@@ -482,6 +522,9 @@ document.addEventListener('DOMContentLoaded', function() {
             addItemBtn.style.display = 'inline-block';
             pdfInput.removeAttribute('required');
             pdfInput.classList.remove('is-invalid');
+            updateTaxColumns();
+            updateSummaryTaxMode();
+            calculateTotals();
         }
     });
 
@@ -491,6 +534,9 @@ document.addEventListener('DOMContentLoaded', function() {
             pdfUploadSection.style.display = 'block';
             addItemBtn.style.display = 'none';
             pdfInput.setAttribute('required', 'required');
+            updateTaxColumns();
+            updateSummaryTaxMode();
+            calculateTotals();
         }
     });
 
@@ -507,6 +553,23 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.sqft-col').forEach(function(el) {
             el.style.display = show ? '' : 'none';
         });
+    }
+
+    function updateTaxColumns() {
+        const show = typeItems.checked && gstRow.style.display !== 'none';
+        document.querySelectorAll('.tax-col').forEach(function(el) {
+            el.style.display = show ? '' : 'none';
+        });
+    }
+
+    function updateSummaryTaxMode() {
+        const perLine = typeItems.checked && gstRow.style.display !== 'none';
+        const gstPercent = document.getElementById('gstPercent');
+        const gstPerLineNote = document.getElementById('gstPerLineNote');
+        const gstLabel = document.getElementById('gstLabel');
+        if (gstPercent) gstPercent.classList.toggle('d-none', perLine);
+        if (gstPerLineNote) gstPerLineNote.classList.toggle('d-none', !perLine);
+        if (gstLabel) gstLabel.textContent = perLine ? 'Tax' : 'GST';
     }
 
     function calculateTotalSqft(row) {
@@ -540,6 +603,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addItemBtn.addEventListener('click', function() {
         const showSqft = hasSqftSelected();
+        const showTax = gstRow.style.display !== 'none';
         const newRow = `
             <tr>
                 <td class="text-center">${itemIndex + 1}</td>
@@ -558,6 +622,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><input type="number" class="form-control form-control-sm qty" name="items[${itemIndex}][qty]" value="1" min="1" max="99999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm rate" name="items[${itemIndex}][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm amount" name="items[${itemIndex}][amount]" value="0" min="0" step="1" inputmode="numeric"></td>
+                <td class="tax-col" style="${showTax ? '' : 'display:none;'}">
+                    <select class="form-select form-select-sm tax-type" name="items[${itemIndex}][tax_type]">
+                        <option value="none">None</option>
+                        <option value="gst" selected>GST</option>
+                        <option value="vat">VAT</option>
+                    </select>
+                </td>
+                <td class="tax-col" style="${showTax ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm tax-rate" name="items[${itemIndex}][tax_rate]" value="18" min="0" max="100" step="0.01" inputmode="decimal"></td>
                 <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-trash"></i></button></td>
             </tr>
         `;
@@ -593,6 +665,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('amount')) {
             calculateTotals();
         }
+        if (e.target.classList.contains('tax-rate')) {
+            calculateTotals();
+        }
     });
 
     itemsTableBody.addEventListener('change', function(e) {
@@ -600,6 +675,9 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleSqftColumns();
             const row = e.target.closest('tr');
             calculateRowAmount(row);
+            calculateTotals();
+        }
+        if (e.target.classList.contains('tax-type')) {
             calculateTotals();
         }
     });
@@ -638,6 +716,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 typeItems.dispatchEvent(new Event('change'));
 
                 let hasSqftItem = items.some(item => (item.unit || '').toLowerCase() === 'sqft' || item.height || item.width || item.total);
+                const showTaxItem = gstRow.style.display !== 'none';
                 let itemsHtml = '';
                 items.forEach((item, index) => {
                     const isSqft = (item.unit || '').toLowerCase() === 'sqft';
@@ -662,7 +741,15 @@ document.addEventListener('DOMContentLoaded', function() {
                             <td class="sqft-col" style="${hasSqftItem ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-total" name="items[${index}][total]" value="${item.total || ''}" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
                             <td><input type="number" class="form-control form-control-sm qty" name="items[${index}][qty]" value="${item.qty || 1}" min="1" max="99999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm rate" name="items[${index}][rate]" value="${item.rate || 0}" min="0" max="999999999" step="1" inputmode="numeric"></td>
-                            <td><input type="number" class="form-control form-control-sm amount" name="items[${index}][amount]" value="${amount}" min="0" step="1" inputmode="numeric"></td>
+                            <td><input type="number" class="form-control form-control-sm amount" name="items[${index}][amount]" value="${amount}" min="0" step="1" inputmode="numeric">${item.passenger_type ? `<input type="hidden" name="items[${index}][passenger_type]" value="${item.passenger_type}">` : ''}</td>
+                            <td class="tax-col" style="${showTaxItem ? '' : 'display:none;'}">
+                                <select class="form-select form-select-sm tax-type" name="items[${index}][tax_type]">
+                                    <option value="none" ${(item.tax_type || 'gst') === 'none' ? 'selected' : ''}>None</option>
+                                    <option value="gst" ${(item.tax_type || 'gst') === 'gst' ? 'selected' : ''}>GST</option>
+                                    <option value="vat" ${(item.tax_type || 'gst') === 'vat' ? 'selected' : ''}>VAT</option>
+                                </select>
+                            </td>
+                            <td class="tax-col" style="${showTaxItem ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm tax-rate" name="items[${index}][tax_rate]" value="${item.tax_rate != null ? item.tax_rate : 18}" min="0" max="100" step="0.01" inputmode="decimal"></td>
                             <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row"><i class="bi bi-trash"></i></button></td>
                         </tr>
                     `;
@@ -674,8 +761,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('subtotalInput').value = Math.round(subtotal);
             document.getElementById('discountInput').value = Math.round(discount);
-                        document.getElementById('gstInput').value = Math.round(gst);
+            document.getElementById('gstInput').value = Math.round(gst);
             document.getElementById('grandTotalInput').value = Math.round(grandTotal);
+            updateTaxColumns();
+            updateSummaryTaxMode();
+            calculateTotals();
         }
     });
 
@@ -685,6 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('gstInclusive').addEventListener('change', calculateTotals);
     document.getElementById('gstSplit').addEventListener('change', calculateTotals);
 
+    updateSummaryTaxMode();
     updateGstVisibility();
     calculateTotals();
 

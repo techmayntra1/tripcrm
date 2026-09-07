@@ -9,6 +9,7 @@ use App\Models\GstRate;
 use App\Models\Trip;
 use App\Models\Quotation;
 use App\Models\Unit;
+use App\Models\PassengerType;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -108,8 +109,9 @@ class QuotationController extends Controller
         $trips = Trip::orderBy('trip_number', 'desc')->get();
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
+        $passengerTypes = PassengerType::active()->ordered()->get();
 
-        return view('admin.quotations.create', compact('companies', 'customers', 'trips', 'units', 'gstRates'));
+        return view('admin.quotations.create', compact('companies', 'customers', 'trips', 'units', 'gstRates', 'passengerTypes'));
     }
 
     public function store(Request $request)
@@ -135,6 +137,9 @@ class QuotationController extends Controller
         if ($request->input('quotation_type') === 'items') {
             $rules['items'] = 'required|array|min:1';
             $rules['items.*.description'] = 'required|string|min:1';
+            $rules['items.*.passenger_type'] = 'nullable|string|max:100';
+            $rules['items.*.tax_type'] = 'nullable|in:none,gst,vat';
+            $rules['items.*.tax_rate'] = 'nullable|numeric|min:0|max:100';
             $rules['items.*.unit'] = 'nullable|string';
             $rules['items.*.height'] = 'nullable|numeric|min:0';
             $rules['items.*.width'] = 'nullable|numeric|min:0';
@@ -225,8 +230,9 @@ class QuotationController extends Controller
         $quotation->load(['company', 'customer']);
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
+        $passengerTypes = PassengerType::active()->ordered()->get();
 
-        return view('admin.quotations.edit', compact('quotation', 'companies', 'customers', 'trips', 'units', 'gstRates'));
+        return view('admin.quotations.edit', compact('quotation', 'companies', 'customers', 'trips', 'units', 'gstRates', 'passengerTypes'));
     }
 
     public function update(Request $request, Quotation $quotation)
@@ -257,6 +263,9 @@ class QuotationController extends Controller
         if ($request->input('quotation_type') === 'items') {
             $rules['items'] = 'required|array|min:1';
             $rules['items.*.description'] = 'required|string|min:1';
+            $rules['items.*.passenger_type'] = 'nullable|string|max:100';
+            $rules['items.*.tax_type'] = 'nullable|in:none,gst,vat';
+            $rules['items.*.tax_rate'] = 'nullable|numeric|min:0|max:100';
             $rules['items.*.unit'] = 'nullable|string';
             $rules['items.*.height'] = 'nullable|numeric|min:0';
             $rules['items.*.width'] = 'nullable|numeric|min:0';

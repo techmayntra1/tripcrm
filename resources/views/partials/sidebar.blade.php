@@ -94,8 +94,13 @@
                 </li>
                 <div class="sidebar-section" data-section="staff">
                     <li class="nav-item">
-                        <a href="{{ route('admin.staff.index') }}" class="nav-link menu-link {{ request()->routeIs('admin.staff.*') ? 'active' : '' }}">
-                            <i class="bi bi-person-badge"></i> <span>Staff &amp; Salary</span>
+                        <a href="{{ route('admin.staff.index') }}" class="nav-link menu-link {{ (request()->routeIs('admin.staff.*') && !request()->routeIs('admin.staff.salary-payments.*') && !request()->routeIs('admin.staff.advances.*')) ? 'active' : '' }}">
+                            <i class="bi bi-person-badge"></i> <span>Staff</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.salary.index') }}" class="nav-link menu-link {{ (request()->routeIs('admin.salary.*') || request()->routeIs('admin.staff.salary-payments.*') || request()->routeIs('admin.staff.advances.*')) ? 'active' : '' }}">
+                            <i class="bi bi-cash-stack"></i> <span>Salary</span>
                         </a>
                     </li>
                 </div>
@@ -187,6 +192,11 @@
                     <li class="nav-item">
                         <a href="{{ route('admin.masters.services') }}" class="nav-link menu-link {{ request()->routeIs('admin.masters.services*') ? 'active' : '' }}">
                             <i class="bi bi-tools"></i> <span>Services</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.masters.passenger-types') }}" class="nav-link menu-link {{ request()->routeIs('admin.masters.passenger-types*') ? 'active' : '' }}">
+                            <i class="bi bi-people"></i> <span>Passenger Types</span>
                         </a>
                     </li>
 
@@ -313,6 +323,35 @@
     letter-spacing: 0.5px;
     color: rgba(255, 255, 255, 0.4);
 }
+
+/* White sidebar font (links, icons, section headings) */
+.navbar-menu .nav-link,
+.navbar-menu .nav-link span,
+.navbar-menu .nav-link i,
+.navbar-menu .sidebar-section-heading,
+.navbar-menu .sidebar-section-heading span,
+.navbar-menu .sidebar-section-heading i {
+    color: #ffffff !important;
+}
+
+/* Active menu item: white background with contrasting (dark) text + icon */
+.navbar-menu .nav-link.active,
+.navbar-menu .nav-link.active span,
+.navbar-menu .nav-link.active i {
+    background-color: #ffffff !important;
+    color: #405189 !important;
+    font-weight: 600;
+}
+.navbar-menu .nav-link.active {
+    border-radius: 6px;
+}
+.navbar-menu .nav-link:hover:not(.active),
+.navbar-menu .nav-link:hover:not(.active) span,
+.navbar-menu .nav-link:hover:not(.active) i {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+}
 </style>
 
 <script>
@@ -339,7 +378,11 @@
         const collapsed = load();
         document.querySelectorAll('.sidebar-section').forEach(function (section) {
             const name = section.dataset.section;
-            const isCollapsed = collapsed.includes(name);
+            // A section holding the active link is always forced open, so the
+            // main menu of the active sub-menu is expanded regardless of any
+            // previously-stored collapsed state.
+            const hasActive = !!section.querySelector('.nav-link.active');
+            const isCollapsed = hasActive ? false : collapsed.includes(name);
             // Give the open section an explicit height for the CSS transition.
             // .collapsed forces max-height:0 !important so this is ignored while shut.
             if (!isCollapsed) section.style.maxHeight = section.scrollHeight + 'px';

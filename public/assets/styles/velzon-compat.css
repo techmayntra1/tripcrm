@@ -78,6 +78,18 @@ body {
 .bg-mean-fruit    { background-image: linear-gradient(135deg, #405189 0%, #333f6b 100%) !important; color: #fff !important; }
 .bg-midnight-bloom{ background-image: linear-gradient(135deg, #2a2f56 0%, #405189 100%) !important; color: #fff !important; }
 .bg-purple        { background-image: linear-gradient(135deg, #6559cc 0%, #405189 100%) !important; color: #fff !important; }
+/* ArchitectUI gradient tiles (main.css is not loaded on admin pages, so
+   redefine the ones the dashboards/widgets use here). All dark enough for
+   white text. */
+.bg-plum-plate    { background-image: linear-gradient(135deg, #3a1c71 0%, #45278d 100%) !important; color: #fff !important; }
+.bg-premium-dark  { background-image: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important; color: #fff !important; }
+.bg-deep-blue     { background-image: linear-gradient(135deg, #1f4037 0%, #274d8b 100%) !important; color: #fff !important; }
+.bg-grow-early    { background-image: linear-gradient(135deg, #0ba360 0%, #3cba92 100%) !important; color: #fff !important; }
+.bg-happy-green   { background-image: linear-gradient(135deg, #0a874c 0%, #1cbb7d 100%) !important; color: #fff !important; }
+.bg-sunny-morning { background-image: linear-gradient(135deg, #d38312 0%, #e08c1a 100%) !important; color: #fff !important; }
+.bg-night-fade    { background-image: linear-gradient(135deg, #6a3093 0%, #a044ff 100%) !important; color: #fff !important; }
+.bg-love-kiss     { background-image: linear-gradient(135deg, #b21f1f 0%, #e0521a 100%) !important; color: #fff !important; }
+.bg-arielle-smile { background-image: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important; color: #fff !important; }
 
 /* icon-gradient text helper -> flat navy so it never disappears */
 .icon-gradient {

@@ -136,6 +136,14 @@ class Trip extends Model
         return $this->hasMany(Income::class);
     }
 
+    public function hasInvoice(): bool
+    {
+        if ($this->relationLoaded('invoices')) {
+            return $this->invoices->isNotEmpty();
+        }
+        return $this->invoices()->exists();
+    }
+
     public function tripServices(): HasMany
     {
         return $this->hasMany(TripService::class);

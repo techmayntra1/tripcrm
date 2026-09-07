@@ -18,6 +18,7 @@ use App\Models\ExpenseType;
 use App\Models\TaskStatus;
 use App\Models\StaffPosition;
 use App\Models\Service;
+use App\Models\PassengerType;
 use Illuminate\Http\Request;
 
 class MasterController extends Controller
@@ -743,6 +744,49 @@ class MasterController extends Controller
     {
         $service->update(['is_active' => !$service->is_active]);
         $message = $service->is_active ? 'Service activated.' : 'Service deactivated.';
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function passengerTypes(Request $request)
+    {
+        $query = PassengerType::orderBy('sort_order')->orderBy('name');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        $items = $query->get();
+        $inactiveCount = PassengerType::where('is_active', false)->count();
+        return view('admin.masters.passenger-types', compact('items', 'inactiveCount'));
+    }
+
+    public function passengerTypesTrashed(Request $request)
+    {
+        $query = PassengerType::where('is_active', false)->orderBy('name');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        $items = $query->get();
+        $activeCount = PassengerType::where('is_active', true)->count();
+        return view('admin.masters.passenger-types-trashed', compact('items', 'activeCount'));
+    }
+
+    public function storePassengerType(Request $request)
+    {
+        $request->validate(['name' => 'required|string|max:100|unique:passenger_types,name']);
+        PassengerType::create(['name' => $request->name, 'sort_order' => PassengerType::max('sort_order') + 1]);
+        return redirect()->route('admin.masters.passenger-types')->with('success', 'Passenger type added successfully.');
+    }
+
+    public function updatePassengerType(Request $request, PassengerType $passengerType)
+    {
+        $request->validate(['name' => 'required|string|max:100|unique:passenger_types,name,' . $passengerType->id]);
+        $passengerType->update(['name' => $request->name]);
+        return redirect()->route('admin.masters.passenger-types')->with('success', 'Passenger type updated successfully.');
+    }
+
+    public function togglePassengerType(PassengerType $passengerType)
+    {
+        $passengerType->update(['is_active' => !$passengerType->is_active]);
+        $message = $passengerType->is_active ? 'Passenger type activated.' : 'Passenger type deactivated.';
         return redirect()->back()->with('success', $message);
     }
 }

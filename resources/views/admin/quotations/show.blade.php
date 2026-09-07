@@ -115,6 +115,32 @@
 
                 return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
             };
+
+            // Per-line tax rollup (GST/VAT summed across line items).
+            $lineTaxByType = ['gst' => 0, 'vat' => 0];
+            $hasLineTax = false;
+            foreach ($quotation->items as $taxItem) {
+                $tType = $taxItem['tax_type'] ?? 'none';
+                $tRate = (float) ($taxItem['tax_rate'] ?? 0);
+                if ($tType === 'none' || $tRate <= 0) {
+                    continue;
+                }
+                $tAmount = $taxItem['amount'] ?? null;
+                if ($tAmount === null || $tAmount === '') {
+                    $tAmount = strtolower($taxItem['unit'] ?? '') === 'sqft'
+                        ? ($taxItem['total'] ?? 0) * ($taxItem['qty'] ?? 0) * ($taxItem['rate'] ?? 0)
+                        : ($taxItem['qty'] ?? 0) * ($taxItem['rate'] ?? 0);
+                }
+                $tAmount = (float) $tAmount;
+                $hasLineTax = true;
+                if ($tType === 'gst') {
+                    $lineTaxByType['gst'] += $quotation->gst_inclusive
+                        ? ($tAmount * $tRate) / (100 + $tRate)
+                        : ($tAmount * $tRate) / 100;
+                } else {
+                    $lineTaxByType['vat'] += ($tAmount * $tRate) / 100;
+                }
+            }
         @endphp
         <table class="table mb-4" style="border-collapse: collapse;">
             <thead style="background-color: #405189; color: #fff;">
@@ -130,6 +156,9 @@
                     <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">QTY</th>
                     <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE (₹)</th>
                     <th width="130" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT (₹)</th>
+                    @if($hasLineTax)
+                    <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">TAX</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -144,7 +173,7 @@
                 @endphp
                 <tr>
                     <td style="border: 1px solid #ddd; padding: 10px;">{{ $index + 1 }}</td>
-                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $item['description'] ?? '-' }}</td>
+                    <td style="border: 1px solid #ddd; padding: 10px;">{{ $item['description'] ?? '-' }}@if(!empty($item['passenger_type']))<br><span style="font-size: 11px; color: #888;">{{ $item['passenger_type'] }}</span>@endif</td>
                     <td class="text-center" style="border: 1px solid #ddd; padding: 10px;">{{ strtoupper($item['unit'] ?? '-') }}</td>
                     @if($hasDimensions)
                     <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ $formatDimension($item['height'] ?? null) }}</td>
@@ -154,6 +183,10 @@
                     <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['qty'] ?? 0, 0) }}</td>
                     <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['rate'] ?? 0, 0) }}</td>
                     <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($itemAmount, 0) }}</td>
+                    @if($hasLineTax)
+                    @php $rowTaxType = $item['tax_type'] ?? 'none'; $rowTaxRate = (float) ($item['tax_rate'] ?? 0); @endphp
+                    <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">@if($rowTaxType !== 'none' && $rowTaxRate > 0){{ strtoupper($rowTaxType) }} {{ rtrim(rtrim(number_format($rowTaxRate, 2), '0'), '.') }}%@else-@endif</td>
+                    @endif
                 </tr>
                 @endforeach
             </tbody>
@@ -197,7 +230,32 @@
                         <td class="text-end text-danger">- {{ formatMoney($quotation->discount) }}</td>
                     </tr>
                     @endif
-                    @if($quotation->gst_percent > 0)
+                    @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
+                    @if($hasLineTax)
+                        @if($lineTaxByType['gst'] > 0)
+                            @if($quotation->gst_split)
+                            <tr>
+                                <td>CGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2) }}</td>
+                            </tr>
+                            <tr>
+                                <td>SGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2) }}</td>
+                            </tr>
+                            @else
+                            <tr>
+                                <td>GST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst']) }}</td>
+                            </tr>
+                            @endif
+                        @endif
+                        @if($lineTaxByType['vat'] > 0)
+                        <tr>
+                            <td>VAT:</td>
+                            <td class="text-end text-success">+ {{ formatMoney($lineTaxByType['vat']) }}</td>
+                        </tr>
+                        @endif
+                    @elseif($quotation->gst_percent > 0)
                         @if($quotation->gst_split)
                         <tr>
                             <td>CGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
