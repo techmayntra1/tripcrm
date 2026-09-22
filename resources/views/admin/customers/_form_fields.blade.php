@@ -4,7 +4,7 @@
     $selectedCountry = old('country', $c->country ?? 'India');
     $selectedCity = old('city', $c ? ($c->city?->name ?? $c->city_other ?? '') : '');
     $selectedTripIds = old('trip_ids', $c ? $c->trips->pluck('id')->toArray() : []);
-    $countries = \App\Models\Customer::COUNTRIES;
+    $countries = \App\Support\Countries::names();
     if ($selectedCountry && !in_array($selectedCountry, $countries)) {
         $countries[] = $selectedCountry;
     }
@@ -25,11 +25,7 @@
         <div class="mb-3">
             <label for="mobile" class="form-label">Mobile <span class="text-danger">*</span></label>
             <div class="input-group has-validation">
-                <select class="form-select flex-grow-0 w-auto @error('country_code') is-invalid @enderror" id="country_code" name="country_code" title="Country code">
-                    @foreach(\App\Models\Lead::COUNTRY_CODES as $code => $label)
-                        <option value="{{ $code }}" {{ old('country_code', $c->country_code ?? '+91') == $code ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
+                @include('partials._country_code_select', ['selected' => old('country_code', $c->country_code ?? '+91')])
                 <input type="tel" class="form-control @error('mobile') is-invalid @enderror" id="mobile" name="mobile" value="{{ old('mobile', $c->mobile ?? '') }}" placeholder="Mobile number" required minlength="7" maxlength="15" inputmode="numeric" pattern="[0-9]{7,15}">
                 @error('mobile')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -159,7 +155,7 @@
 $(document).ready(function() {
     // City list depends on the country: Indian cities, UAE cities, or free text for anywhere else.
     var uaeCities = @json(\App\Models\Customer::UAE_CITIES).map(function(n) { return { id: n, text: n }; });
-    var dialCodeByCountry = { 'India': '+91', 'United Arab Emirates': '+971' };
+    var dialCodeByCountry = @json(\App\Support\Countries::ALL);
 
     var $city = $('#city');
     var $country = $('#country');
@@ -197,8 +193,10 @@ $(document).ready(function() {
     $country.on('change', function() {
         initCity(false);
         var code = dialCodeByCountry[this.value];
-        if (code) $('#country_code').val(code);
+        if (code) $('#country_code').val(code).trigger('change');
     });
+
+    $('#country').select2({ width: '100%', theme: 'bootstrap-5', placeholder: 'Select Country' });
 
     $('#trip_ids').select2({
         placeholder: 'Select Trips',

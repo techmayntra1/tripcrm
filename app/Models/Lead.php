@@ -10,11 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Lead extends Model
 {
     use SoftDeletes;
-    // Dialling codes offered on the lead form. India and UAE only, matching Company::COUNTRIES.
-    public const COUNTRY_CODES = [
-        '+91' => 'India (+91)',
-        '+971' => 'UAE (+971)',
-    ];
+    /** Dialling codes offered on the lead form, code => label. @see \App\Support\Countries */
+    public static function countryCodes(): array
+    {
+        return \App\Support\Countries::dialOptions();
+    }
 
     protected $fillable = [
         'name',

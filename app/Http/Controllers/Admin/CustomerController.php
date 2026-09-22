@@ -167,7 +167,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:30',
-            'country_code' => 'nullable|string|in:' . implode(',', array_keys(Lead::COUNTRY_CODES)),
+            'country_code' => 'nullable|string|in:' . implode(',', \App\Support\Countries::dialCodes()),
             'mobile' => 'required|string|regex:/^[0-9]{7,15}$/',
             'email' => 'nullable|email|max:100',
             'company_name' => 'nullable|string|max:100',
@@ -288,7 +288,7 @@ class CustomerController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:30',
-            'country_code' => 'nullable|string|in:' . implode(',', array_keys(Lead::COUNTRY_CODES)),
+            'country_code' => 'nullable|string|in:' . implode(',', \App\Support\Countries::dialCodes()),
             'mobile' => 'required|string|regex:/^[0-9]{7,15}$/',
             'email' => 'nullable|email|max:100',
             'company_name' => 'nullable|string|max:100',

@@ -44,11 +44,7 @@
                     <div class="mb-3">
                         <label for="mobile" class="form-label">Mobile <span class="text-danger">*</span></label>
                         <div class="input-group has-validation">
-                            <select class="form-select flex-grow-0 w-auto @error('country_code') is-invalid @enderror" id="country_code" name="country_code" title="Country code">
-                                @foreach(\App\Models\Lead::COUNTRY_CODES as $code => $label)
-                                    <option value="{{ $code }}" {{ old('country_code', $lead->country_code ?? '+91') == $code ? 'selected' : '' }}>{{ $label }}</option>
-                                @endforeach
-                            </select>
+                            @include('partials._country_code_select', ['selected' => old('country_code', $lead->country_code ?? '+91')])
                             <input type="tel" class="form-control @error('mobile') is-invalid @enderror" id="mobile" name="mobile" value="{{ old('mobile', $lead->mobile) }}" placeholder="Mobile number" required minlength="7" maxlength="15" inputmode="numeric" pattern="[0-9]{7,15}">
                         @error('mobile')
                             <div class="invalid-feedback">{{ $message }}</div>

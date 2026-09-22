@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Customer extends Model
 {
     use SoftDeletes;
-    // Countries offered on the customer form (select2 with tags, so others can be typed).
-    public const COUNTRIES = [
-        'India', 'United Arab Emirates',
-    ];
+    /** Countries offered on the customer form. @see \App\Support\Countries */
+    public static function countries(): array
+    {
+        return \App\Support\Countries::names();
+    }
 
     /** UAE cities and major towns, grouped by emirate then alphabetical within it. */
     public const UAE_CITIES = [
