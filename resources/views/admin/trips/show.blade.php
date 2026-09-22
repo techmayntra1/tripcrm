@@ -1,6 +1,7 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.app')
 @section('title', 'Trip Details')
+@section('currency_symbol', currencySymbol($trip))
 @section('content')
 <div class="app-page-title">
     <div class="page-title-wrapper">
@@ -128,19 +129,19 @@
                 <div class="row text-center">
                     <div class="col-3">
                         <small class="text-muted d-block">Budget</small>
-                        <strong class="text-primary">{{ formatMoney($trip->budget, true) }}</strong>
+                        <strong class="text-primary">{{ formatMoney($trip->budget, true, 0, $trip) }}</strong>
                     </div>
                     <div class="col-3">
                         <small class="text-muted d-block">Total Spent</small>
-                        <strong class="text-danger">{{ formatMoney($trip->total_spent, true) }}</strong>
+                        <strong class="text-danger">{{ formatMoney($trip->total_spent, true, 0, $trip) }}</strong>
                     </div>
                     <div class="col-3">
                         <small class="text-muted d-block">Income</small>
-                        <strong class="text-success">{{ formatMoney($trip->total_income, true) }}</strong>
+                        <strong class="text-success">{{ formatMoney($trip->total_income, true, 0, $trip) }}</strong>
                     </div>
                     <div class="col-3">
                         <small class="text-muted d-block">Profit</small>
-                        <strong class="{{ $trip->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ formatMoney($trip->profit, true) }}</strong>
+                        <strong class="{{ $trip->profit >= 0 ? 'text-success' : 'text-danger' }}">{{ formatMoney($trip->profit, true, 0, $trip) }}</strong>
                     </div>
                 </div>
                 @if($trip->gst_percent > 0 && $trip->gst_amount > 0)
@@ -148,20 +149,20 @@
                 <div class="row text-center">
                     <div class="col-3">
                         <small class="text-muted d-block">GST ({{ rtrim(rtrim(number_format($trip->gst_percent, 2), '0'), '.') }}%){{ $trip->gst_inclusive ? ' incl.' : '' }}</small>
-                        <strong class="text-info">{{ formatMoney($trip->gst_amount, true) }}</strong>
+                        <strong class="text-info">{{ formatMoney($trip->gst_amount, true, 0, $trip) }}</strong>
                     </div>
                     <div class="col-3">
                         <small class="text-muted d-block">Total with GST</small>
-                        <strong class="text-primary">{{ formatMoney($trip->total_with_gst, true) }}</strong>
+                        <strong class="text-primary">{{ formatMoney($trip->total_with_gst, true, 0, $trip) }}</strong>
                     </div>
                     @if($trip->gst_split)
                     <div class="col-3">
                         <small class="text-muted d-block">CGST</small>
-                        <strong>{{ formatMoney($trip->gst_amount / 2, true) }}</strong>
+                        <strong>{{ formatMoney($trip->gst_amount / 2, true, 0, $trip) }}</strong>
                     </div>
                     <div class="col-3">
                         <small class="text-muted d-block">SGST</small>
-                        <strong>{{ formatMoney($trip->gst_amount / 2, true) }}</strong>
+                        <strong>{{ formatMoney($trip->gst_amount / 2, true, 0, $trip) }}</strong>
                     </div>
                     @endif
                 </div>
@@ -281,9 +282,9 @@
                                                 -
                                             @endif
                                         </td>
-                                        <td class="text-end text-danger">{{ formatMoney($expense->grand_total) }}</td>
-                                        <td class="text-end text-success">{{ formatMoney($expense->paid_amount) }}</td>
-                                        <td class="text-end {{ $expense->balance > 0 ? 'text-danger' : '' }}">{{ formatMoney($expense->balance) }}</td>
+                                        <td class="text-end text-danger">{{ formatMoney($expense->grand_total, 0, $trip) }}</td>
+                                        <td class="text-end text-success">{{ formatMoney($expense->paid_amount, 0, $trip) }}</td>
+                                        <td class="text-end {{ $expense->balance > 0 ? 'text-danger' : '' }}">{{ formatMoney($expense->balance, 0, $trip) }}</td>
                                         <td class="text-center">
                                             @if($expense->payment_status == 'paid')
                                                 <span class="badge bg-success">Paid</span>
@@ -331,9 +332,9 @@
                                     @if($nonServiceExpenses->count() > 0)
                                     <tr>
                                         <td colspan="3" class="text-end"><strong>Total</strong></td>
-                                        <td class="text-end text-danger"><strong>{{ formatMoney($nonServiceExpenses->sum('grand_total')) }}</strong></td>
-                                        <td class="text-end text-success"><strong>{{ formatMoney($nonServiceExpenses->sum('paid_amount')) }}</strong></td>
-                                        <td class="text-end {{ $nonServiceExpenses->sum('grand_total') - $nonServiceExpenses->sum('paid_amount') > 0 ? 'text-danger' : '' }}"><strong>{{ formatMoney($nonServiceExpenses->sum('grand_total') - $nonServiceExpenses->sum('paid_amount')) }}</strong></td>
+                                        <td class="text-end text-danger"><strong>{{ formatMoney($nonServiceExpenses->sum('grand_total'), 0, $trip) }}</strong></td>
+                                        <td class="text-end text-success"><strong>{{ formatMoney($nonServiceExpenses->sum('paid_amount'), 0, $trip) }}</strong></td>
+                                        <td class="text-end {{ $nonServiceExpenses->sum('grand_total') - $nonServiceExpenses->sum('paid_amount') > 0 ? 'text-danger' : '' }}"><strong>{{ formatMoney($nonServiceExpenses->sum('grand_total') - $nonServiceExpenses->sum('paid_amount'), 0, $trip) }}</strong></td>
                                         <td colspan="2"></td>
                                     </tr>
                                     @endif
@@ -365,7 +366,7 @@
                                         </td>
                                         <td>{{ $income->description ?? '-' }}</td>
                                         <td>{{ $income->payment_mode ?? '-' }}</td>
-                                        <td class="text-success">{{ formatMoney($income->amount) }}</td>
+                                        <td class="text-success">{{ formatMoney($income->amount, 0, $trip) }}</td>
                                         <td>
                                             <div class="btn-group-actions">
                                                 @can('income.edit')
@@ -397,7 +398,7 @@
                                     @if($trip->incomes->count() > 0)
                                     <tr class="table-success">
                                         <td colspan="4"><strong>Total Income</strong></td>
-                                        <td class="text-success"><strong>{{ formatMoney($trip->total_income) }}</strong></td>
+                                        <td class="text-success"><strong>{{ formatMoney($trip->total_income, 0, $trip) }}</strong></td>
                                         <td></td>
                                     </tr>
                                     @endif
@@ -434,7 +435,7 @@
                                             @endphp
                                             <span class="badge {{ $invoiceStatusColors[$invoice->status] ?? 'bg-secondary' }}">{{ ucfirst($invoice->status) }}</span>
                                         </td>
-                                        <td class="text-end">{{ formatMoney($invoice->total_amount) }}</td>
+                                        <td class="text-end">{{ formatMoney($invoice->total_amount, 0, $trip) }}</td>
                                         <td>
                                             <div class="btn-group-actions">
                                                 @can('invoices.edit')
@@ -485,7 +486,7 @@
                                 <tr>
                                     <td><strong>{{ $addon->title }}</strong></td>
                                     <td>{{ Str::limit($addon->description, 50) ?? '-' }}</td>
-                                    <td class="text-info">{{ formatMoney($addon->amount) }}</td>
+                                    <td class="text-info">{{ formatMoney($addon->amount, 0, $trip) }}</td>
                                     <td>
                                         <span class="badge bg-{{ $addon->status_badge }}">{{ ucfirst($addon->status) }}</span>
                                     </td>
@@ -516,7 +517,7 @@
                                 @if($trip->addons->count() > 0)
                                 <tr>
                                     <td colspan="2"><strong>Total Add-Ons</strong></td>
-                                    <td class="text-info"><strong>{{ formatMoney($trip->add_on_total) }}</strong></td>
+                                    <td class="text-info"><strong>{{ formatMoney($trip->add_on_total, 0, $trip) }}</strong></td>
                                     <td colspan="3"></td>
                                 </tr>
                                 @endif
@@ -615,9 +616,9 @@
                                     <span class="badge bg-info">{{ $sName }}</span>
                                 @endforeach
                             </td>
-                            <td class="text-end">{{ formatMoney($tripService->total_amount) }}</td>
-                            <td class="text-end text-success">{{ formatMoney($tripService->paid_amount) }}</td>
-                            <td class="text-end {{ $tripService->balance > 0 ? 'text-danger' : '' }}">{{ formatMoney($tripService->balance) }}</td>
+                            <td class="text-end">{{ formatMoney($tripService->total_amount, 0, $trip) }}</td>
+                            <td class="text-end text-success">{{ formatMoney($tripService->paid_amount, 0, $trip) }}</td>
+                            <td class="text-end {{ $tripService->balance > 0 ? 'text-danger' : '' }}">{{ formatMoney($tripService->balance, 0, $trip) }}</td>
                             <td>
                                 {{ $tripService->due_date ? formatDate($tripService->due_date) : '-' }}
                                 @if($tripService->isOverdue())
@@ -661,7 +662,7 @@
                                 @endif
                                 <small class="d-block text-muted">{{ $sAddon->description }}</small>
                             </td>
-                            <td class="text-end"><small>{{ formatMoney($sAddon->amount) }}</small></td>
+                            <td class="text-end"><small>{{ formatMoney($sAddon->amount, 0, $trip) }}</small></td>
                             <td colspan="3"></td>
                             <td class="text-center">
                                 @can('trips.edit')
@@ -694,9 +695,9 @@
                         @endphp
                         <tr>
                             <td><strong>Total Services</strong></td>
-                            <td class="text-end"><strong>{{ formatMoney($totalServiceAmount) }}</strong></td>
-                            <td class="text-end text-success"><strong>{{ formatMoney($totalServicePaid) }}</strong></td>
-                            <td class="text-end {{ $totalServiceBalance > 0 ? 'text-danger' : '' }}"><strong>{{ formatMoney($totalServiceBalance) }}</strong></td>
+                            <td class="text-end"><strong>{{ formatMoney($totalServiceAmount, 0, $trip) }}</strong></td>
+                            <td class="text-end text-success"><strong>{{ formatMoney($totalServicePaid, 0, $trip) }}</strong></td>
+                            <td class="text-end {{ $totalServiceBalance > 0 ? 'text-danger' : '' }}"><strong>{{ formatMoney($totalServiceBalance, 0, $trip) }}</strong></td>
                             <td colspan="2"></td>
                         </tr>
                         @endif
@@ -876,14 +877,14 @@
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Amount <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text">₹</span>
+                                <span class="input-group-text js-currency-symbol">₹</span>
                                 <input type="number" name="amount" class="form-control" required min="0" step="1">
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Advance</label>
                             <div class="input-group">
-                                <span class="input-group-text">₹</span>
+                                <span class="input-group-text js-currency-symbol">₹</span>
                                 <input type="number" name="advance" id="add_service_advance" class="form-control" min="0" step="1" value="0">
                             </div>
                         </div>
@@ -892,7 +893,7 @@
                             <select name="bank_id" id="add_service_bank" class="form-select">
                                 <option value="">Select Bank</option>
                                 @foreach($banks as $bank)
-                                <option value="{{ $bank->id }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
+                                <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -941,19 +942,19 @@
                 <div class="row mb-3">
                     <div class="col-3">
                         <small class="text-muted">Base Amount</small>
-                        <div><strong>{{ formatMoney($tripService->amount) }}</strong></div>
+                        <div><strong>{{ formatMoney($tripService->amount, 0, $trip) }}</strong></div>
                     </div>
                     <div class="col-3">
                         <small class="text-muted">Add-Ons</small>
-                        <div><strong>{{ formatMoney($tripService->addons_total) }}</strong></div>
+                        <div><strong>{{ formatMoney($tripService->addons_total, 0, $trip) }}</strong></div>
                     </div>
                     <div class="col-3">
                         <small class="text-muted">Total</small>
-                        <div><strong class="text-primary">{{ formatMoney($tripService->total_amount) }}</strong></div>
+                        <div><strong class="text-primary">{{ formatMoney($tripService->total_amount, 0, $trip) }}</strong></div>
                     </div>
                     <div class="col-3">
                         <small class="text-muted">Balance</small>
-                        <div><strong class="{{ $tripService->balance > 0 ? 'text-danger' : 'text-success' }}">{{ formatMoney($tripService->balance) }}</strong></div>
+                        <div><strong class="{{ $tripService->balance > 0 ? 'text-danger' : 'text-success' }}">{{ formatMoney($tripService->balance, 0, $trip) }}</strong></div>
                     </div>
                 </div>
                 <div class="row mb-3">
@@ -980,7 +981,7 @@
                         @foreach($tripService->addons as $sAddon)
                         <tr>
                             <td>{{ $sAddon->description }}</td>
-                            <td class="text-end">{{ formatMoney($sAddon->amount) }}</td>
+                            <td class="text-end">{{ formatMoney($sAddon->amount, 0, $trip) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -1002,7 +1003,7 @@
                         <tr>
                             <td>{{ formatDate($payment->expense_date) }}</td>
                             <td>{{ $payment->bank->bank_name ?? '-' }}</td>
-                            <td class="text-end">{{ formatMoney($payment->paid_amount) }}</td>
+                            <td class="text-end">{{ formatMoney($payment->paid_amount, 0, $trip) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -1040,21 +1041,21 @@
                             </div>
                             <div class="col-6 text-end">
                                 <small class="text-muted">Balance Due</small>
-                                <div class="text-danger"><strong>{{ formatMoney($tripService->balance) }}</strong></div>
+                                <div class="text-danger"><strong>{{ formatMoney($tripService->balance, 0, $trip) }}</strong></div>
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Payment Amount <span class="text-danger">*</span></label>
                         <input type="number" name="amount" class="form-control" step="1" min="1" max="{{ $tripService->balance }}" required>
-                        <small class="text-muted">Max: {{ formatMoney($tripService->balance) }}</small>
+                        <small class="text-muted">Max: {{ formatMoney($tripService->balance, 0, $trip) }}</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Bank/Cash Account <span class="text-danger">*</span></label>
                         <select name="bank_id" class="form-select" required>
                             <option value="">Select Account</option>
                             @foreach($banks as $bank)
-                            <option value="{{ $bank->id }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
+                            <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -1111,7 +1112,7 @@
                     <div class="mb-3">
                         <label class="form-label">Amount <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <span class="input-group-text">₹</span>
+                            <span class="input-group-text js-currency-symbol">₹</span>
                             <input type="number" name="amount" class="form-control" required min="0" step="1">
                         </div>
                     </div>
@@ -1145,21 +1146,21 @@
                             </div>
                             <div class="col-6 text-end">
                                 <small class="text-muted">Balance Due</small>
-                                <div class="text-danger"><strong>{{ formatMoney($expense->balance) }}</strong></div>
+                                <div class="text-danger"><strong>{{ formatMoney($expense->balance, 0, $trip) }}</strong></div>
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Payment Amount <span class="text-danger">*</span></label>
                         <input type="number" name="amount" class="form-control" step="1" min="1" max="{{ $expense->balance }}" placeholder="0" required>
-                        <small class="text-muted">Max: {{ formatMoney($expense->balance) }}</small>
+                        <small class="text-muted">Max: {{ formatMoney($expense->balance, 0, $trip) }}</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Bank/Cash Account <span class="text-danger">*</span></label>
                         <select name="bank_id" class="form-select" required>
                             <option value="">Select Account</option>
                             @foreach($banks as $bank)
-                            <option value="{{ $bank->id }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
+                            <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
                             @endforeach
                         </select>
                     </div>

@@ -90,14 +90,15 @@
                         @else
                         <small>{{ ucfirst($bank->account_type ?? 'Bank') }} Account</small>
                         @endif
-                        @if($bank->ifsc_code)
-                        <br><small class="text-muted">IFSC: {{ $bank->ifsc_code }}</small>
+                        @if($bank->bank_code)
+                        <br><small class="text-muted">{{ $bank->bank_code_label }}: {{ $bank->bank_code }}</small>
                         @endif
+                        <br><span class="badge bg-light text-dark">{{ $bank->country_label }} · {{ $bank->currency_code }}</span>
                     </td>
-                    <td class="text-end">{{ formatMoney($bank->opening_balance) }}</td>
-                    <td class="text-end text-success">{{ formatMoney($bank->total_credit) }}</td>
-                    <td class="text-end text-danger">{{ formatMoney($bank->total_debit) }}</td>
-                    <td class="text-end"><strong class="{{ $bank->balance >= 0 ? 'text-primary' : 'text-danger' }}">{{ formatMoney($bank->balance) }}</strong></td>
+                    <td class="text-end">{{ formatMoney($bank->opening_balance, 0, $bank) }}</td>
+                    <td class="text-end text-success">{{ formatMoney($bank->total_credit, 0, $bank) }}</td>
+                    <td class="text-end text-danger">{{ formatMoney($bank->total_debit, 0, $bank) }}</td>
+                    <td class="text-end"><strong class="{{ $bank->balance >= 0 ? 'text-primary' : 'text-danger' }}">{{ formatMoney($bank->balance, 0, $bank) }}</strong></td>
                     <td class="text-center">
                         <div class="d-flex gap-1 justify-content-center">
                             <button class="btn btn-sm btn-outline-primary" title="Edit" onclick="openEditModal({{ json_encode($bank) }})" data-bs-toggle="modal" data-bs-target="#editBankModal">
@@ -129,14 +130,17 @@
             </tbody>
             @if($banks->count() > 0)
             <tfoot>
+                {{-- INR and AED can't be summed together, so totals are per region --}}
+                @foreach($banks->groupBy('country') as $country => $group)
                 <tr>
-                    <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                    <td class="text-end"><strong>{{ formatMoney($banks->sum('opening_balance')) }}</strong></td>
-                    <td class="text-end"><strong>{{ formatMoney($banks->sum('total_credit')) }}</strong></td>
-                    <td class="text-end"><strong>{{ formatMoney($banks->sum('total_debit')) }}</strong></td>
-                    <td class="text-end"><strong>{{ formatMoney($banks->sum('balance')) }}</strong></td>
+                    <td colspan="3" class="text-end"><strong>Total ({{ currencyCode($country) }}):</strong></td>
+                    <td class="text-end"><strong>{{ formatMoney($group->sum('opening_balance'), 0, $country) }}</strong></td>
+                    <td class="text-end"><strong>{{ formatMoney($group->sum('total_credit'), 0, $country) }}</strong></td>
+                    <td class="text-end"><strong>{{ formatMoney($group->sum('total_debit'), 0, $country) }}</strong></td>
+                    <td class="text-end"><strong>{{ formatMoney($group->sum('balance'), 0, $country) }}</strong></td>
                     <td></td>
                 </tr>
+                @endforeach
             </tfoot>
             @endif
         </table>
@@ -168,10 +172,21 @@
                         </select>
                         <div class="invalid-feedback"></div>
                     </div>
-                    <div class="mb-3">
-                        <label for="bank_name" class="form-label">Account Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="e.g., HDFC Current Account" maxlength="40">
-                        <div class="invalid-feedback"></div>
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="bank_name" class="form-label">Account Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="e.g., HDFC Current Account" maxlength="40">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="country" class="form-label">Region <span class="text-danger">*</span></label>
+                            <select class="form-select bank-country-select" id="country" name="country" data-form="addBankForm">
+                                @foreach(\App\Models\Company::COUNTRIES as $key => $label)
+                                    <option value="{{ $key }}" data-currency="{{ currencySymbol($key) }}">{{ $label }} ({{ currencyCode($key) }})</option>
+                                @endforeach
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="account_holder" class="form-label">Account Holder</label>
@@ -184,9 +199,14 @@
                             <input type="text" class="form-control" id="account_number" name="account_number" placeholder="Account Number" maxlength="20">
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 bank-field-india">
                             <label for="ifsc_code" class="form-label">IFSC Code</label>
                             <input type="text" class="form-control" id="ifsc_code" name="ifsc_code" placeholder="IFSC Code" maxlength="11">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6 mb-3 bank-field-uae">
+                            <label for="iban" class="form-label">IBAN</label>
+                            <input type="text" class="form-control" id="iban" name="iban" placeholder="AE07 0331 2345 6789 0123 456" maxlength="34">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -198,7 +218,7 @@
                     <div class="mb-3">
                         <label for="opening_balance" class="form-label">Opening Balance</label>
                         <div class="input-group has-validation">
-                            <span class="input-group-text">₹</span>
+                            <span class="input-group-text bank-currency-symbol">₹</span>
                             <input type="number" class="form-control" id="opening_balance" name="opening_balance" placeholder="0" step="1" max="999999999">
                             <div class="invalid-feedback"></div>
                         </div>
@@ -235,10 +255,22 @@
                         </select>
                         <div class="invalid-feedback"></div>
                     </div>
-                    <div class="mb-3" id="edit_bank_name_section">
-                        <label for="edit_bank_name" class="form-label">Account Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="edit_bank_name" name="bank_name" placeholder="e.g., HDFC Current Account" maxlength="40">
-                        <div class="invalid-feedback"></div>
+                    <div class="row" id="edit_bank_name_section">
+                        <div class="col-md-8 mb-3">
+                            <label for="edit_bank_name" class="form-label">Account Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit_bank_name" name="bank_name" placeholder="e.g., HDFC Current Account" maxlength="40">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="edit_country" class="form-label">Region <span class="text-danger">*</span></label>
+                            <select class="form-select bank-country-select" id="edit_country" name="country" data-form="editBankForm">
+                                @foreach(\App\Models\Company::COUNTRIES as $key => $label)
+                                    <option value="{{ $key }}" data-currency="{{ currencySymbol($key) }}">{{ $label }} ({{ currencyCode($key) }})</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted d-none" id="edit_country_locked_note">Follows the assigned company's region.</small>
+                            <div class="invalid-feedback"></div>
+                        </div>
                     </div>
                     <div class="mb-3" id="edit_account_holder_section">
                         <label for="edit_account_holder" class="form-label">Account Holder</label>
@@ -251,9 +283,14 @@
                             <input type="text" class="form-control" id="edit_account_number" name="account_number" placeholder="Account Number" maxlength="20">
                             <div class="invalid-feedback"></div>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 bank-field-india">
                             <label for="edit_ifsc_code" class="form-label">IFSC Code</label>
                             <input type="text" class="form-control" id="edit_ifsc_code" name="ifsc_code" placeholder="IFSC Code" maxlength="11">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6 mb-3 bank-field-uae">
+                            <label for="edit_iban" class="form-label">IBAN</label>
+                            <input type="text" class="form-control" id="edit_iban" name="iban" placeholder="AE07 0331 2345 6789 0123 456" maxlength="34">
                             <div class="invalid-feedback"></div>
                         </div>
                     </div>
@@ -265,7 +302,7 @@
                     <div class="mb-3">
                         <label for="edit_opening_balance" class="form-label">Opening Balance</label>
                         <div class="input-group has-validation">
-                            <span class="input-group-text">₹</span>
+                            <span class="input-group-text bank-currency-symbol">₹</span>
                             <input type="number" class="form-control" id="edit_opening_balance" name="opening_balance" placeholder="0" step="1" max="999999999">
                             <div class="invalid-feedback"></div>
                         </div>
@@ -350,6 +387,7 @@ const bankMaxLengths = {
     account_holder: 40,
     account_number: 20,
     ifsc_code: 11,
+    iban: 34,
     branch: 30
 };
 
@@ -414,10 +452,28 @@ document.getElementById('addBankModal').addEventListener('hidden.bs.modal', func
     const form = document.getElementById('addBankForm');
     form.reset();
     form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    applyBankRegion(document.getElementById('country'));
 });
 
 document.getElementById('editBankModal').addEventListener('hidden.bs.modal', function() {
     document.getElementById('editBankForm').querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+});
+
+// Region drives which code field shows (IFSC vs IBAN) and the currency symbol.
+function applyBankRegion(select) {
+    const form = document.getElementById(select.dataset.form);
+    if (!form) return;
+    const country = select.value || 'india';
+    const symbol = select.options[select.selectedIndex]?.dataset.currency || '₹';
+
+    form.querySelectorAll('.bank-field-india').forEach(el => el.style.display = country === 'india' ? '' : 'none');
+    form.querySelectorAll('.bank-field-uae').forEach(el => el.style.display = country === 'uae' ? '' : 'none');
+    form.querySelectorAll('.bank-currency-symbol').forEach(el => el.textContent = symbol);
+}
+
+document.querySelectorAll('.bank-country-select').forEach(select => {
+    select.addEventListener('change', () => applyBankRegion(select));
+    applyBankRegion(select);
 });
 
 function openEditModal(bank) {
@@ -427,8 +483,31 @@ function openEditModal(bank) {
     document.getElementById('edit_account_holder').value = bank.account_holder || '';
     document.getElementById('edit_account_number').value = bank.account_number || '';
     document.getElementById('edit_ifsc_code').value = bank.ifsc_code || '';
+    document.getElementById('edit_iban').value = bank.iban || '';
     document.getElementById('edit_branch').value = bank.branch || '';
     document.getElementById('edit_opening_balance').value = bank.opening_balance || 0;
+
+    // A bank assigned to a company follows that company's region and can't be changed here.
+    const countrySelect = document.getElementById('edit_country');
+    const lockedNote = document.getElementById('edit_country_locked_note');
+    const locked = !!bank.company_id;
+    countrySelect.value = (locked && bank.company ? bank.company.country : bank.country) || 'india';
+    countrySelect.disabled = locked;
+    lockedNote.classList.toggle('d-none', !locked);
+    let hidden = document.getElementById('edit_country_hidden');
+    if (locked) {
+        if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'country';
+            hidden.id = 'edit_country_hidden';
+            countrySelect.insertAdjacentElement('afterend', hidden);
+        }
+        hidden.value = countrySelect.value;
+    } else if (hidden) {
+        hidden.remove();
+    }
+    applyBankRegion(countrySelect);
 
     const isProtected = bank.is_protected;
     editingProtectedBank = isProtected;

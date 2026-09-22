@@ -86,14 +86,14 @@
                     <div class="col-md-3">
                         <label class="form-label">Amount <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <span class="input-group-text">₹</span>
+                            <span class="input-group-text js-currency-symbol">₹</span>
                             <input type="number" class="form-control" id="modalAmount" min="1" step="1">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Advance</label>
                         <div class="input-group">
-                            <span class="input-group-text">₹</span>
+                            <span class="input-group-text js-currency-symbol">₹</span>
                             <input type="number" class="form-control" id="modalAdvance" min="0" step="1" value="0">
                         </div>
                     </div>
@@ -102,7 +102,7 @@
                         <select class="form-select" id="modalBank">
                             <option value="">Select Bank</option>
                             @foreach($banks as $bank)
-                                <option value="{{ $bank->id }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
+                                <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -169,7 +169,7 @@ $(function() {
         });
     }
     function fmt(n) {
-        return '₹' + (parseFloat(n)||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        return currencySymbol() + (parseFloat(n)||0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
     function formatDate(d) {
         if (!d) return '-';

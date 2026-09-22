@@ -42,7 +42,8 @@
     </script>
     @endif
 </head>
-<body>
+{{-- Pages tied to one company/bank set @section('currency_symbol', currencySymbol($model)) --}}
+<body data-currency-symbol="@yield('currency_symbol', '₹')">
     <div id="layout-wrapper">
 
         @include('partials.header')
@@ -134,6 +135,34 @@
                 });
             });
         });
+
+        // Currency symbol follows the selected company/bank region (INR ₹ vs AED).
+        // A <select class="js-currency-source"> whose <option>s carry data-currency drives
+        // every .js-currency-symbol on the page. window.currencySymbol() gives the current one to scripts.
+        (function() {
+            var current = document.body.dataset.currencySymbol || '₹';
+            window.currencySymbol = function() { return current; };
+
+            function apply(symbol) {
+                current = symbol || '₹';
+                document.querySelectorAll('.js-currency-symbol').forEach(function(el) { el.textContent = current; });
+                document.dispatchEvent(new CustomEvent('currency:changed', { detail: { symbol: current } }));
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var sources = document.querySelectorAll('select.js-currency-source');
+                if (!sources.length) { apply(current); return; }
+                sources.forEach(function(select) {
+                    select.addEventListener('change', function() {
+                        var opt = select.options[select.selectedIndex];
+                        apply(opt && opt.dataset.currency ? opt.dataset.currency : select.dataset.currencyDefault);
+                    });
+                });
+                var first = sources[0];
+                var opt = first.options[first.selectedIndex];
+                apply(opt && opt.dataset.currency ? opt.dataset.currency : (first.dataset.currencyDefault || current));
+            });
+        })();
 
         document.addEventListener('shown.bs.modal', function(e) {
             e.target.querySelectorAll('input[type="date"]:not(.flatpickr-input)').forEach(function(el) {

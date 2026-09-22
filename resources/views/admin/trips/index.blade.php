@@ -119,11 +119,11 @@
                                 <small class="text-muted">Company: {{ $trip->company->name ?? '-' }}</small>
                             @endif
                         </td>
-                        <td>{{ formatMoney($trip->budget) }}</td>
-                        <td class="{{ $trip->add_on_total > 0 ? 'text-info' : 'text-muted' }}">{{ formatMoney($trip->add_on_total) }}</td>
-                        <td class="text-danger">{{ formatMoney($trip->total_spent) }}</td>
-                        <td class="text-success">{{ formatMoney($trip->total_income) }}</td>
-                        <td class="{{ $trip->profit >= 0 ? 'text-success' : 'text-danger' }}"><strong>{{ formatMoney($trip->profit) }}</strong></td>
+                        <td>{{ formatMoney($trip->budget, 0, $trip) }}</td>
+                        <td class="{{ $trip->add_on_total > 0 ? 'text-info' : 'text-muted' }}">{{ formatMoney($trip->add_on_total, 0, $trip) }}</td>
+                        <td class="text-danger">{{ formatMoney($trip->total_spent, 0, $trip) }}</td>
+                        <td class="text-success">{{ formatMoney($trip->total_income, 0, $trip) }}</td>
+                        <td class="{{ $trip->profit >= 0 ? 'text-success' : 'text-danger' }}"><strong>{{ formatMoney($trip->profit, 0, $trip) }}</strong></td>
                         <td>
                             @php
                                 $statusColors = [

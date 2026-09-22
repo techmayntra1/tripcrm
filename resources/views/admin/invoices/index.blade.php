@@ -99,9 +99,9 @@
                                     -
                                 @endif
                             </td>
-                            <td>{{ formatMoney($invoice->grand_total) }}</td>
-                            <td class="text-success">{{ formatMoney($invoice->amount_paid) }}</td>
-                            <td class="{{ $invoice->balance_due > 0 ? 'text-danger' : '' }}">{{ formatMoney($invoice->balance_due) }}</td>
+                            <td>{{ formatMoney($invoice->grand_total, 0, $invoice) }}</td>
+                            <td class="text-success">{{ formatMoney($invoice->amount_paid, 0, $invoice) }}</td>
+                            <td class="{{ $invoice->balance_due > 0 ? 'text-danger' : '' }}">{{ formatMoney($invoice->balance_due, 0, $invoice) }}</td>
                             <td><span class="badge bg-{{ $invoice->status_color }}">{{ ucfirst($invoice->status) }}</span></td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center">

@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Income Details')
+@section('currency_symbol', currencySymbol($income))
 @section('content')
 <div class="app-page-title">
     <div class="page-title-wrapper">
@@ -153,7 +154,7 @@
                 <i class="bi bi-calculator me-2"></i> Amount
             </div>
             <div class="card-body text-center py-4">
-                <span class="fs-3 text-success fw-bold">{{ formatMoney($income->amount) }}</span>
+                <span class="fs-3 text-success fw-bold">{{ formatMoney($income->amount, 0, $income) }}</span>
             </div>
         </div>
         @if($income->bank)

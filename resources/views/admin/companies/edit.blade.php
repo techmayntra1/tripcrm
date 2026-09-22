@@ -82,27 +82,7 @@
             </div>
 
             
-            <div class="main-card mb-3 card">
-                <div class="card-header">
-                    <i class="bi bi-receipt me-2"></i> Tax Information
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">GST Number</label>
-                                <input type="text" class="form-control" name="gst_number" value="{{ old('gst_number', $company->gst_number) }}" maxlength="15">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">PAN Number</label>
-                                <input type="text" class="form-control" name="pan_number" value="{{ old('pan_number', $company->pan_number) }}" maxlength="10">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @include('admin.companies._region_tax', ['company' => $company])
 
             
             <div class="main-card mb-3 card">
@@ -169,13 +149,17 @@
                     @endphp
                     <div class="mb-3">
                         <label class="form-label">Select Bank Accounts</label>
+                        {{-- Banks already assigned to this company follow its region (they are updated on save),
+                             so only unassigned banks are filtered by the selected region. --}}
                         @foreach($availableBanks as $bank)
-                        <div class="form-check mb-2">
+                        <div class="form-check mb-2 bank-option" @if($bank->company_id != $company->id) data-country="{{ $bank->country }}" @endif>
                             <input class="form-check-input bank-checkbox" type="checkbox" name="bank_ids[]" value="{{ $bank->id }}" id="bank{{ $bank->id }}" {{ in_array($bank->id, old('bank_ids', $companyBankIds)) ? 'checked' : '' }}>
                             <label class="form-check-label" for="bank{{ $bank->id }}">
                                 <strong>{{ $bank->bank_name }}</strong>
                                 @if($bank->company_id == $company->id)
                                 <span class="badge bg-success ms-1">Assigned</span>
+                                @else
+                                <span class="badge bg-light text-dark ms-1">{{ $bank->country_label }}</span>
                                 @endif
                                 <br><small class="text-muted">A/C: {{ $bank->account_number }} | {{ ucfirst($bank->account_type) }}</small>
                             </label>

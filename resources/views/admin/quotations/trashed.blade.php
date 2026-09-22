@@ -88,7 +88,7 @@
                             <td>{{ formatDate($quotation->date) }}</td>
                             <td><span class="name-truncate" title="{{ $quotation->customer->name ?? '-' }}">{{ $quotation->customer->name ?? '-' }}</span></td>
                             <td><span class="name-truncate" title="{{ $quotation->company->name ?? '-' }}">{{ $quotation->company->name ?? '-' }}</span></td>
-                            <td>{{ formatMoney($quotation->grand_total) }}</td>
+                            <td>{{ formatMoney($quotation->grand_total, 0, $quotation) }}</td>
                             <td><span class="badge bg-{{ $quotation->status_color }}">{{ ucfirst($quotation->status) }}</span></td>
                             <td>
                                 <div class="btn-group-actions">

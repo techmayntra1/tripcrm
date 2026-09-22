@@ -31,10 +31,23 @@ class DashboardController extends Controller
         $today = Carbon::today();
         $fyDates = getFinancialYearDates();
 
-        $incomeQuery = Income::query();
-        $expenseQuery = Expense::query();
-        $invoiceQuery = Invoice::query();
-        $tripQuery = Trip::query();
+        // Optional company filter: INR and AED amounts can't be mixed, so the headline
+        // numbers (and their currency symbol) are scoped to one company when selected.
+        $allCompanies = Company::orderBy('name')->get();
+        $dashboardCompany = request('company') ? $allCompanies->firstWhere('id', (int) request('company')) : null;
+        $companyBankIds = $dashboardCompany ? $dashboardCompany->banks()->pluck('id')->toArray() : null;
+
+        $scopeByBank = function ($query) use ($companyBankIds) {
+            return $companyBankIds === null ? $query : $query->whereIn('bank_id', $companyBankIds);
+        };
+        $scopeByCompany = function ($query) use ($dashboardCompany) {
+            return $dashboardCompany ? $query->where('company_id', $dashboardCompany->id) : $query;
+        };
+
+        $incomeQuery = $scopeByBank(Income::query());
+        $expenseQuery = $scopeByBank(Expense::query());
+        $invoiceQuery = $scopeByCompany(Invoice::query());
+        $tripQuery = $scopeByCompany(Trip::query());
 
         if ($fyDates) {
             $incomeQuery->whereBetween('income_date', [$fyDates['start'], $fyDates['end']]);
@@ -52,7 +65,7 @@ class DashboardController extends Controller
         $totalCustomers = Customer::count();
         $staffSalary = (clone $expenseQuery)->where('expense_type', 'salary')->whereIn('payment_status', ['paid', 'partial'])->sum('paid_amount');
 
-        $vendorExpenseQuery = Expense::query();
+        $vendorExpenseQuery = $scopeByBank(Expense::query());
         if ($fyDates) {
             $vendorExpenseQuery->whereBetween('expense_date', [$fyDates['start'], $fyDates['end']]);
         }
@@ -64,7 +77,9 @@ class DashboardController extends Controller
 
         $serviceProviderPayable = 0;
         $spDueCount = 0;
-        $tripServicesWithBalance = TripService::with(['addons', 'serviceExpenses'])->get();
+        $tripServicesWithBalance = TripService::with(['addons', 'serviceExpenses'])
+            ->when($dashboardCompany, fn($q) => $q->whereHas('trip', fn($t) => $t->where('company_id', $dashboardCompany->id)))
+            ->get();
         foreach ($tripServicesWithBalance as $ps) {
             $balance = $ps->balance;
             if ($balance > 0) {
@@ -130,7 +145,8 @@ class DashboardController extends Controller
             return $company;
         });
 
-        $banks = Bank::orderByDesc('opening_balance')->limit(3)->get();
+        $banks = Bank::when($companyBankIds !== null, fn($q) => $q->whereIn('id', $companyBankIds))
+            ->orderByDesc('opening_balance')->limit(3)->get();
 
         $incomeByType = [
             'trip' => (clone $incomeQuery)->where('income_type', 'trip')->sum('amount'),
@@ -138,7 +154,7 @@ class DashboardController extends Controller
             'other' => (clone $incomeQuery)->where('income_type', 'other')->sum('amount'),
         ];
 
-        $expenseByTypeQuery = Expense::query();
+        $expenseByTypeQuery = $scopeByBank(Expense::query());
         if ($fyDates) {
             $expenseByTypeQuery->whereBetween('expense_date', [$fyDates['start'], $fyDates['end']]);
         }
@@ -152,13 +168,13 @@ class DashboardController extends Controller
         ];
 
         // Trip Budget vs Expense chart — with trip filter + received income (money in).
-        $chartTrips = Trip::whereNotNull('budget')->where('budget', '>', 0)
+        $chartTrips = $scopeByCompany(Trip::whereNotNull('budget')->where('budget', '>', 0))
             ->orderByDesc('created_at')
             ->get(['id', 'trip_number', 'name']);
 
         $selectedChartTrip = request('chart_trip');
 
-        $tripsChartQuery = Trip::whereNotNull('budget')->where('budget', '>', 0);
+        $tripsChartQuery = $scopeByCompany(Trip::whereNotNull('budget')->where('budget', '>', 0));
         if ($selectedChartTrip) {
             $tripsChartQuery->where('id', $selectedChartTrip);
         } else {
@@ -182,21 +198,21 @@ class DashboardController extends Controller
             ];
         });
 
-        $recentTripExpenses = Expense::with(['trip', 'vendor'])
+        $recentTripExpenses = $scopeByBank(Expense::with(['trip', 'vendor']))
             ->where('expense_type', 'trip')
             ->when($fyDates, fn($q) => $q->whereBetween('expense_date', [$fyDates['start'], $fyDates['end']]))
             ->orderByDesc('expense_date')
             ->limit(10)
             ->get();
 
-        $recentSalaryExpenses = Expense::with('staff')
+        $recentSalaryExpenses = $scopeByBank(Expense::with('staff'))
             ->where('expense_type', 'salary')
             ->when($fyDates, fn($q) => $q->whereBetween('expense_date', [$fyDates['start'], $fyDates['end']]))
             ->orderByDesc('expense_date')
             ->limit(10)
             ->get();
 
-        $recentGeneralExpenses = Expense::with('category')
+        $recentGeneralExpenses = $scopeByBank(Expense::with('category'))
             ->whereIn('expense_type', ['general', 'vendor', 'service'])
             ->when($fyDates, fn($q) => $q->whereBetween('expense_date', [$fyDates['start'], $fyDates['end']]))
             ->orderByDesc('expense_date')
@@ -204,6 +220,8 @@ class DashboardController extends Controller
             ->get();
 
         return view('admin.dashboard', compact(
+            'allCompanies',
+            'dashboardCompany',
             'totalIncome',
             'totalExpenses',
             'netProfit',

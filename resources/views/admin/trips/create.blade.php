@@ -118,7 +118,7 @@
                             <div class="mb-3">
                                 <label for="budget" class="form-label">Total Budget <span class="text-danger">*</span></label>
                                 <div class="input-group has-validation">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control @error('budget') is-invalid @enderror" id="budget" name="budget" value="{{ old('budget', 0) }}" placeholder="0" min="0" max="999999999" step="1" required inputmode="numeric">
                                     @error('budget')<div class="invalid-feedback">{{ $message }}</div>@else<div class="invalid-feedback">Please enter trip budget</div>@enderror
                                 </div>
@@ -128,7 +128,7 @@
                             <div class="mb-3">
                                 <label for="advance_received" class="form-label">Advance Received</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" id="advance_received" name="advance_received" value="{{ old('advance_received', 0) }}" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric">
                                 </div>
                             </div>
@@ -156,10 +156,10 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="company_id" class="form-label">Assign Company</label>
-                                <select class="form-select @error('company_id') is-invalid @enderror" id="company_id" name="company_id">
+                                <select class="form-select js-currency-source @error('company_id') is-invalid @enderror" id="company_id" name="company_id" data-currency-default="₹">
                                     <option value="">Select Company (Optional)</option>
                                     @foreach($companies as $company)
-                                        <option value="{{ $company->id }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                        <option value="{{ $company->id }}" data-currency="{{ $company->currency_symbol }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
                                     @endforeach
                                 </select>
                                 @error('company_id')<div class="invalid-feedback">{{ $message }}</div>@enderror

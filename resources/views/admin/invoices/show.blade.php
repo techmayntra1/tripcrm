@@ -1,6 +1,7 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.app')
 @section('title', 'View Invoice')
+@section('currency_symbol', currencySymbol($invoice))
 @section('content')
 <div class="app-page-title">
     <div class="page-title-wrapper">
@@ -172,8 +173,8 @@
                             <th width="70" class="text-end" style="border: 1px solid #405189; padding: 10px;">SQFT</th>
                             @endif
                             <th width="60" class="text-end" style="border: 1px solid #405189; padding: 10px;">QTY</th>
-                            <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE (₹)</th>
-                            <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT (₹)</th>
+                            <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE ({{ currencySymbol($invoice) }})</th>
+                            <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT ({{ currencySymbol($invoice) }})</th>
                             @if($hasLineTax)
                             <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">TAX</th>
                             @endif
@@ -227,12 +228,12 @@
                         <table class="table table-sm">
                             <tr>
                                 <td>Subtotal:</td>
-                                <td class="text-end">{{ formatMoney($invoice->subtotal) }}</td>
+                                <td class="text-end">{{ formatMoney($invoice->subtotal, 0, $invoice) }}</td>
                             </tr>
                             @if($invoice->discount > 0)
                             <tr>
                                 <td>Discount:</td>
-                                <td class="text-end text-danger">- {{ formatMoney($invoice->discount) }}</td>
+                                <td class="text-end text-danger">- {{ formatMoney($invoice->discount, 0, $invoice) }}</td>
                             </tr>
                             @endif
                             @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
@@ -241,45 +242,45 @@
                                     @if($invoice->gst_split)
                                     <tr>
                                         <td>CGST{{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                        <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2) }}</td>
+                                        <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2, 0, $invoice) }}</td>
                                     </tr>
                                     <tr>
                                         <td>SGST{{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                        <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2) }}</td>
+                                        <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2, 0, $invoice) }}</td>
                                     </tr>
                                     @else
                                     <tr>
                                         <td>GST{{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                        <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst']) }}</td>
+                                        <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'], 0, $invoice) }}</td>
                                     </tr>
                                     @endif
                                 @endif
                                 @if($lineTaxByType['vat'] > 0)
                                 <tr>
                                     <td>VAT:</td>
-                                    <td class="text-end text-success">+ {{ formatMoney($lineTaxByType['vat']) }}</td>
+                                    <td class="text-end text-success">+ {{ formatMoney($lineTaxByType['vat'], 0, $invoice) }}</td>
                                 </tr>
                                 @endif
                             @elseif($invoice->gst > 0)
                                 @if($invoice->gst_split)
                                 <tr>
                                     <td>CGST ({{ $invoice->gst_percent / 2 }}%){{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                    <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($invoice->gst / 2) }}</td>
+                                    <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($invoice->gst / 2, 0, $invoice) }}</td>
                                 </tr>
                                 <tr>
                                     <td>SGST ({{ $invoice->gst_percent / 2 }}%){{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                    <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($invoice->gst / 2) }}</td>
+                                    <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($invoice->gst / 2, 0, $invoice) }}</td>
                                 </tr>
                                 @else
                                 <tr>
                                     <td>GST ({{ $invoice->gst_percent }}%){{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                    <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($invoice->gst) }}</td>
+                                    <td class="text-end {{ $invoice->gst_inclusive ? '' : 'text-success' }}">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ formatMoney($invoice->gst, 0, $invoice) }}</td>
                                 </tr>
                                 @endif
                             @endif
                             <tr>
                                 <td><strong>Grand Total:</strong></td>
-                                <td class="text-end"><strong>{{ formatMoney($invoice->grand_total) }}</strong></td>
+                                <td class="text-end"><strong>{{ formatMoney($invoice->grand_total, 0, $invoice) }}</strong></td>
                             </tr>
                         </table>
                     </div>
@@ -328,16 +329,16 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-2">
                     <span>Invoice Total:</span>
-                    <strong>{{ formatMoney($invoice->grand_total) }}</strong>
+                    <strong>{{ formatMoney($invoice->grand_total, 0, $invoice) }}</strong>
                 </div>
                 <div class="d-flex justify-content-between mb-2">
                     <span class="text-success">Amount Paid:</span>
-                    <strong class="text-success">{{ formatMoney($invoice->amount_paid) }}</strong>
+                    <strong class="text-success">{{ formatMoney($invoice->amount_paid, 0, $invoice) }}</strong>
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between">
                     <span class="{{ $invoice->balance_due > 0 ? 'text-danger' : 'text-success' }}">Balance Due:</span>
-                    <strong class="{{ $invoice->balance_due > 0 ? 'text-danger' : 'text-success' }}">{{ formatMoney($invoice->balance_due) }}</strong>
+                    <strong class="{{ $invoice->balance_due > 0 ? 'text-danger' : 'text-success' }}">{{ formatMoney($invoice->balance_due, 0, $invoice) }}</strong>
                 </div>
             </div>
         </div>
@@ -352,7 +353,7 @@
                     <li class="list-group-item">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <strong>{{ formatMoney($income->amount) }}</strong>
+                                <strong>{{ formatMoney($income->amount, 0, $invoice) }}</strong>
                                 <br><small class="text-muted">{{ formatDate($income->income_date) }}</small>
                             </div>
                             <div class="text-end">

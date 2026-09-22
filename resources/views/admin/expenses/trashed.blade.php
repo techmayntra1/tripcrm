@@ -101,7 +101,7 @@
                             <span class="small text-muted d-block name-truncate" title="{{ $expense->staff->name }}">{{ $expense->staff->name }}</span>
                         @endif
                     </td>
-                    <td class="text-end text-danger"><strong>{{ formatMoney($expense->grand_total) }}</strong></td>
+                    <td class="text-end text-danger"><strong>{{ formatMoney($expense->grand_total, 0, $expense) }}</strong></td>
                     <td>{{ $expense->deleted_at->format('d-m-Y H:i') }}</td>
                     <td class="text-center">
                         <form action="{{ route('admin.expenses.restore', $expense->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Restore this expense?')">

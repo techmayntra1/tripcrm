@@ -12,7 +12,7 @@
                 <div class="page-title-subheading">
                     @if($bank->account_number)
                         A/C: XXXX{{ substr($bank->account_number, -4) }}
-                        @if($bank->ifsc_code) | IFSC: {{ $bank->ifsc_code }} @endif
+                        | {{ $bank->country_label }} ({{ $bank->currency_code }}) @if($bank->bank_code) | {{ $bank->bank_code_label }}: {{ $bank->bank_code }} @endif
                     @else
                         {{ ucfirst($bank->account_type) }} Account
                     @endif
@@ -47,10 +47,10 @@
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
         <span><i class="bi bi-list-ul me-1"></i> Statement ({{ $activeCount }})</span>
         <div class="d-flex flex-wrap gap-3 small">
-            <span class="text-muted">Opening: <strong>{{ formatMoney($bank->opening_balance ?? 0) }}</strong></span>
-            <span class="text-success">Credits: <strong>{{ formatMoney($bank->total_credit) }}</strong></span>
-            <span class="text-danger">Debits: <strong>{{ formatMoney($bank->total_debit) }}</strong></span>
-            <span>Balance: <strong>{{ formatMoney($bank->balance) }}</strong></span>
+            <span class="text-muted">Opening: <strong>{{ formatMoney($bank->opening_balance ?? 0, 0, $bank) }}</strong></span>
+            <span class="text-success">Credits: <strong>{{ formatMoney($bank->total_credit, 0, $bank) }}</strong></span>
+            <span class="text-danger">Debits: <strong>{{ formatMoney($bank->total_debit, 0, $bank) }}</strong></span>
+            <span>Balance: <strong>{{ formatMoney($bank->balance, 0, $bank) }}</strong></span>
         </div>
     </div>
     <div class="card-body">
@@ -79,14 +79,14 @@
                     </td>
                     <td class="text-end text-success">
                         @if($txn->type == 'credit')
-                            {{ formatMoney($txn->amount) }}
+                            {{ formatMoney($txn->amount, 0, $bank) }}
                         @else
                             -
                         @endif
                     </td>
                     <td class="text-end text-danger">
                         @if($txn->type == 'debit')
-                            {{ formatMoney($txn->amount) }}
+                            {{ formatMoney($txn->amount, 0, $bank) }}
                         @else
                             -
                         @endif
@@ -112,8 +112,8 @@
             <tfoot>
                 <tr>
                     <td colspan="4" class="text-end"><strong>Total:</strong></td>
-                    <td class="text-end"><strong>{{ formatMoney($transactions->where('type', 'credit')->sum('amount')) }}</strong></td>
-                    <td class="text-end"><strong>{{ formatMoney($transactions->where('type', 'debit')->sum('amount')) }}</strong></td>
+                    <td class="text-end"><strong>{{ formatMoney($transactions->where('type', 'credit')->sum('amount'), 0, $bank) }}</strong></td>
+                    <td class="text-end"><strong>{{ formatMoney($transactions->where('type', 'debit')->sum('amount'), 0, $bank) }}</strong></td>
                     <td></td>
                 </tr>
             </tfoot>
@@ -153,7 +153,7 @@
                         <div class="col-md-6 mb-3">
                             <label for="txn_amount" class="form-label">Amount <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text">₹</span>
+                                <span class="input-group-text">{{ $bank->currency_symbol ?? '₹' }}</span>
                                 <input type="number" class="form-control" name="amount" placeholder="0" min="1" step="1" required>
                             </div>
                         </div>

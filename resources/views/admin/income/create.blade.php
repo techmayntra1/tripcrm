@@ -42,9 +42,9 @@
             @endif
         </div>
         <div>
-            <span class="me-3">Total: <strong>{{ formatMoney($selectedInvoice->grand_total) }}</strong></span>
-            <span class="me-3 text-success">Paid: <strong>{{ formatMoney($selectedInvoice->amount_paid) }}</strong></span>
-            <span class="text-danger">Balance: <strong>{{ formatMoney($selectedInvoice->balance_due) }}</strong></span>
+            <span class="me-3">Total: <strong>{{ formatMoney($selectedInvoice->grand_total, 0, $selectedInvoice) }}</strong></span>
+            <span class="me-3 text-success">Paid: <strong>{{ formatMoney($selectedInvoice->amount_paid, 0, $selectedInvoice) }}</strong></span>
+            <span class="text-danger">Balance: <strong>{{ formatMoney($selectedInvoice->balance_due, 0, $selectedInvoice) }}</strong></span>
         </div>
     </div>
 </div>
@@ -121,7 +121,7 @@
                                             data-customer="{{ $invoice->customer_id }}"
                                             data-trip="{{ $invoice->trip_id }}"
                                             {{ (isset($selectedInvoiceId) && $selectedInvoiceId == $invoice->id) ? 'selected' : '' }}>
-                                            {{ $invoice->invoice_number }} - ₹{{ number_format($invoice->balance_due, 0) }} due
+                                            {{ $invoice->invoice_number }} - {{ formatMoney($invoice->balance_due, 0, $invoice) }} due
                                         </option>
                                     @endforeach
                                 </select>
@@ -159,10 +159,10 @@
                         <div class="col-md-6" id="bank_section">
                             <div class="mb-3">
                                 <label for="bank_id" class="form-label">Bank Account <span class="text-danger">*</span></label>
-                                <select class="form-select" id="bank_id" name="bank_id" required>
+                                <select class="form-select js-currency-source" id="bank_id" name="bank_id" data-currency-default="₹" required>
                                     <option value="">Select Bank Account</option>
                                     @foreach($banks as $bank)
-                                        <option value="{{ $bank->id }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
+                                        <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}">{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
                                     @endforeach
                                 </select>
                                 <div class="invalid-feedback">Please select a bank account</div>
@@ -175,7 +175,7 @@
                             <div class="mb-3">
                                 <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
                                 <div class="input-group has-validation">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" min="1" step="1" max="999999999" id="amount" name="amount"
                                         value="{{ isset($selectedInvoice) && $selectedInvoice ? $selectedInvoice->balance_due : '' }}"
                                         placeholder="0" required inputmode="numeric">

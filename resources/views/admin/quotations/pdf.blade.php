@@ -1,3 +1,4 @@
+@php $currencySymbol = currencySymbol($quotation); @endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -339,8 +340,8 @@
                 <th style="width: 8%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">SQFT</th>
                 @endif
                 <th style="width: {{ $hasDimensions ? '8%' : '13%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">QTY</th>
-                <th style="width: {{ $hasDimensions ? '12%' : '13%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">RATE (₹)</th>
-                <th style="width: {{ $hasDimensions ? '12%' : '14%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">AMOUNT (₹)</th>
+                <th style="width: {{ $hasDimensions ? '12%' : '13%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">RATE ({{ $currencySymbol }})</th>
+                <th style="width: {{ $hasDimensions ? '12%' : '14%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">AMOUNT ({{ $currencySymbol }})</th>
                 @if($hasLineTax)
                 <th style="width: 10%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">TAX</th>
                 @endif
@@ -396,12 +397,12 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Subtotal:</td>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">₹ {{ number_format($quotation->subtotal, 0) }}</td>
+                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->subtotal, 0) }}</td>
                 </tr>
                 @if($quotation->discount > 0)
                 <tr>
                     <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Discount:</td>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #e74c3c;">- ₹ {{ number_format($quotation->discount, 0) }}</td>
+                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #e74c3c;">- {{ $currencySymbol }} {{ number_format($quotation->discount, 0) }}</td>
                 </tr>
                 @endif
                 @if($hasLineTax)
@@ -409,45 +410,45 @@
                         @if($quotation->gst_split)
                         <tr>
                             <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
+                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
+                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
                         </tr>
                         @else
                         <tr>
                             <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($lineTaxByType['gst'], 0) }}</td>
+                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'], 0) }}</td>
                         </tr>
                         @endif
                     @endif
                     @if($lineTaxByType['vat'] > 0)
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">VAT:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60;">+ ₹ {{ number_format($lineTaxByType['vat'], 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60;">+ {{ $currencySymbol }} {{ number_format($lineTaxByType['vat'], 0) }}</td>
                     </tr>
                     @endif
                 @elseif($quotation->gst_percent > 0)
                     @if($quotation->gst_split)
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($quotation->gst / 2, 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst / 2, 0) }}</td>
                     </tr>
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($quotation->gst / 2, 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst / 2, 0) }}</td>
                     </tr>
                     @else
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($quotation->gst, 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst, 0) }}</td>
                     </tr>
                     @endif
                 @endif
                 <tr style="background-color: #f0f4f8;">
                     <td style="padding: 12px 8px; font-size: 14px; text-align: right; font-weight: bold; color: #333;">Grand Total:</td>
-                    <td style="padding: 12px 8px; font-size: 16px; text-align: right; font-weight: bold; color: #333;">₹ {{ number_format($quotation->grand_total, 0) }}</td>
+                    <td style="padding: 12px 8px; font-size: 16px; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->grand_total, 0) }}</td>
                 </tr>
             </table>
         </div>

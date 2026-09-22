@@ -86,13 +86,82 @@ if (!function_exists('formatIndianCurrency')) {
     }
 }
 
+if (!function_exists('currencyMap')) {
+    // Region => [code, symbol]. Only India and UAE are supported.
+    function currencyMap(): array
+    {
+        return [
+            'india' => ['code' => 'INR', 'symbol' => '₹'],
+            'uae' => ['code' => 'AED', 'symbol' => 'AED'],
+        ];
+    }
+}
+
+if (!function_exists('resolveCountry')) {
+    /**
+     * Resolve a region key ('india' | 'uae') from whatever context is at hand:
+     * a region string, a Company/Bank, or a model that belongs to a company or bank
+     * (Invoice, Quotation, Trip, Income, Expense...). Falls back to India.
+     */
+    function resolveCountry($context = null): string
+    {
+        if (is_string($context)) {
+            return array_key_exists($context, currencyMap()) ? $context : 'india';
+        }
+
+        if (is_object($context)) {
+            if (isset($context->country) && is_string($context->country)) {
+                return resolveCountry($context->country);
+            }
+            foreach (['company', 'bank', 'trip', 'invoice', 'quotation'] as $relation) {
+                if (method_exists($context, $relation) && $context->{$relation}) {
+                    return resolveCountry($context->{$relation});
+                }
+            }
+        }
+
+        return 'india';
+    }
+}
+
+if (!function_exists('currencySymbol')) {
+    function currencySymbol($context = null): string
+    {
+        return currencyMap()[resolveCountry($context)]['symbol'];
+    }
+}
+
+if (!function_exists('currencyCode')) {
+    function currencyCode($context = null): string
+    {
+        return currencyMap()[resolveCountry($context)]['code'];
+    }
+}
+
+if (!function_exists('formatAmount')) {
+    // Number only, no symbol. Indian grouping (12,34,567) for INR, standard (1,234,567) for AED.
+    function formatAmount($number, $decimals = 0, $context = null): string
+    {
+        if (resolveCountry($context) === 'uae') {
+            return number_format((float) $number, $decimals);
+        }
+        return formatIndianCurrency($number, $decimals);
+    }
+}
+
 if (!function_exists('formatMoney')) {
-    function formatMoney($amount, $decimals = 0): string
+    /**
+     * @param mixed $context region string, Company, Bank, or a model linked to one (see resolveCountry)
+     */
+    function formatMoney($amount, $decimals = 0, $context = null): string
     {
         if ($amount === null || $amount === '') {
             return '-';
         }
-        return '₹' . formatIndianCurrency($amount, $decimals);
+        $country = resolveCountry($context);
+        $symbol = currencySymbol($country);
+        $separator = $country === 'uae' ? ' ' : '';
+        return $symbol . $separator . formatAmount($amount, $decimals, $country);
     }
 }
 

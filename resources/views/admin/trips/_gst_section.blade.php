@@ -19,14 +19,14 @@
         <div class="col-md-3">
             <label class="form-label small mb-1">GST Amount</label>
             <div class="input-group">
-                <span class="input-group-text text-success" id="gstSign">+ ₹</span>
+                <span class="input-group-text text-success" id="gstSign">+ <span class="js-currency-symbol">₹</span></span>
                 <input type="text" class="form-control" id="gstAmountDisplay" value="0" readonly style="background-color: #e9ecef;">
             </div>
         </div>
         <div class="col-md-3">
             <label class="form-label small mb-1">Total with GST</label>
             <div class="input-group">
-                <span class="input-group-text">₹</span>
+                <span class="input-group-text js-currency-symbol">₹</span>
                 <input type="text" class="form-control fw-bold" id="totalWithGstDisplay" value="0" readonly style="background-color: #e9ecef;">
             </div>
         </div>
@@ -91,12 +91,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (inclusive) {
                 gst = base * percent / (100 + percent);
                 total = base;
-                gstSign.textContent = '₹';
+                gstSign.innerHTML = '<span class="js-currency-symbol">' + currencySymbol() + '</span>';
                 gstSign.classList.remove('text-success');
             } else {
                 gst = base * percent / 100;
                 total = base + gst;
-                gstSign.textContent = '+ ₹';
+                gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
                 gstSign.classList.add('text-success');
             }
         }

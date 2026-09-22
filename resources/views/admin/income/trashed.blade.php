@@ -94,7 +94,7 @@
                         -
                     @endif
                 </td>
-                <td class="text-end text-success"><strong>{{ formatMoney($income->amount) }}</strong></td>
+                <td class="text-end text-success"><strong>{{ formatMoney($income->amount, 0, $income) }}</strong></td>
                 <td>{{ $income->deleted_at->format('d-m-Y H:i') }}</td>
                 <td class="text-center">
                     <form action="{{ route('admin.income.restore', $income->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Restore this income?')">

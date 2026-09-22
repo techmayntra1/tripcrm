@@ -10,11 +10,21 @@ class Company extends Model
 {
     use SoftDeletes;
 
+    public const COUNTRY_INDIA = 'india';
+    public const COUNTRY_UAE = 'uae';
+
+    public const COUNTRIES = [
+        self::COUNTRY_INDIA => 'India',
+        self::COUNTRY_UAE => 'UAE',
+    ];
+
     protected $fillable = [
         'name',
         'contact_person',
+        'country',
         'gst_number',
         'pan_number',
+        'vat_number',
         'address',
         'city',
         'state',
@@ -60,6 +70,26 @@ class Company extends Model
     public function getTotalBankBalanceAttribute(): float
     {
         return $this->banks->sum('balance');
+    }
+
+    public function getIsUaeAttribute(): bool
+    {
+        return $this->country === self::COUNTRY_UAE;
+    }
+
+    public function getCountryLabelAttribute(): string
+    {
+        return self::COUNTRIES[$this->country] ?? 'India';
+    }
+
+    public function getCurrencyCodeAttribute(): string
+    {
+        return currencyCode($this->country);
+    }
+
+    public function getCurrencySymbolAttribute(): string
+    {
+        return currencySymbol($this->country);
     }
 
 }

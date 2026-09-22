@@ -102,27 +102,7 @@
             </div>
 
             
-            <div class="main-card mb-3 card">
-                <div class="card-header">
-                    <i class="bi bi-receipt me-2"></i> Tax Information
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">GST Number</label>
-                                <input type="text" class="form-control" name="gst_number" value="{{ old('gst_number') }}" maxlength="15" placeholder="e.g., 24AABCK1234D1ZH">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">PAN Number</label>
-                                <input type="text" class="form-control" name="pan_number" value="{{ old('pan_number') }}" maxlength="10" placeholder="e.g., AABCK1234D">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @include('admin.companies._region_tax')
 
             
             <div class="main-card mb-3 card">
@@ -185,14 +165,18 @@
                     <div class="mb-3">
                         <label class="form-label">Select Bank Accounts</label>
                         @foreach($banks as $bank)
-                        <div class="form-check mb-2">
+                        <div class="form-check mb-2 bank-option" data-country="{{ $bank->country }}">
                             <input class="form-check-input bank-checkbox" type="checkbox" name="bank_ids[]" value="{{ $bank->id }}" id="bank{{ $bank->id }}" {{ in_array($bank->id, old('bank_ids', [])) ? 'checked' : '' }}>
                             <label class="form-check-label" for="bank{{ $bank->id }}">
                                 <strong>{{ $bank->bank_name }}</strong>
+                                <span class="badge bg-light text-dark ms-1">{{ $bank->country_label }}</span>
                                 <br><small class="text-muted">A/C: {{ $bank->account_number }} | {{ ucfirst($bank->account_type) }}</small>
                             </label>
                         </div>
                         @endforeach
+                        <div class="alert alert-warning py-2 mb-0" id="bank_region_empty" style="display: none;">
+                            <small><i class="bi bi-exclamation-triangle me-1"></i> No unassigned bank accounts for the selected region.</small>
+                        </div>
                     </div>
                     @else
                     <div class="alert alert-warning py-2">

@@ -351,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             return trips[context[0].dataIndex];
                         },
                         label: function(context) {
-                            return context.dataset.label + ': ₹' + context.raw + 'L';
+                            return context.dataset.label + ': ' + currencySymbol() + context.raw + 'L';
                         },
                         afterBody: function(context) {
                             var i = context[0].dataIndex;
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     beginAtZero: true,
                     grid: { color: 'rgba(0,0,0,0.05)' },
                     ticks: {
-                        callback: function(value) { return '₹' + value + 'L'; }
+                        callback: function(value) { return currencySymbol() + value + 'L'; }
                     }
                 }
             }

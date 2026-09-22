@@ -61,10 +61,10 @@
                     <div class="row mb-3" id="bank_section">
                         <div class="col-md-6">
                             <label class="form-label">Bank Account <span class="text-danger">*</span></label>
-                            <select name="bank_id" id="bank_id" class="form-select" required>
+                            <select name="bank_id" id="bank_id" class="form-select js-currency-source" data-currency-default="₹" required>
                                 <option value="">Select Bank Account</option>
                                 @foreach($banks as $bank)
-                                <option value="{{ $bank->id }}" {{ old('bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
+                                <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}" {{ old('bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
                                 @endforeach
                             </select>
                             <div class="invalid-feedback">Please select a bank account</div>

@@ -80,12 +80,12 @@
                         @else
                         <small>{{ ucfirst($bank->account_type ?? 'Bank') }} Account</small>
                         @endif
-                        @if($bank->ifsc_code)
-                        <br><small class="text-muted">IFSC: {{ $bank->ifsc_code }}</small>
+                        @if($bank->bank_code)
+                        <br><small class="text-muted">{{ $bank->bank_code_label }}: {{ $bank->bank_code }}</small>
                         @endif
                     </td>
-                    <td class="text-end">{{ formatMoney($bank->opening_balance) }}</td>
-                    <td class="text-end"><strong class="{{ $bank->balance >= 0 ? 'text-primary' : 'text-danger' }}">{{ formatMoney($bank->balance) }}</strong></td>
+                    <td class="text-end">{{ formatMoney($bank->opening_balance, 0, $bank) }}</td>
+                    <td class="text-end"><strong class="{{ $bank->balance >= 0 ? 'text-primary' : 'text-danger' }}">{{ formatMoney($bank->balance, 0, $bank) }}</strong></td>
                     <td class="text-center">
                         <form action="{{ route('admin.banks.restore', $bank->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Restore this bank account?')">
                             @csrf
@@ -134,30 +134,42 @@
                     </div>
                     <div class="mb-3">
                         <label for="bank_name" class="form-label">Account Name <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="e.g., HDFC Current Account" required maxlength="100">
+                        <input type="text" class="form-control" id="bank_name" name="bank_name" placeholder="e.g., HDFC Current Account" required maxlength="40">
+                    </div>
+                    <div class="mb-3">
+                        <label for="country" class="form-label">Region <span class="text-danger">*</span></label>
+                        <select class="form-select" id="country" name="country" required>
+                            @foreach(\App\Models\Company::COUNTRIES as $key => $label)
+                                <option value="{{ $key }}" data-currency="{{ currencySymbol($key) }}">{{ $label }} ({{ currencyCode($key) }})</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="account_holder" class="form-label">Account Holder</label>
-                        <input type="text" class="form-control" id="account_holder" name="account_holder" placeholder="Account holder name" maxlength="100">
+                        <input type="text" class="form-control" id="account_holder" name="account_holder" placeholder="Account holder name" maxlength="40">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="account_number" class="form-label">Account Number <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="account_number" name="account_number" placeholder="Account Number" maxlength="20" required>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-3 bank-field-india">
                             <label for="ifsc_code" class="form-label">IFSC Code</label>
                             <input type="text" class="form-control" id="ifsc_code" name="ifsc_code" placeholder="IFSC Code" maxlength="11">
+                        </div>
+                        <div class="col-md-6 mb-3 bank-field-uae">
+                            <label for="iban" class="form-label">IBAN</label>
+                            <input type="text" class="form-control" id="iban" name="iban" placeholder="AE07 0331 2345 6789 0123 456" maxlength="34">
                         </div>
                     </div>
                     <div class="mb-3">
                         <label for="branch" class="form-label">Branch</label>
-                        <input type="text" class="form-control" id="branch" name="branch" placeholder="Branch name" maxlength="100">
+                        <input type="text" class="form-control" id="branch" name="branch" placeholder="Branch name" maxlength="30">
                     </div>
                     <div class="mb-3">
                         <label for="opening_balance" class="form-label">Opening Balance</label>
                         <div class="input-group">
-                            <span class="input-group-text">₹</span>
+                            <span class="input-group-text" id="opening_balance_symbol">₹</span>
                             <input type="number" class="form-control" id="opening_balance" name="opening_balance" placeholder="0" min="0" step="1">
                         </div>
                     </div>
@@ -172,6 +184,22 @@
 </div>
 @endpush
 @endsection
+@push('scripts')
+<script>
+(function () {
+    const select = document.getElementById('country');
+    if (!select) return;
+    function apply() {
+        const country = select.value || 'india';
+        document.querySelectorAll('.bank-field-india').forEach(el => el.style.display = country === 'india' ? '' : 'none');
+        document.querySelectorAll('.bank-field-uae').forEach(el => el.style.display = country === 'uae' ? '' : 'none');
+        document.getElementById('opening_balance_symbol').textContent = select.options[select.selectedIndex]?.dataset.currency || '₹';
+    }
+    select.addEventListener('change', apply);
+    apply();
+})();
+</script>
+@endpush
 @push('styles')
 <style>
     .card-header .form-select,

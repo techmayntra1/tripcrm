@@ -88,7 +88,7 @@
                                     <option value="">Select Invoice (Optional)</option>
                                     @foreach($invoices as $invoice)
                                         <option value="{{ $invoice->id }}" {{ $income->invoice_id == $invoice->id ? 'selected' : '' }}>
-                                            {{ $invoice->invoice_number }} - ₹{{ number_format($invoice->grand_total, 0) }}
+                                            {{ $invoice->invoice_number }} - {{ formatMoney($invoice->grand_total, 0, $invoice) }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -126,10 +126,10 @@
                         <div class="col-md-6" id="bank_section" style="{{ optional($income->paymentMode)->slug == 'cash' ? 'display: none;' : '' }}">
                             <div class="mb-3">
                                 <label for="bank_id" class="form-label">Bank Account <span class="text-danger">*</span></label>
-                                <select class="form-select" id="bank_id" name="bank_id" {{ optional($income->paymentMode)->slug == 'cash' ? '' : 'required' }}>
+                                <select class="form-select js-currency-source" id="bank_id" name="bank_id" data-currency-default="₹" {{ optional($income->paymentMode)->slug == 'cash' ? '' : 'required' }}>
                                     <option value="">Select Bank Account</option>
                                     @foreach($banks as $bank)
-                                        <option value="{{ $bank->id }}" {{ $income->bank_id == $bank->id ? 'selected' : '' }}>{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
+                                        <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}" {{ $income->bank_id == $bank->id ? 'selected' : '' }}>{{ $bank->bank_name }} - {{ $bank->account_number }}</option>
                                     @endforeach
                                 </select>
                                 <div class="invalid-feedback">Please select a bank account</div>
@@ -142,7 +142,7 @@
                             <div class="mb-3">
                                 <label for="amount" class="form-label">Amount <span class="text-danger">*</span></label>
                                 <div class="input-group has-validation">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" id="amount" name="amount" value="{{ $income->amount }}" min="1" step="1" max="999999999" required inputmode="numeric">
                                     <div class="invalid-feedback">Please enter a valid amount (1 - 99999999)</div>
                                 </div>

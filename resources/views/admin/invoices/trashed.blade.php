@@ -88,7 +88,7 @@
                                     -
                                 @endif
                             </td>
-                            <td>{{ formatMoney($invoice->grand_total) }}</td>
+                            <td>{{ formatMoney($invoice->grand_total, 0, $invoice) }}</td>
                             <td><span class="badge bg-{{ $invoice->status_color }}">{{ ucfirst($invoice->status) }}</span></td>
                             <td>
                                 <div class="btn-group-actions">

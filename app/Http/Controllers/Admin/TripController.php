@@ -178,7 +178,7 @@ class TripController extends Controller
             }
             if ($servicePending > 0) {
                 return back()->withInput()->with('error',
-                    'Cannot create trip as completed. Pending amount to pay for services: ₹' . number_format($servicePending, 2));
+                    'Cannot create trip as completed. Pending amount to pay for services: ' . formatMoney($servicePending, 2, !empty($validated['company_id']) ? Company::find($validated['company_id']) : null));
             }
         }
 
@@ -303,13 +303,13 @@ class TripController extends Controller
                         $summary = $trip->getPendingPaymentsSummary();
                         $errors = [];
                         if ($summary['pending_to_receive'] > 0) {
-                            $errors[] = 'Pending amount to receive from customer: ₹' . number_format($summary['pending_to_receive'], 2);
+                            $errors[] = 'Pending amount to receive from customer: ' . formatMoney($summary['pending_to_receive'], 2, $trip);
                         }
                         if ($summary['pending_to_give'] > 0) {
-                            $errors[] = 'Pending amount to pay to vendors: ₹' . number_format($summary['pending_to_give'], 2);
+                            $errors[] = 'Pending amount to pay to vendors: ' . formatMoney($summary['pending_to_give'], 2, $trip);
                         }
                         if ($summary['service_pending'] > 0) {
-                            $errors[] = 'Pending amount to pay for services: ₹' . number_format($summary['service_pending'], 2);
+                            $errors[] = 'Pending amount to pay for services: ' . formatMoney($summary['service_pending'], 2, $trip);
                         }
                         throw new \RuntimeException('Cannot mark trip as completed. ' . implode(' | ', $errors));
                     }

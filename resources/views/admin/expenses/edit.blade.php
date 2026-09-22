@@ -111,10 +111,10 @@
                 <div class="col-md-4" id="bank_section">
                     <div class="mb-3">
                         <label for="bank_id" class="form-label">Bank Account <span class="text-danger">*</span></label>
-                        <select class="form-select" id="bank_id" name="bank_id" required>
+                        <select class="form-select js-currency-source" id="bank_id" name="bank_id" data-currency-default="₹" required>
                             <option value="">Select Account</option>
                             @foreach($banks as $bank)
-                            <option value="{{ $bank->id }}" {{ $expense->bank_id == $bank->id ? 'selected' : '' }}>{{ $bank->bank_name }} - {{ $bank->account_number }} ({{ formatMoney($bank->balance) }})</option>
+                            <option value="{{ $bank->id }}" data-currency="{{ $bank->currency_symbol }}" {{ $expense->bank_id == $bank->id ? 'selected' : '' }}>{{ $bank->bank_name }} - {{ $bank->account_number }} ({{ formatMoney($bank->balance, 0, $bank) }})</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback">Please select bank account</div>
@@ -294,7 +294,7 @@
                             <td class="py-2">Sub Total <span class="text-danger">*</span></td>
                             <td class="py-2">
                                 <div class="input-group has-validation">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" min="1" step="1" max="999999999" name="sub_total" id="exp_sub_total" value="{{ $expense->sub_total }}" placeholder="0" required inputmode="numeric">
                                     <div class="invalid-feedback">Please enter a valid amount (1 - 99999999)</div>
                                 </div>
@@ -304,7 +304,7 @@
                             <td class="py-2"><strong>Grand Total <span class="text-danger">*</span></strong></td>
                             <td class="py-2">
                                 <div class="input-group has-validation">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control fw-bold" min="1" step="1" max="999999999" name="grand_total" id="exp_grand_total" value="{{ $expense->grand_total }}" placeholder="0" required inputmode="numeric">
                                     <div class="invalid-feedback">Please enter a valid amount (1 - 99999999)</div>
                                 </div>

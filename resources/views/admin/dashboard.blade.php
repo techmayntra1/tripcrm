@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Dashboard')
+@section('currency_symbol', currencySymbol($dashboardCompany))
 @section('content')
 <div class="app-page-title">
     <div class="page-title-wrapper">
@@ -9,27 +10,42 @@
             </div>
             <div>
                 Dashboard
+                @if($dashboardCompany)
+                <div class="page-title-subheading">{{ $dashboardCompany->name }} · {{ $dashboardCompany->country_label }} ({{ $dashboardCompany->currency_code }})</div>
+                @endif
             </div>
+        </div>
+        <div class="page-title-actions">
+            {{-- Amounts in INR and AED can't be mixed, so totals can be scoped to one company --}}
+            <form method="GET" action="{{ route('admin.dashboard') }}" class="d-flex align-items-center gap-2">
+                <label class="fw-bold mb-0 d-none d-sm-inline">Company</label>
+                <select name="company" class="form-select form-select-sm" style="min-width: 220px;" onchange="this.form.submit()">
+                    <option value="">All companies</option>
+                    @foreach($allCompanies as $c)
+                        <option value="{{ $c->id }}" {{ $dashboardCompany && $dashboardCompany->id == $c->id ? 'selected' : '' }}>{{ $c->name }} ({{ $c->currency_code }})</option>
+                    @endforeach
+                </select>
+            </form>
         </div>
     </div>
 </div>
 
 <div class="summary-row mb-3">
-    <div class="summary-item bg-success text-white" data-bs-toggle="tooltip" title="{{ formatMoney($totalIncome) }}">
+    <div class="summary-item bg-success text-white" data-bs-toggle="tooltip" title="{{ formatMoney($totalIncome, 0, $dashboardCompany) }}">
         <span class="summary-label">Income</span>
-        <span class="summary-value">{{ formatMoney($totalIncome) }}</span>
+        <span class="summary-value">{{ formatMoney($totalIncome, 0, $dashboardCompany) }}</span>
     </div>
-    <div class="summary-item bg-danger text-white" data-bs-toggle="tooltip" title="{{ formatMoney($totalExpenses) }}">
+    <div class="summary-item bg-danger text-white" data-bs-toggle="tooltip" title="{{ formatMoney($totalExpenses, 0, $dashboardCompany) }}">
         <span class="summary-label">Expenses</span>
-        <span class="summary-value">{{ formatMoney($totalExpenses) }}</span>
+        <span class="summary-value">{{ formatMoney($totalExpenses, 0, $dashboardCompany) }}</span>
     </div>
-    <div class="summary-item bg-success text-white" data-bs-toggle="tooltip" title="{{ formatMoney($netProfit) }}">
+    <div class="summary-item bg-success text-white" data-bs-toggle="tooltip" title="{{ formatMoney($netProfit, 0, $dashboardCompany) }}">
         <span class="summary-label">Net Profit</span>
-        <span class="summary-value">{{ formatMoney($netProfit) }}</span>
+        <span class="summary-value">{{ formatMoney($netProfit, 0, $dashboardCompany) }}</span>
     </div>
-    <div class="summary-item bg-dark text-white" data-bs-toggle="tooltip" title="{{ formatMoney($receivable) }}">
+    <div class="summary-item bg-dark text-white" data-bs-toggle="tooltip" title="{{ formatMoney($receivable, 0, $dashboardCompany) }}">
         <span class="summary-label">Receivable</span>
-        <span class="summary-value">{{ formatMoney($receivable) }}</span>
+        <span class="summary-value">{{ formatMoney($receivable, 0, $dashboardCompany) }}</span>
     </div>
 </div>
 <div class="summary-row mb-3">
@@ -41,17 +57,17 @@
         <span class="summary-label">Customers</span>
         <span class="summary-value">{{ $totalCustomers }}</span>
     </div>
-    <div class="summary-item bg-secondary text-white" data-bs-toggle="tooltip" title="{{ formatMoney($staffSalary) }}">
+    <div class="summary-item bg-secondary text-white" data-bs-toggle="tooltip" title="{{ formatMoney($staffSalary, 0, $dashboardCompany) }}">
         <span class="summary-label">Salary</span>
-        <span class="summary-value">{{ formatMoney($staffSalary) }}</span>
+        <span class="summary-value">{{ formatMoney($staffSalary, 0, $dashboardCompany) }}</span>
     </div>
-    <div class="summary-item bg-danger text-white" data-bs-toggle="tooltip" title="{{ formatMoney($vendorPayable) }}">
+    <div class="summary-item bg-danger text-white" data-bs-toggle="tooltip" title="{{ formatMoney($vendorPayable, 0, $dashboardCompany) }}">
         <span class="summary-label">Vendor Due</span>
-        <span class="summary-value">{{ formatMoney($vendorPayable) }}</span>
+        <span class="summary-value">{{ formatMoney($vendorPayable, 0, $dashboardCompany) }}</span>
     </div>
-    <div class="summary-item bg-purple text-white" data-bs-toggle="tooltip" title="{{ formatMoney($serviceProviderPayable) }}">
+    <div class="summary-item bg-purple text-white" data-bs-toggle="tooltip" title="{{ formatMoney($serviceProviderPayable, 0, $dashboardCompany) }}">
         <span class="summary-label">Service Due</span>
-        <span class="summary-value">{{ formatMoney($serviceProviderPayable) }}</span>
+        <span class="summary-value">{{ formatMoney($serviceProviderPayable, 0, $dashboardCompany) }}</span>
     </div>
 </div>
 <div class="row mb-3">
@@ -213,15 +229,15 @@
                 <div class="row text-center">
                     <div class="col-4">
                         <small class="text-muted d-block">Income</small>
-                        <strong class="text-success">{{ formatMoney($company->total_income) }}</strong>
+                        <strong class="text-success">{{ formatMoney($company->total_income, 0, $company) }}</strong>
                     </div>
                     <div class="col-4">
                         <small class="text-muted d-block">Expense</small>
-                        <strong class="text-danger">{{ formatMoney($company->total_expense) }}</strong>
+                        <strong class="text-danger">{{ formatMoney($company->total_expense, 0, $company) }}</strong>
                     </div>
                     <div class="col-4">
                         <small class="text-muted d-block">Profit</small>
-                        <strong class="text-primary">{{ formatMoney($company->total_profit) }}</strong>
+                        <strong class="text-primary">{{ formatMoney($company->total_profit, 0, $company) }}</strong>
                     </div>
                 </div>
             </div>
@@ -239,7 +255,7 @@
                     @foreach($banks as $bank)
                     <div class="col-4">
                         <small class="text-muted d-block">{{ \Str::limit($bank->bank_name, 8) }}</small>
-                        <strong class="text-primary">{{ formatMoney($bank->balance) }}</strong>
+                        <strong class="text-primary">{{ formatMoney($bank->balance, 0, $bank) }}</strong>
                     </div>
                     @endforeach
                     @if($banks->count() == 0)
@@ -265,19 +281,19 @@
                             <tbody>
                                 <tr>
                                     <td>Trip Income</td>
-                                    <td class="text-end text-success">{{ formatMoney($incomeByType['trip']) }}</td>
+                                    <td class="text-end text-success">{{ formatMoney($incomeByType['trip'], 0, $dashboardCompany) }}</td>
                                 </tr>
                                 <tr>
                                     <td>Advance Payments</td>
-                                    <td class="text-end text-success">{{ formatMoney($incomeByType['advance']) }}</td>
+                                    <td class="text-end text-success">{{ formatMoney($incomeByType['advance'], 0, $dashboardCompany) }}</td>
                                 </tr>
                                 <tr>
                                     <td>Other Income</td>
-                                    <td class="text-end text-success">{{ formatMoney($incomeByType['other']) }}</td>
+                                    <td class="text-end text-success">{{ formatMoney($incomeByType['other'], 0, $dashboardCompany) }}</td>
                                 </tr>
                                 <tr class="table-success">
                                     <td><strong>Total Income</strong></td>
-                                    <td class="text-end"><strong>{{ formatMoney($totalIncome) }}</strong></td>
+                                    <td class="text-end"><strong>{{ formatMoney($totalIncome, 0, $dashboardCompany) }}</strong></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -288,19 +304,19 @@
                             <tbody>
                                 <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#dashExpenseModal1">
                                     <td>Material & Trip</td>
-                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['trip']) }}</td>
+                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['trip'], 0, $dashboardCompany) }}</td>
                                 </tr>
                                 <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#dashExpenseModal3">
                                     <td>Staff Salary</td>
-                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['salary']) }}</td>
+                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['salary'], 0, $dashboardCompany) }}</td>
                                 </tr>
                                 <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#dashExpenseModal4">
                                     <td>Vendor, Service & General</td>
-                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['vendor'] + $expenseByType['general'] + $expenseByType['service']) }}</td>
+                                    <td class="text-end text-danger">{{ formatMoney($expenseByType['vendor'] + $expenseByType['general'] + $expenseByType['service'], 0, $dashboardCompany) }}</td>
                                 </tr>
                                 <tr class="table-danger">
                                     <td><strong>Total Expenses</strong></td>
-                                    <td class="text-end"><strong>{{ formatMoney($totalExpenses) }}</strong></td>
+                                    <td class="text-end"><strong>{{ formatMoney($totalExpenses, 0, $dashboardCompany) }}</strong></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -315,7 +331,7 @@
                                 <small class="text-muted">Total Income - Total Expenses</small>
                             </div>
                             <div class="text-end">
-                                <h3 class="{{ $netProfit >= 0 ? 'text-success' : 'text-danger' }} mb-0">{{ formatMoney($netProfit) }}</h3>
+                                <h3 class="{{ $netProfit >= 0 ? 'text-success' : 'text-danger' }} mb-0">{{ formatMoney($netProfit, 0, $dashboardCompany) }}</h3>
                             </div>
                         </div>
                     </div>
@@ -330,7 +346,7 @@
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <span><i class="bi bi-bar-chart-fill me-2"></i> Trip Budget vs Expense</span>
                 <form method="GET" action="{{ route('admin.dashboard') }}" class="mb-0">
-                    <select name="chart_trip" class="form-select form-select-sm" style="min-width: 240px;" onchange="window.location.href = this.form.action + (this.value ? '?chart_trip=' + encodeURIComponent(this.value) : '') + '#tripChartCard';">
+                    <select name="chart_trip" class="form-select form-select-sm" style="min-width: 240px;" onchange="window.location.href = this.form.action + '?company={{ $dashboardCompany?->id }}' + (this.value ? '&chart_trip=' + encodeURIComponent(this.value) : '') + '#tripChartCard';">
                         <option value="">Top 5 Trips</option>
                         @foreach($chartTrips as $cp)
                             <option value="{{ $cp->id }}" {{ (string) $selectedChartTrip === (string) $cp->id ? 'selected' : '' }}>
@@ -370,7 +386,7 @@
                             <td>{{ $expense->expense_date->format('d-m') }}</td>
                             <td>{{ \Str::limit($expense->description ?? 'Trip Expense', 50) }}</td>
                             <td>{{ $expense->trip->trip_number ?? ($expense->vendor->name ?? '-') }}</td>
-                            <td class="text-end">{{ formatMoney($expense->grand_total) }}</td>
+                            <td class="text-end">{{ formatMoney($expense->grand_total, 0, $expense) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -381,7 +397,7 @@
                     <tfoot class="table-danger">
                         <tr>
                             <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                            <td class="text-end"><strong>{{ formatMoney($expenseByType['trip']) }}</strong></td>
+                            <td class="text-end"><strong>{{ formatMoney($expenseByType['trip'], 0, $dashboardCompany) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -415,7 +431,7 @@
                             <td>{{ $expense->expense_date->format('d-m') }}</td>
                             <td>{{ $expense->staff->name ?? 'N/A' }}</td>
                             <td>{{ \Str::limit($expense->description ?? 'Salary', 30) }}</td>
-                            <td class="text-end">{{ formatMoney($expense->grand_total) }}</td>
+                            <td class="text-end">{{ formatMoney($expense->grand_total, 0, $expense) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -426,7 +442,7 @@
                     <tfoot class="table-danger">
                         <tr>
                             <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                            <td class="text-end"><strong>{{ formatMoney($expenseByType['salary']) }}</strong></td>
+                            <td class="text-end"><strong>{{ formatMoney($expenseByType['salary'], 0, $dashboardCompany) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -460,7 +476,7 @@
                             <td>{{ $expense->expense_date->format('d-m') }}</td>
                             <td>{{ \Str::limit($expense->description ?? 'Expense', 40) }}</td>
                             <td>{{ $expense->category->name ?? ($expense->vendor->name ?? '-') }}</td>
-                            <td class="text-end">{{ formatMoney($expense->grand_total) }}</td>
+                            <td class="text-end">{{ formatMoney($expense->grand_total, 0, $expense) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -471,7 +487,7 @@
                     <tfoot class="table-danger">
                         <tr>
                             <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                            <td class="text-end"><strong>{{ formatMoney($expenseByType['vendor'] + $expenseByType['general'] + $expenseByType['service']) }}</strong></td>
+                            <td class="text-end"><strong>{{ formatMoney($expenseByType['vendor'] + $expenseByType['general'] + $expenseByType['service'], 0, $dashboardCompany) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -612,7 +628,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             return trips[context[0].dataIndex];
                         },
                         label: function(context) {
-                            return context.dataset.label + ': ₹' + context.raw + 'L';
+                            return context.dataset.label + ': ' + currencySymbol() + context.raw + 'L';
                         },
                         afterBody: function(context) {
                             var i = context[0].dataIndex;
@@ -633,7 +649,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     beginAtZero: true,
                     grid: { color: 'rgba(0,0,0,0.05)' },
                     ticks: {
-                        callback: function(value) { return '₹' + value + 'L'; }
+                        callback: function(value) { return currencySymbol() + value + 'L'; }
                     }
                 }
             }

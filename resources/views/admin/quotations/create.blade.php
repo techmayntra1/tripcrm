@@ -75,10 +75,10 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="company" class="form-label">Company <span class="text-danger">*</span></label>
-                        <select class="form-select @error('company_id') is-invalid @enderror" id="company" name="company_id" required>
+                        <select class="form-select js-currency-source @error('company_id') is-invalid @enderror" id="company" name="company_id" data-currency-default="₹" required>
                             <option value="" data-has-gst="0">Select Company</option>
                             @foreach($companies as $company)
-                                <option value="{{ $company->id }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                <option value="{{ $company->id }}" data-currency="{{ $company->currency_symbol }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback">Please select a company</div>
@@ -163,8 +163,8 @@
                         <th>Description <span class="text-danger">*</span></th>
                         <th width="130">Passenger Type</th>
                         <th width="95">Qty <span class="text-danger">*</span></th>
-                        <th width="100">Rate (₹)</th>
-                        <th width="120">Amount (₹)</th>
+                        <th width="100">Rate (<span class="js-currency-symbol">₹</span>)</th>
+                        <th width="120">Amount (<span class="js-currency-symbol">₹</span>)</th>
                         <th width="110" class="tax-col" style="display:none;">Tax Type</th>
                         <th width="90" class="tax-col" style="display:none;">Tax %</th>
                         <th></th>
@@ -230,7 +230,7 @@
                             <td class="py-2">Subtotal</td>
                             <td class="py-2">
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" min="0" step="1" max="999999999" name="subtotal" id="subtotalInput" placeholder="0" inputmode="numeric">
                                 </div>
                             </td>
@@ -239,7 +239,7 @@
                             <td class="py-2">Discount</td>
                             <td class="py-2">
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" min="0" step="1" max="999999999" name="discount" id="discountInput" placeholder="0" inputmode="numeric">
                                 </div>
                             </td>
@@ -254,7 +254,7 @@
                                         <option value="{{ $rate->percentage }}" {{ $rate->percentage == 18 ? 'selected' : '' }}>{{ $rate->name }}</option>
                                         @endforeach
                                     </select>
-                                    <span class="input-group-text text-success" id="gstSign">+ ₹</span>
+                                    <span class="input-group-text text-success" id="gstSign">+ <span class="js-currency-symbol">₹</span></span>
                                     <input type="number" class="form-control" name="gst" id="gstInput" placeholder="0" readonly style="background-color: #e9ecef;">
                                 </div>
                                 <div class="row g-2 mt-2" id="gstSplitDisplay" style="display: none;">
@@ -287,7 +287,7 @@
                             <td class="py-2"><strong>Grand Total</strong></td>
                             <td class="py-2">
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control fw-bold" min="0" step="1" max="999999999" name="grand_total" id="grandTotalInput" placeholder="0" inputmode="numeric">
                                 </div>
                             </td>
@@ -437,10 +437,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const addTax = vatTax + (gstInclusive ? 0 : gstTax);
             grandTotal = Math.round(subtotal - discount + addTax);
             if (gstInclusive) {
-                gstSign.textContent = '₹';
+                gstSign.innerHTML = '<span class="js-currency-symbol">' + currencySymbol() + '</span>';
                 gstSign.classList.remove('text-success');
             } else {
-                gstSign.textContent = '+ ₹';
+                gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
                 gstSign.classList.add('text-success');
             }
         } else {
@@ -451,12 +451,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (gstInclusive && gstPercent > 0) {
                 gst = (afterDiscount * gstPercent) / (100 + gstPercent);
                 grandTotal = Math.round(afterDiscount);
-                gstSign.textContent = '₹';
+                gstSign.innerHTML = '<span class="js-currency-symbol">' + currencySymbol() + '</span>';
                 gstSign.classList.remove('text-success');
             } else {
                 gst = (afterDiscount * gstPercent) / 100;
                 grandTotal = Math.round(afterDiscount + gst);
-                gstSign.textContent = '+ ₹';
+                gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
                 gstSign.classList.add('text-success');
             }
             gstPortion = gst;

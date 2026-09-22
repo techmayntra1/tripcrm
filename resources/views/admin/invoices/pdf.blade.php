@@ -1,3 +1,4 @@
+@php $currencySymbol = currencySymbol($invoice); @endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -275,8 +276,8 @@
                 <th style="width: 7%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">SQFT</th>
                 @endif
                 <th style="width: {{ $hasDimensions ? '7%' : '10%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">QTY</th>
-                <th style="width: {{ $hasDimensions ? '11%' : '15%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">RATE (₹)</th>
-                <th style="width: {{ $hasDimensions ? '14%' : '15%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">AMOUNT (₹)</th>
+                <th style="width: {{ $hasDimensions ? '11%' : '15%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">RATE ({{ $currencySymbol }})</th>
+                <th style="width: {{ $hasDimensions ? '14%' : '15%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">AMOUNT ({{ $currencySymbol }})</th>
                 @if($hasLineTax)
                 <th style="width: 10%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">TAX</th>
                 @endif
@@ -334,12 +335,12 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Subtotal:</td>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">₹ {{ number_format($invoice->subtotal, 0) }}</td>
+                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($invoice->subtotal, 0) }}</td>
                 </tr>
                 @if($invoice->discount > 0)
                 <tr>
                     <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Discount:</td>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #e74c3c;">- ₹ {{ number_format($invoice->discount, 0) }}</td>
+                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #e74c3c;">- {{ $currencySymbol }} {{ number_format($invoice->discount, 0) }}</td>
                 </tr>
                 @endif
                 @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
@@ -348,45 +349,45 @@
                         @if($invoice->gst_split)
                         <tr>
                             <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST{{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
+                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
                         </tr>
                         <tr>
                             <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST{{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
+                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
                         </tr>
                         @else
                         <tr>
                             <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST{{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($lineTaxByType['gst'], 0) }}</td>
+                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'], 0) }}</td>
                         </tr>
                         @endif
                     @endif
                     @if($lineTaxByType['vat'] > 0)
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">VAT:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60;">+ ₹ {{ number_format($lineTaxByType['vat'], 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60;">+ {{ $currencySymbol }} {{ number_format($lineTaxByType['vat'], 0) }}</td>
                     </tr>
                     @endif
                 @elseif($invoice->gst_percent > 0)
                     @if($invoice->gst_split)
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST ({{ $invoice->gst_percent / 2 }}%){{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($invoice->gst / 2, 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($invoice->gst / 2, 0) }}</td>
                     </tr>
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST ({{ $invoice->gst_percent / 2 }}%){{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($invoice->gst / 2, 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($invoice->gst / 2, 0) }}</td>
                     </tr>
                     @else
                     <tr>
                         <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST ({{ $invoice->gst_percent }}%){{ $invoice->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}₹ {{ number_format($invoice->gst, 0) }}</td>
+                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $invoice->gst_inclusive ? '#333' : '#27ae60' }};">{{ $invoice->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($invoice->gst, 0) }}</td>
                     </tr>
                     @endif
                 @endif
                 <tr style="background-color: #f0f4f8;">
                     <td style="padding: 12px 8px; font-size: 14px; text-align: right; font-weight: bold; color: #333;">Grand Total:</td>
-                    <td style="padding: 12px 8px; font-size: 16px; text-align: right; font-weight: bold; color: #333; white-space: nowrap;">₹{{ number_format($invoice->grand_total, 0) }}</td>
+                    <td style="padding: 12px 8px; font-size: 16px; text-align: right; font-weight: bold; color: #333; white-space: nowrap;">{{ $currencySymbol }}{{ number_format($invoice->grand_total, 0) }}</td>
                 </tr>
             </table>
         </div>
@@ -399,11 +400,11 @@
             <tr>
                 <td style="width: 33%; text-align: center;">
                     <div style="font-size: 11px; color: #666;">Amount Paid</div>
-                    <div style="font-size: 16px; font-weight: bold; color: #27ae60;">₹ {{ number_format($invoice->amount_paid, 0) }}</div>
+                    <div style="font-size: 16px; font-weight: bold; color: #27ae60;">{{ $currencySymbol }} {{ number_format($invoice->amount_paid, 0) }}</div>
                 </td>
                 <td style="width: 33%; text-align: center;">
                     <div style="font-size: 11px; color: #666;">Balance Due</div>
-                    <div style="font-size: 16px; font-weight: bold; color: {{ $invoice->balance_due > 0 ? '#e74c3c' : '#27ae60' }};">₹ {{ number_format($invoice->balance_due, 0) }}</div>
+                    <div style="font-size: 16px; font-weight: bold; color: {{ $invoice->balance_due > 0 ? '#e74c3c' : '#27ae60' }};">{{ $currencySymbol }} {{ number_format($invoice->balance_due, 0) }}</div>
                 </td>
                 <td style="width: 33%; text-align: center;">
                     <div style="font-size: 11px; color: #666;">Status</div>

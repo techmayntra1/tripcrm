@@ -13,7 +13,7 @@ class BankController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Bank::ordered();
+        $query = Bank::with('company')->ordered();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -22,6 +22,7 @@ class BankController extends Controller
                   ->orWhere('account_holder', 'like', "%{$search}%")
                   ->orWhere('account_number', 'like', "%{$search}%")
                   ->orWhere('ifsc_code', 'like', "%{$search}%")
+                  ->orWhere('iban', 'like', "%{$search}%")
                   ->orWhere('branch', 'like', "%{$search}%");
             });
         }
@@ -67,14 +68,17 @@ class BankController extends Controller
         $validated = $request->validate([
             'account_type' => 'required|in:savings,current,recurring',
             'bank_name' => 'required|string|max:40',
+            'country' => 'required|in:india,uae',
             'account_holder' => 'nullable|string|max:40',
             'account_number' => 'required|string|max:20',
             'ifsc_code' => 'nullable|string|max:11',
+            'iban' => 'nullable|string|max:34',
             'branch' => 'nullable|string|max:30',
             'opening_balance' => 'nullable|numeric|min:0|max:99999999.99',
         ]);
 
         $validated['opening_balance'] = $validated['opening_balance'] ?? 0;
+        $validated = $this->clearCodeForOtherRegion($validated);
 
         $maxSortOrder = Bank::max('sort_order') ?? 0;
         $validated['sort_order'] = $maxSortOrder + 1;
@@ -83,6 +87,18 @@ class BankController extends Controller
 
         return redirect()->route('admin.banks.index')
             ->with('success', 'Bank account added successfully.');
+    }
+
+    // Indian accounts carry an IFSC, UAE accounts an IBAN — never both.
+    private function clearCodeForOtherRegion(array $data): array
+    {
+        if (($data['country'] ?? 'india') === 'uae') {
+            $data['ifsc_code'] = null;
+        } else {
+            $data['iban'] = null;
+        }
+
+        return $data;
     }
 
     public function show(Request $request, Bank $bank)
@@ -151,14 +167,22 @@ class BankController extends Controller
         $validated = $request->validate([
             'account_type' => 'required|in:savings,current,recurring',
             'bank_name' => 'required|string|max:40',
+            'country' => 'required|in:india,uae',
             'account_holder' => 'nullable|string|max:40',
             'account_number' => 'required|string|max:20',
             'ifsc_code' => 'nullable|string|max:11',
+            'iban' => 'nullable|string|max:34',
             'branch' => 'nullable|string|max:30',
             'opening_balance' => 'nullable|numeric|min:0|max:99999999.99',
         ]);
 
         $validated['opening_balance'] = $validated['opening_balance'] ?? 0;
+
+        // A bank assigned to a company always keeps that company's region.
+        if ($bank->company_id && $bank->company) {
+            $validated['country'] = $bank->company->country;
+        }
+        $validated = $this->clearCodeForOtherRegion($validated);
 
         $bank->update($validated);
 

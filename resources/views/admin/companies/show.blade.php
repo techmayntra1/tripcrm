@@ -15,9 +15,13 @@
                     </span>
                 </span>
                 <div class="page-title-subheading">
-                    @if($company->gst_number)GST: {{ $company->gst_number }}@endif
-                    @if($company->gst_number && $company->pan_number) | @endif
-                    @if($company->pan_number)PAN: {{ $company->pan_number }}@endif
+                    {{ $company->country_label }} ({{ $company->currency_code }})
+                    @if($company->is_uae)
+                        @if($company->vat_number) | VAT: {{ $company->vat_number }}@endif
+                    @else
+                        @if($company->gst_number) | GST: {{ $company->gst_number }}@endif
+                        @if($company->pan_number) | PAN: {{ $company->pan_number }}@endif
+                    @endif
                 </div>
             </div>
         </div>
@@ -50,7 +54,7 @@
                     <div class="widget-heading">Total Income</div>
                 </div>
                 <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ formatMoney($totalIncome) }}</span></div>
+                    <div class="widget-numbers text-white"><span>{{ formatMoney($totalIncome, 0, $company) }}</span></div>
                 </div>
             </div>
         </div>
@@ -62,7 +66,7 @@
                     <div class="widget-heading">Receivable</div>
                 </div>
                 <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ formatMoney($totalReceivable) }}</span></div>
+                    <div class="widget-numbers text-white"><span>{{ formatMoney($totalReceivable, 0, $company) }}</span></div>
                 </div>
             </div>
         </div>
@@ -74,7 +78,7 @@
                     <div class="widget-heading">Bank Balance</div>
                 </div>
                 <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ formatMoney($company->total_bank_balance) }}</span></div>
+                    <div class="widget-numbers text-white"><span>{{ formatMoney($company->total_bank_balance, 0, $company) }}</span></div>
                 </div>
             </div>
         </div>
@@ -161,25 +165,25 @@
                                     <i class="bi bi-bank2 me-1 text-info"></i>{{ $bank->bank_name }}
                                 </h6>
                                 <small class="text-muted">
-                                    A/C: {{ $bank->account_number }} | IFSC: {{ $bank->ifsc_code ?: '-' }}<br>
+                                    A/C: {{ $bank->account_number }} | {{ $bank->bank_code_label }}: {{ $bank->bank_code ?: '-' }}<br>
                                     Branch: {{ $bank->branch ?: '-' }} | Type: {{ ucfirst($bank->account_type) }}
                                 </small>
                             </div>
                         </div>
                         <div class="mt-2 d-flex justify-content-between align-items-center">
                             <div>
-                                <span class="text-muted me-3">Opening: {{ formatMoney($bank->opening_balance) }}</span>
-                                <span class="text-success me-3">Credit: {{ formatMoney($bank->total_credit) }}</span>
-                                <span class="text-danger">Debit: {{ formatMoney($bank->total_debit) }}</span>
+                                <span class="text-muted me-3">Opening: {{ formatMoney($bank->opening_balance, 0, $company) }}</span>
+                                <span class="text-success me-3">Credit: {{ formatMoney($bank->total_credit, 0, $company) }}</span>
+                                <span class="text-danger">Debit: {{ formatMoney($bank->total_debit, 0, $company) }}</span>
                             </div>
-                            <strong class="text-primary fs-5">{{ formatMoney($bank->balance) }}</strong>
+                            <strong class="text-primary fs-5">{{ formatMoney($bank->balance, 0, $company) }}</strong>
                         </div>
                     </div>
                     @endforeach
                 </div>
                 <div class="card-footer bg-primary text-white d-flex justify-content-between">
                     <strong>Total Bank Balance</strong>
-                    <strong class="fs-5">{{ formatMoney($company->total_bank_balance) }}</strong>
+                    <strong class="fs-5">{{ formatMoney($company->total_bank_balance, 0, $company) }}</strong>
                 </div>
                 @else
                 <div class="p-3 text-center text-muted">
@@ -243,7 +247,7 @@
                             </td>
                             <td>{{ $invoice->customer->name ?? '-' }}</td>
                             <td>{{ $invoice->date ? $invoice->date->format('d-m-Y') : '-' }}</td>
-                            <td>{{ formatMoney($invoice->grand_total) }}</td>
+                            <td>{{ formatMoney($invoice->grand_total, 0, $company) }}</td>
                             <td>
                                 @php
                                 $statusColors = ['sent' => 'info', 'partial' => 'warning', 'paid' => 'success', 'overdue' => 'danger', 'cancelled' => 'secondary'];
@@ -289,7 +293,7 @@
                             </td>
                             <td>{{ $quotation->customer->name ?? '-' }}</td>
                             <td>{{ $quotation->date ? $quotation->date->format('d-m-Y') : '-' }}</td>
-                            <td>{{ formatMoney($quotation->grand_total) }}</td>
+                            <td>{{ formatMoney($quotation->grand_total, 0, $company) }}</td>
                             <td>
                                 @php
                                 $statusColors = ['sent' => 'info', 'accepted' => 'success', 'rejected' => 'danger', 'expired' => 'secondary'];

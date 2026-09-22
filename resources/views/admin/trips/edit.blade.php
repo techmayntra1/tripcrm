@@ -1,6 +1,7 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.app')
 @section('title', 'Edit Trip')
+@section('currency_symbol', currencySymbol($trip))
 @section('content')
 <div class="app-page-title">
     <div class="page-title-wrapper">
@@ -39,13 +40,13 @@
     </div>
     <div class="card-body py-2 d-flex flex-wrap align-items-center gap-4">
         @if($trip->pending_to_receive > 0)
-        <span class="text-danger"><i class="bi bi-arrow-down-circle me-1"></i> To Receive: <strong>₹{{ number_format($trip->pending_to_receive, 2) }}</strong></span>
+        <span class="text-danger"><i class="bi bi-arrow-down-circle me-1"></i> To Receive: <strong>{{ formatMoney($trip->pending_to_receive, 2, $trip) }}</strong></span>
         @endif
         @if($trip->pending_to_give > 0)
-        <span class="text-primary"><i class="bi bi-arrow-up-circle me-1"></i> To Pay (Vendors): <strong>₹{{ number_format($trip->pending_to_give, 2) }}</strong></span>
+        <span class="text-primary"><i class="bi bi-arrow-up-circle me-1"></i> To Pay (Vendors): <strong>{{ formatMoney($trip->pending_to_give, 2, $trip) }}</strong></span>
         @endif
         @if($trip->service_pending > 0)
-        <span class="text-warning-emphasis"><i class="bi bi-tools me-1"></i> To Pay (Services): <strong>₹{{ number_format($trip->service_pending, 2) }}</strong></span>
+        <span class="text-warning-emphasis"><i class="bi bi-tools me-1"></i> To Pay (Services): <strong>{{ formatMoney($trip->service_pending, 2, $trip) }}</strong></span>
         @endif
         <small class="text-muted ms-auto"><i class="bi bi-info-circle me-1"></i> Clear all pending payments before marking trip as completed.</small>
     </div>
@@ -171,7 +172,7 @@
                             <div class="mb-3">
                                 <label for="budget" class="form-label">Total Budget <span class="text-danger">*</span></label>
                                 <div class="input-group has-validation">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control @error('budget') is-invalid @enderror" id="budget" name="budget" value="{{ old('budget', (int)$trip->budget) }}" min="0" max="999999999" step="1" required inputmode="numeric">
                                     @error('budget')<div class="invalid-feedback">{{ $message }}</div>@else<div class="invalid-feedback">Please enter trip budget</div>@enderror
                                 </div>
@@ -181,7 +182,7 @@
                             <div class="mb-3">
                                 <label for="advance_received" class="form-label">Advance Received</label>
                                 <div class="input-group">
-                                    <span class="input-group-text">₹</span>
+                                    <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" id="advance_received" name="advance_received" value="{{ old('advance_received', (int)$trip->advance_received) }}" min="0" max="999999999" step="1" inputmode="numeric">
                                 </div>
                             </div>
@@ -209,10 +210,10 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="company_id" class="form-label">Assign Company</label>
-                                <select class="form-select @error('company_id') is-invalid @enderror" id="company_id" name="company_id">
+                                <select class="form-select js-currency-source @error('company_id') is-invalid @enderror" id="company_id" name="company_id" data-currency-default="₹">
                                     <option value="">Select Company (Optional)</option>
                                     @foreach($companies as $company)
-                                        <option value="{{ $company->id }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id', $trip->company_id) == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                        <option value="{{ $company->id }}" data-currency="{{ $company->currency_symbol }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id', $trip->company_id) == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
                                     @endforeach
                                 </select>
                                 @error('company_id')<div class="invalid-feedback">{{ $message }}</div>@enderror

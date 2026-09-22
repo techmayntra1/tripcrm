@@ -1,6 +1,7 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.app')
 @section('title', 'View Quotation')
+@section('currency_symbol', currencySymbol($quotation))
 @section('content')
 <div class="app-page-title">
     <div class="page-title-wrapper">
@@ -154,8 +155,8 @@
                     <th width="80" class="text-end" style="border: 1px solid #405189; padding: 10px;">SQFT</th>
                     @endif
                     <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">QTY</th>
-                    <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE (₹)</th>
-                    <th width="130" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT (₹)</th>
+                    <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE ({{ currencySymbol($quotation) }})</th>
+                    <th width="130" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT ({{ currencySymbol($quotation) }})</th>
                     @if($hasLineTax)
                     <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">TAX</th>
                     @endif
@@ -222,12 +223,12 @@
                 <table class="table table-sm">
                     <tr>
                         <td>Subtotal:</td>
-                        <td class="text-end">{{ formatMoney($quotation->subtotal) }}</td>
+                        <td class="text-end">{{ formatMoney($quotation->subtotal, 0, $quotation) }}</td>
                     </tr>
                     @if($quotation->discount > 0)
                     <tr>
                         <td>Discount:</td>
-                        <td class="text-end text-danger">- {{ formatMoney($quotation->discount) }}</td>
+                        <td class="text-end text-danger">- {{ formatMoney($quotation->discount, 0, $quotation) }}</td>
                     </tr>
                     @endif
                     @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
@@ -236,45 +237,45 @@
                             @if($quotation->gst_split)
                             <tr>
                                 <td>CGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2) }}</td>
+                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2, 0, $quotation) }}</td>
                             </tr>
                             <tr>
                                 <td>SGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2) }}</td>
+                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'] / 2, 0, $quotation) }}</td>
                             </tr>
                             @else
                             <tr>
                                 <td>GST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst']) }}</td>
+                                <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($lineTaxByType['gst'], 0, $quotation) }}</td>
                             </tr>
                             @endif
                         @endif
                         @if($lineTaxByType['vat'] > 0)
                         <tr>
                             <td>VAT:</td>
-                            <td class="text-end text-success">+ {{ formatMoney($lineTaxByType['vat']) }}</td>
+                            <td class="text-end text-success">+ {{ formatMoney($lineTaxByType['vat'], 0, $quotation) }}</td>
                         </tr>
                         @endif
                     @elseif($quotation->gst_percent > 0)
                         @if($quotation->gst_split)
                         <tr>
                             <td>CGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($quotation->gst / 2) }}</td>
+                            <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($quotation->gst / 2, 0, $quotation) }}</td>
                         </tr>
                         <tr>
                             <td>SGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($quotation->gst / 2) }}</td>
+                            <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($quotation->gst / 2, 0, $quotation) }}</td>
                         </tr>
                         @else
                         <tr>
                             <td>GST ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($quotation->gst) }}</td>
+                            <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($quotation->gst, 0, $quotation) }}</td>
                         </tr>
                         @endif
                     @endif
                     <tr>
                         <td><strong>Grand Total:</strong></td>
-                        <td class="text-end"><strong>{{ formatMoney($quotation->grand_total) }}</strong></td>
+                        <td class="text-end"><strong>{{ formatMoney($quotation->grand_total, 0, $quotation) }}</strong></td>
                     </tr>
                 </table>
             </div>

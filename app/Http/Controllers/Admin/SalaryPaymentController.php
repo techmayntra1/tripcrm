@@ -158,7 +158,7 @@ class SalaryPaymentController extends Controller
 
         $totalPendingAdvance = $staff->total_pending_advance;
         if ($advanceDeduction > $totalPendingAdvance) {
-            return back()->withErrors(['advance_deduction' => "Advance deduction cannot exceed pending advance of ₹{$totalPendingAdvance}"])->withInput();
+            return back()->withErrors(['advance_deduction' => "Advance deduction cannot exceed pending advance of " . formatMoney($totalPendingAdvance, 2, Bank::find($validated['bank_id'] ?? null))])->withInput();
         }
 
         if ($isCash && empty($validated['bank_id'])) {
@@ -335,7 +335,7 @@ class SalaryPaymentController extends Controller
         if ($advanceDeduction > $totalPendingAdvance) {
             // Re-apply the previously recovered deductions so we don't lose state
             $this->reapplyAdvanceDeductions($staff, $existingRecovered, $payment->id);
-            return back()->withErrors(['advance_deduction' => "Advance deduction cannot exceed pending advance of ₹{$totalPendingAdvance}"])->withInput();
+            return back()->withErrors(['advance_deduction' => "Advance deduction cannot exceed pending advance of " . formatMoney($totalPendingAdvance, 2, Bank::find($validated['bank_id'] ?? null))])->withInput();
         }
 
         if ($isCash && empty($validated['bank_id'])) {

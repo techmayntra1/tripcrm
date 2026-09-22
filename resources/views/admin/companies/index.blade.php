@@ -37,7 +37,14 @@
                     <i class="bi bi-building me-2 fs-5"></i>
                     <div>
                         <h6 class="mb-0">{{ $company->name }}</h6>
-                        <small>{{ $company->gst_number ? 'GST: '.$company->gst_number : 'GST: -' }}</small>
+                        <small>
+                            {{ $company->country_label }} ({{ $company->currency_code }}) |
+                            @if($company->is_uae)
+                                VAT: {{ $company->vat_number ?: '-' }}
+                            @else
+                                GST: {{ $company->gst_number ?: '-' }}
+                            @endif
+                        </small>
                     </div>
                 </div>
                 <span class="badge {{ $company->trashed() ? 'bg-danger' : 'bg-success' }}">
@@ -62,8 +69,13 @@
                         <span>{{ $company->email ?: '-' }}</span>
                     </div>
                     <div class="col-md-6">
+                        @if($company->is_uae)
+                        <small class="text-muted d-block">VAT (TRN)</small>
+                        <span>{{ $company->vat_number ?: '-' }}</span>
+                        @else
                         <small class="text-muted d-block">PAN</small>
                         <span>{{ $company->pan_number ?: '-' }}</span>
+                        @endif
                     </div>
                 </div>
 
@@ -86,14 +98,14 @@
                                     <i class="bi bi-bank2 me-1 text-info"></i>{{ $bank->bank_name }}
                                 </td>
                                 <td>XXXX {{ substr($bank->account_number, -4) }}</td>
-                                <td class="text-end text-success">{{ formatMoney($bank->balance) }}</td>
+                                <td class="text-end text-success">{{ formatMoney($bank->balance, 0, $company) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="table-primary">
                             <tr>
                                 <th colspan="2">Total Balance</th>
-                                <th class="text-end">{{ formatMoney($company->total_bank_balance) }}</th>
+                                <th class="text-end">{{ formatMoney($company->total_bank_balance, 0, $company) }}</th>
                             </tr>
                         </tfoot>
                     </table>

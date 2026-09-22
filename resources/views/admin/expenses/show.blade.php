@@ -1,5 +1,6 @@
 @extends('layouts.app')
 @section('title', 'Expense Details')
+@section('currency_symbol', currencySymbol($expense))
 @section('content')
 <div class="app-page-title">
     <div class="page-title-wrapper">
@@ -116,19 +117,19 @@
                                 <td><span class="d-inline-block text-truncate" style="max-width: 250px;" title="{{ $item['description'] ?? '-' }}">{{ Str::limit($item['description'] ?? '-', 40) }}</span></td>
                                 <td>{{ strtoupper($item['unit'] ?? '-') }}</td>
                                 <td class="text-end">{{ $item['quantity'] ?? 0 }}</td>
-                                <td class="text-end">{{ formatMoney($item['rate'] ?? 0) }}</td>
-                                <td class="text-end">{{ formatMoney($item['total'] ?? 0) }}</td>
+                                <td class="text-end">{{ formatMoney($item['rate'] ?? 0, 0, $expense) }}</td>
+                                <td class="text-end">{{ formatMoney($item['total'] ?? 0, 0, $expense) }}</td>
                             </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="table-light">
                             <tr>
                                 <td colspan="5" class="text-end"><strong>Sub Total:</strong></td>
-                                <td class="text-end"><strong>{{ formatMoney($expense->sub_total) }}</strong></td>
+                                <td class="text-end"><strong>{{ formatMoney($expense->sub_total, 0, $expense) }}</strong></td>
                             </tr>
                             <tr>
                                 <td colspan="5" class="text-end"><strong>Grand Total:</strong></td>
-                                <td class="text-end"><strong class="text-danger">{{ formatMoney($expense->grand_total) }}</strong></td>
+                                <td class="text-end"><strong class="text-danger">{{ formatMoney($expense->grand_total, 0, $expense) }}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
@@ -176,20 +177,20 @@
                 <table class="table table-borderless mb-0">
                     <tr>
                         <td>Sub Total</td>
-                        <td class="text-end">{{ formatMoney($expense->sub_total) }}</td>
+                        <td class="text-end">{{ formatMoney($expense->sub_total, 0, $expense) }}</td>
                     </tr>
                     <tr class="border-top">
                         <td><strong>Grand Total</strong></td>
-                        <td class="text-end text-danger"><strong>{{ formatMoney($expense->grand_total) }}</strong></td>
+                        <td class="text-end text-danger"><strong>{{ formatMoney($expense->grand_total, 0, $expense) }}</strong></td>
                     </tr>
                     <tr>
                         <td>Paid Amount</td>
-                        <td class="text-end text-success">{{ formatMoney($expense->paid_amount) }}</td>
+                        <td class="text-end text-success">{{ formatMoney($expense->paid_amount, 0, $expense) }}</td>
                     </tr>
                     <tr class="border-top">
                         <td><strong>Balance</strong></td>
                         <td class="text-end {{ $expense->balance > 0 ? 'text-danger' : 'text-success' }}">
-                            <strong>{{ formatMoney($expense->balance) }}</strong>
+                            <strong>{{ formatMoney($expense->balance, 0, $expense) }}</strong>
                         </td>
                     </tr>
                 </table>

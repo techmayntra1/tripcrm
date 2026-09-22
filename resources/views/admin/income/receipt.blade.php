@@ -1,3 +1,4 @@
+@php $currencySymbol = currencySymbol($income); @endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -218,7 +219,7 @@
 
     <div class="amount-box">
         <div class="label">Amount Received</div>
-        <div class="value">₹ {{ number_format($income->amount, 2) }}</div>
+        <div class="value">{{ $currencySymbol }} {{ number_format($income->amount, 2) }}</div>
         <div class="words">{{ $amountWords }}</div>
     </div>
 
@@ -258,15 +259,15 @@
         <table class="summary">
             <tr>
                 <td class="label">Invoice Total</td>
-                <td class="value">₹ {{ number_format($invoice->grand_total, 2) }}</td>
+                <td class="value">{{ $currencySymbol }} {{ number_format($invoice->grand_total, 2) }}</td>
             </tr>
             <tr>
                 <td class="label">Paid To Date</td>
-                <td class="value">₹ {{ number_format($paidToDate, 2) }}</td>
+                <td class="value">{{ $currencySymbol }} {{ number_format($paidToDate, 2) }}</td>
             </tr>
             <tr class="balance">
                 <td class="label">Balance Due</td>
-                <td class="value">₹ {{ number_format($balanceAfter, 2) }}</td>
+                <td class="value">{{ $currencySymbol }} {{ number_format($balanceAfter, 2) }}</td>
             </tr>
         </table>
     </div>

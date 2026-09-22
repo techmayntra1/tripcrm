@@ -30,8 +30,10 @@ class CompanyController extends Controller
             'contact_person' => 'nullable|string|max:100',
             'email' => 'nullable|email|max:100',
             'phone' => 'nullable|string|max:15',
+            'country' => 'required|in:india,uae',
             'gst_number' => 'nullable|string|max:20',
             'pan_number' => 'nullable|string|max:10',
+            'vat_number' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
@@ -48,15 +50,40 @@ class CompanyController extends Controller
         ]);
 
         unset($validated['bank_ids']);
+        $validated = $this->clearTaxFieldsForOtherRegion($validated);
 
         $company = Company::create($validated);
 
-        if ($request->filled('bank_ids')) {
-            Bank::whereIn('id', $request->bank_ids)->update(['company_id' => $company->id]);
-        }
+        $this->assignBanks($company, $request->input('bank_ids', []));
 
         return redirect()->route('admin.companies.index')
             ->with('success', 'Company created successfully.');
+    }
+
+    // An Indian company only carries GST/PAN, a UAE company only carries VAT.
+    private function clearTaxFieldsForOtherRegion(array $data): array
+    {
+        if (($data['country'] ?? 'india') === Company::COUNTRY_UAE) {
+            $data['gst_number'] = null;
+            $data['pan_number'] = null;
+        } else {
+            $data['vat_number'] = null;
+        }
+
+        return $data;
+    }
+
+    // Banks follow their company's region so currency and IFSC/IBAN always match.
+    private function assignBanks(Company $company, array $bankIds): void
+    {
+        Bank::where('company_id', $company->id)->update(['company_id' => null]);
+
+        if (!empty($bankIds)) {
+            Bank::whereIn('id', $bankIds)->update([
+                'company_id' => $company->id,
+                'country' => $company->country,
+            ]);
+        }
     }
 
     public function show(Company $company)
@@ -90,8 +117,10 @@ class CompanyController extends Controller
             'contact_person' => 'nullable|string|max:100',
             'email' => 'nullable|email|max:100',
             'phone' => 'nullable|string|max:15',
+            'country' => 'required|in:india,uae',
             'gst_number' => 'nullable|string|max:20',
             'pan_number' => 'nullable|string|max:10',
+            'vat_number' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
@@ -108,13 +137,10 @@ class CompanyController extends Controller
         ]);
 
         unset($validated['bank_ids']);
+        $validated = $this->clearTaxFieldsForOtherRegion($validated);
         $company->update($validated);
 
-        Bank::where('company_id', $company->id)->update(['company_id' => null]);
-
-        if ($request->filled('bank_ids')) {
-            Bank::whereIn('id', $request->bank_ids)->update(['company_id' => $company->id]);
-        }
+        $this->assignBanks($company, $request->input('bank_ids', []));
 
         return redirect()->route('admin.companies.show', $company)
             ->with('success', 'Company updated successfully.');

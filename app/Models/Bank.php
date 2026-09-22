@@ -12,9 +12,11 @@ class Bank extends Model
     protected $fillable = [
         'company_id',
         'bank_name',
+        'country',
         'account_number',
         'account_holder',
         'ifsc_code',
+        'iban',
         'branch',
         'account_type',
         'opening_balance',
@@ -85,9 +87,45 @@ class Bank extends Model
         return $this->expenses()->sum('paid_amount');
     }
 
+    public function getIsUaeAttribute(): bool
+    {
+        return $this->country === Company::COUNTRY_UAE;
+    }
+
+    public function getCountryLabelAttribute(): string
+    {
+        return Company::COUNTRIES[$this->country] ?? 'India';
+    }
+
+    public function getCurrencyCodeAttribute(): string
+    {
+        return currencyCode($this->country);
+    }
+
+    public function getCurrencySymbolAttribute(): string
+    {
+        return currencySymbol($this->country);
+    }
+
+    // IFSC for Indian accounts, IBAN for UAE accounts.
+    public function getBankCodeLabelAttribute(): string
+    {
+        return $this->is_uae ? 'IBAN' : 'IFSC';
+    }
+
+    public function getBankCodeAttribute(): ?string
+    {
+        return $this->is_uae ? $this->iban : $this->ifsc_code;
+    }
+
     public function scopeActive($query)
     {
         return $query;
+    }
+
+    public function scopeForCountry($query, ?string $country)
+    {
+        return $country ? $query->where('country', $country) : $query;
     }
 
     public function scopeOrdered($query)
