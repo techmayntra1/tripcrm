@@ -12,9 +12,7 @@ class Customer extends Model
     use SoftDeletes;
     // Countries offered on the customer form (select2 with tags, so others can be typed).
     public const COUNTRIES = [
-        'India', 'United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Oman', 'Bahrain',
-        'United Kingdom', 'United States', 'Canada', 'Australia', 'Singapore', 'Malaysia',
-        'Thailand', 'Sri Lanka', 'Nepal', 'Maldives', 'Egypt', 'Turkey', 'Germany', 'France',
+        'India', 'United Arab Emirates',
     ];
 
     /** UAE cities and major towns, grouped by emirate then alphabetical within it. */

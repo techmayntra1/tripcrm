@@ -159,7 +159,7 @@
 $(document).ready(function() {
     // City list depends on the country: Indian cities, UAE cities, or free text for anywhere else.
     var uaeCities = @json(\App\Models\Customer::UAE_CITIES).map(function(n) { return { id: n, text: n }; });
-    var dialCodeByCountry = { 'India': '+91', 'United Arab Emirates': '+971', 'Saudi Arabia': '+966', 'Qatar': '+974', 'Kuwait': '+965', 'Oman': '+968', 'Bahrain': '+973', 'United Kingdom': '+44', 'United States': '+1', 'Canada': '+1' };
+    var dialCodeByCountry = { 'India': '+91', 'United Arab Emirates': '+971' };
 
     var $city = $('#city');
     var $country = $('#country');
