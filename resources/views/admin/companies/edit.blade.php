@@ -85,48 +85,7 @@
             @include('admin.companies._region_tax', ['company' => $company])
 
             
-            <div class="main-card mb-3 card">
-                <div class="card-header">
-                    <i class="bi bi-geo-alt me-2"></i> Address Information
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea class="form-control" name="address" rows="2">{{ old('address', $company->address) }}</textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">City</label>
-                                <input type="text" class="form-control" name="city" value="{{ old('city', $company->city) }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">State</label>
-                                <select class="form-select" name="state">
-                                    <option value="">Select State</option>
-                                    @php $currentState = old('state', $company->state); @endphp
-                                    <option value="Andhra Pradesh" {{ $currentState == 'Andhra Pradesh' ? 'selected' : '' }}>Andhra Pradesh</option>
-                                    <option value="Delhi" {{ $currentState == 'Delhi' ? 'selected' : '' }}>Delhi</option>
-                                    <option value="Gujarat" {{ $currentState == 'Gujarat' ? 'selected' : '' }}>Gujarat</option>
-                                    <option value="Karnataka" {{ $currentState == 'Karnataka' ? 'selected' : '' }}>Karnataka</option>
-                                    <option value="Maharashtra" {{ $currentState == 'Maharashtra' ? 'selected' : '' }}>Maharashtra</option>
-                                    <option value="Rajasthan" {{ $currentState == 'Rajasthan' ? 'selected' : '' }}>Rajasthan</option>
-                                    <option value="Tamil Nadu" {{ $currentState == 'Tamil Nadu' ? 'selected' : '' }}>Tamil Nadu</option>
-                                    <option value="Uttar Pradesh" {{ $currentState == 'Uttar Pradesh' ? 'selected' : '' }}>Uttar Pradesh</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Pincode</label>
-                                <input type="text" class="form-control" name="pincode" value="{{ old('pincode', $company->pincode) }}" maxlength="6">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @include('admin.companies._address', ['company' => $company])
         </div>
 
         <div class="col-md-4">

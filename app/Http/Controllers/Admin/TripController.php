@@ -462,7 +462,7 @@ class TripController extends Controller
     {
         $slug = preg_replace('/[^A-Za-z0-9]+/', '_', trim($trip->name ?: $trip->trip_number));
         $slug = trim($slug, '_');
-        $filename = $slug . '_' . now()->format('d_m_Y_His') . '.xlsx';
+        $filename = safeFilename($slug . '_' . now()->format('d_m_Y_His')) . '.xlsx';
 
         return (new \App\Exports\TripExport($trip))->download($filename);
     }

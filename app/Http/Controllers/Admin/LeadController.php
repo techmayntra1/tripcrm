@@ -35,8 +35,7 @@ class LeadController extends Controller
                     ->orWhere('mobile', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('city', 'like', "%{$search}%")
-                    ->orWhere('work_lead', 'like', "%{$search}%")
-                    ->orWhereJsonContains('work_type', $search);
+                    ->orWhere('work_lead', 'like', "%{$search}%");
             });
         }
 
@@ -74,8 +73,7 @@ class LeadController extends Controller
                     ->orWhere('mobile', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhere('city', 'like', "%{$search}%")
-                    ->orWhere('work_lead', 'like', "%{$search}%")
-                    ->orWhereJsonContains('work_type', $search);
+                    ->orWhere('work_lead', 'like', "%{$search}%");
             });
         }
 
@@ -149,21 +147,18 @@ class LeadController extends Controller
 
     public function create()
     {
-        $workTypes = WorkType::active()->ordered()->get();
         $workLeads = WorkLead::active()->ordered()->get();
-        return view('admin.leads.create', compact('workTypes', 'workLeads'));
+        return view('admin.leads.create', compact('workLeads'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:30',
-            'mobile' => 'required|string|size:10',
+            'country_code' => 'nullable|string|in:' . implode(',', array_keys(Lead::COUNTRY_CODES)),
+            'mobile' => 'required|string|regex:/^[0-9]{7,15}$/',
             'email' => 'nullable|email|max:100',
-            'work_type' => 'nullable|array',
-            'work_type.*' => 'string|max:100',
             'work_lead' => 'nullable|string|max:100',
-            'budget' => 'nullable|numeric|min:0|max:999999999',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:150',
@@ -171,10 +166,8 @@ class LeadController extends Controller
             'name.required' => 'Name is required.',
             'name.min' => 'Name must be at least 2 characters.',
             'mobile.required' => 'Mobile number is required.',
-            'mobile.size' => 'Mobile number must be exactly 10 digits.',
+            'mobile.regex' => 'Mobile number must be 7 to 15 digits.',
             'email.email' => 'Please enter a valid email address.',
-            'budget.numeric' => 'Budget must be a valid number.',
-            'budget.min' => 'Budget cannot be negative.',
         ]);
 
         Lead::create($validated);
@@ -225,22 +218,19 @@ class LeadController extends Controller
 
     public function edit(Lead $lead)
     {
-        $workTypes = WorkType::active()->ordered()->get();
         $workLeads = WorkLead::active()->ordered()->get();
         $leadStatuses = LeadStatus::active()->get();
-        return view('admin.leads.edit', compact('lead', 'workTypes', 'workLeads', 'leadStatuses'));
+        return view('admin.leads.edit', compact('lead', 'workLeads', 'leadStatuses'));
     }
 
     public function update(Request $request, Lead $lead)
     {
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:30',
-            'mobile' => 'required|string|size:10',
+            'country_code' => 'nullable|string|in:' . implode(',', array_keys(Lead::COUNTRY_CODES)),
+            'mobile' => 'required|string|regex:/^[0-9]{7,15}$/',
             'email' => 'nullable|email|max:100',
-            'work_type' => 'nullable|array',
-            'work_type.*' => 'string|max:100',
             'work_lead' => 'nullable|string|max:100',
-            'budget' => 'nullable|numeric|min:0|max:999999999',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:150',
@@ -249,10 +239,8 @@ class LeadController extends Controller
             'name.required' => 'Name is required.',
             'name.min' => 'Name must be at least 2 characters.',
             'mobile.required' => 'Mobile number is required.',
-            'mobile.size' => 'Mobile number must be exactly 10 digits.',
+            'mobile.regex' => 'Mobile number must be 7 to 15 digits.',
             'email.email' => 'Please enter a valid email address.',
-            'budget.numeric' => 'Budget must be a valid number.',
-            'budget.min' => 'Budget cannot be negative.',
         ]);
 
         if (!empty($validated['status']) && !Auth::user()->isAdmin()) {
@@ -279,9 +267,8 @@ class LeadController extends Controller
         }
 
         $cities = City::active()->orderBy('name')->get();
-        $workTypes = WorkType::active()->ordered()->get();
         $workLeads = WorkLead::active()->ordered()->get();
-        return view('admin.leads.convert', compact('lead', 'cities', 'workTypes', 'workLeads'));
+        return view('admin.leads.convert', compact('lead', 'cities', 'workLeads'));
     }
 
     public function convert(Request $request, Lead $lead)
@@ -292,14 +279,14 @@ class LeadController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:30',
-            'mobile' => 'required|string|size:10',
+            'country_code' => 'nullable|string|in:' . implode(',', array_keys(Lead::COUNTRY_CODES)),
+            'mobile' => 'required|string|regex:/^[0-9]{7,15}$/',
             'email' => 'nullable|email|max:100',
-            'work_type' => 'nullable|array',
-            'work_type.*' => 'string|max:100',
             'work_lead' => 'nullable|string|max:100',
-            'budget' => 'nullable|numeric|min:0|max:999999999',
-            'payment_type' => 'required|string|max:50',
-            'gst_number' => 'nullable|string|size:15',
+            'company_name' => 'nullable|string|max:100',
+            'company_trn' => 'nullable|string|max:30',
+            'gst_number' => 'nullable|string|max:15',
+            'country' => 'nullable|string|max:60',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:150',
@@ -307,9 +294,8 @@ class LeadController extends Controller
             'name.required' => 'Name is required.',
             'name.min' => 'Name must be at least 2 characters.',
             'mobile.required' => 'Mobile number is required.',
-            'mobile.size' => 'Mobile number must be exactly 10 digits.',
-            'payment_type.required' => 'Payment type is required.',
-            'gst_number.size' => 'GST number must be exactly 15 characters.',
+            'mobile.regex' => 'Mobile number must be 7 to 15 digits.',
+            'gst_number.max' => 'GST number must not exceed 15 characters.',
         ]);
 
         if (!empty($validated['city'])) {

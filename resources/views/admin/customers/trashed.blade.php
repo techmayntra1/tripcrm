@@ -47,19 +47,13 @@
                     </li>
                 </ul>
                 <form method="GET" action="{{ route('admin.customers.trashed') }}" class="d-flex align-items-center gap-2">
-                    <select name="payment_type" class="form-select form-select-sm" style="width: 140px;" onchange="this.form.submit()">
-                        <option value="">All Payment</option>
-                        @foreach(['Cash', 'Cheque', 'Bank Transfer', 'UPI', 'Credit'] as $type)
-                            <option value="{{ $type }}" {{ request('payment_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
-                        @endforeach
-                    </select>
                     <div class="input-group input-group-sm" style="width: 350px;">
                         <input type="text" name="search" class="form-control" placeholder="Search name, mobile, email, city..." value="{{ request('search') }}">
                         <button class="btn btn-outline-secondary" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
-                    @if(request('search') || request('payment_type'))
+                    @if(request('search'))
                     <a href="{{ route('admin.customers.trashed') }}" class="btn btn-sm btn-danger" title="Clear Filters">
                         <i class="bi bi-x-lg"></i>
                     </a>
@@ -71,9 +65,10 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Work Type</th>
+                                <th>Mobile</th>
+                                <th>Company</th>
                                 <th>Trips</th>
-                                <th>Payment Type</th>
+                                <th>Country</th>
                                 <th>City</th>
                                 <th>Deleted</th>
                                 <th>Actions</th>
@@ -86,18 +81,8 @@
                                     <a href="{{ route('admin.customers.trashed.show', $customer->id) }}"><strong class="text-muted">{{ $customer->name }}</strong></a>
                                     <br><small class="text-muted">{{ $customer->created_at->format('d-m-Y') }}</small>
                                 </td>
-                                <td>
-                                    @if($customer->work_type && count($customer->work_type))
-                                        @foreach(array_slice($customer->work_type, 0, 2) as $type)
-                                            <span class="badge bg-secondary">{{ $type }}</span>
-                                        @endforeach
-                                        @if(count($customer->work_type) > 2)
-                                            <span class="badge bg-secondary" style="cursor: pointer;" title="{{ implode(', ', array_slice($customer->work_type, 2)) }}">+{{ count($customer->work_type) - 2 }}</span>
-                                        @endif
-                                    @else
-                                        -
-                                    @endif
-                                </td>
+                                <td>{{ $customer->mobile ? $customer->full_mobile : '-' }}</td>
+                                <td>{{ $customer->company_name ?: '-' }}@if($customer->company_trn)<br><small class="text-muted">TRN: {{ $customer->company_trn }}</small>@endif</td>
                                 <td>
                                     @if($customer->trips_count > 0)
                                         <span class="badge bg-secondary">
@@ -107,13 +92,7 @@
                                         <span class="text-muted">-</span>
                                     @endif
                                 </td>
-                                <td>
-                                    @if($customer->payment_type)
-                                        <span class="badge bg-secondary">{{ $customer->payment_type }}</span>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
+                                <td>{{ $customer->country ?: '-' }}</td>
                                 <td>{{ $customer->city_name }}</td>
                                 <td>
                                     <small class="text-muted">{{ $customer->deleted_at->format('d-m-Y') }}</small>

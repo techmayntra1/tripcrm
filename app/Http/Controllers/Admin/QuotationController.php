@@ -376,6 +376,6 @@ class QuotationController extends Controller
                 'isHtml5ParserEnabled' => true,
             ]);
 
-        return $pdf->download('Quotation-' . $quotation->quotation_number . '.pdf');
+        return $pdf->download(safeFilename('Quotation-' . $quotation->quotation_number, 'Quotation') . '.pdf');
     }
 }

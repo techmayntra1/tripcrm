@@ -17,7 +17,7 @@
                             <option value="{{ $key }}" data-currency="{{ $currencies[$key]['symbol'] }}" data-currency-code="{{ $currencies[$key]['code'] }}" {{ $selectedCountry == $key ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <small class="text-muted">Currency: <strong id="company_currency_label">{{ $currencies[$selectedCountry]['code'] }} ({{ $currencies[$selectedCountry]['symbol'] }})</strong></small>
+                    <small class="text-muted">Currency: <strong id="company_currency_label">{{ $currencies[$selectedCountry]['code'] }}</strong></small>
                 </div>
             </div>
             <div class="col-md-4 tax-india">
@@ -56,7 +56,29 @@
         document.querySelectorAll('.tax-uae').forEach(el => el.style.display = country === 'uae' ? '' : 'none');
 
         const label = document.getElementById('company_currency_label');
-        if (label && opt) label.textContent = opt.dataset.currencyCode + ' (' + opt.dataset.currency + ')';
+        if (label && opt) label.textContent = opt.dataset.currencyCode;
+
+        // Address: Indian states vs UAE emirates, Pincode vs P.O. Box
+        const stateSelect = document.getElementById('company_state');
+        if (stateSelect) {
+            stateSelect.querySelectorAll('optgroup[data-country]').forEach(group => {
+                const match = group.dataset.country === country;
+                group.hidden = !match;
+                group.disabled = !match;
+            });
+            const selected = stateSelect.options[stateSelect.selectedIndex];
+            if (selected && selected.parentElement.tagName === 'OPTGROUP' && selected.parentElement.dataset.country !== country) {
+                stateSelect.value = '';
+            }
+            document.getElementById('state_label').textContent = country === 'uae' ? 'Emirate' : 'State';
+        }
+        const pincode = document.getElementById('company_pincode');
+        if (pincode) {
+            const isUae = country === 'uae';
+            document.getElementById('pincode_label').textContent = isUae ? 'P.O. Box' : 'Pincode';
+            pincode.placeholder = isUae ? 'P.O. Box' : 'Pincode';
+            pincode.maxLength = isUae ? 10 : 6;
+        }
 
         // Only offer banks from the same region; a company's banks always match its region.
         document.querySelectorAll('.bank-option[data-country]').forEach(el => {

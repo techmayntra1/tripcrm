@@ -238,6 +238,23 @@ if (!function_exists('numberToWords')) {
     }
 }
 
+if (!function_exists('safeFilename')) {
+    /**
+     * Make a string safe to use as a download filename. Document numbers can contain
+     * slashes (e.g. the series "QT/2025"), which Symfony rejects in a Content-Disposition
+     * header. Separators become hyphens; other characters the OS dislikes are dropped.
+     */
+    function safeFilename(?string $name, string $fallback = 'document'): string
+    {
+        $name = str_replace(['/', '\\', ':'], '-', (string) $name);
+        $name = preg_replace('/[<>"|?*\x00-\x1F]/', '', $name);
+        $name = preg_replace('/\s+/', ' ', $name);
+        $name = trim($name, " .-");
+
+        return $name !== '' ? $name : $fallback;
+    }
+}
+
 if (!function_exists('formatDate')) {
     function formatDate($date, $withTime = false): string
     {

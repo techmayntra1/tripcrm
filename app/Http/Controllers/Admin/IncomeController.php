@@ -297,7 +297,7 @@ class IncomeController extends Controller
     {
         $fyDates = getFinancialYearDates();
         $fyLabel = $fyDates ? $fyDates['start']->format('Y') . '_' . $fyDates['end']->format('Y') : 'all';
-        $filename = 'income_FY_' . $fyLabel . '_' . now()->format('d_m_Y_His') . '.xlsx';
+        $filename = safeFilename('income_FY_' . $fyLabel . '_' . now()->format('d_m_Y_His')) . '.xlsx';
         return (new IncomeExport($request))->download($filename);
     }
 
@@ -324,6 +324,6 @@ class IncomeController extends Controller
                 'isHtml5ParserEnabled' => true,
             ]);
 
-        return $pdf->download('Receipt-' . $income->receipt_number . '.pdf');
+        return $pdf->download(safeFilename('Receipt-' . $income->receipt_number, 'Receipt') . '.pdf');
     }
 }

@@ -10,16 +10,45 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Customer extends Model
 {
     use SoftDeletes;
+    // Countries offered on the customer form (select2 with tags, so others can be typed).
+    public const COUNTRIES = [
+        'India', 'United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Oman', 'Bahrain',
+        'United Kingdom', 'United States', 'Canada', 'Australia', 'Singapore', 'Malaysia',
+        'Thailand', 'Sri Lanka', 'Nepal', 'Maldives', 'Egypt', 'Turkey', 'Germany', 'France',
+    ];
+
+    /** UAE cities and major towns, grouped by emirate then alphabetical within it. */
+    public const UAE_CITIES = [
+        // Abu Dhabi
+        'Abu Dhabi', 'Al Ain', 'Al Dhafra', 'Ghayathi', 'Liwa Oasis', 'Madinat Zayed', 'Ruwais',
+        // Dubai
+        'Dubai', 'Hatta', 'Jebel Ali',
+        // Sharjah
+        'Sharjah', 'Al Dhaid', 'Kalba', 'Khor Fakkan', 'Dibba Al-Hisn',
+        // Ajman
+        'Ajman', 'Masfout', 'Manama',
+        // Umm Al Quwain
+        'Umm Al Quwain', 'Falaj Al Mualla',
+        // Ras Al Khaimah
+        'Ras Al Khaimah', 'Al Jazirah Al Hamra', 'Al Rams', 'Khatt',
+        // Fujairah
+        'Fujairah', 'Dibba Al-Fujairah', 'Masafi', 'Qidfa',
+    ];
+
     protected $fillable = [
         'lead_id',
         'name',
+        'country_code',
         'mobile',
         'email',
+        'company_name',
+        'company_trn',
         'work_type',
         'work_lead',
         'budget',
         'payment_type',
         'gst_number',
+        'country',
         'city_id',
         'city_other',
         'address',
@@ -82,6 +111,11 @@ class Customer extends Model
     public function getCityNameAttribute(): string
     {
         return $this->city?->name ?? $this->city_other ?? '-';
+    }
+
+    public function getFullMobileAttribute(): string
+    {
+        return trim(($this->country_code ?: '+91') . ' ' . $this->mobile);
     }
 
     /**

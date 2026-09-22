@@ -71,9 +71,9 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Work Type</th>
+                                <th>Mobile</th>
                                 <th>Lead Source</th>
-                                <th>Budget</th>
+                                <th>Final Budget</th>
                                 <th>City</th>
                                 <th width="100">Status</th>
                                 <th>Deleted</th>
@@ -87,19 +87,7 @@
                                     <a href="{{ route('admin.leads.trashed.show', $lead->id) }}"><strong class="text-muted">{{ $lead->name }}</strong></a>
                                     <br><small class="text-muted">{{ $lead->created_at->format('d-m-Y') }}</small>
                                 </td>
-                                <td>
-                                    @if($lead->work_type && count($lead->work_type))
-                                        @php $workTypes = $lead->work_type; @endphp
-                                        @foreach(array_slice($workTypes, 0, 2) as $type)
-                                            <span class="badge bg-secondary">{{ $type }}</span>
-                                        @endforeach
-                                        @if(count($workTypes) > 2)
-                                            <span class="badge bg-secondary" style="cursor: pointer;" title="{{ implode(', ', array_slice($workTypes, 2)) }}">+{{ count($workTypes) - 2 }}</span>
-                                        @endif
-                                    @else
-                                        -
-                                    @endif
-                                </td>
+                                <td>{{ $lead->mobile ? $lead->full_mobile : '-' }}</td>
                                 <td>
                                     @if($lead->work_lead)
                                         <span class="badge bg-secondary">{{ $lead->work_lead }}</span>
@@ -107,7 +95,7 @@
                                         -
                                     @endif
                                 </td>
-                                <td>{{ $lead->budget ? formatMoney($lead->budget) : '-' }}</td>
+                                <td>{{ $lead->final_budget ? formatMoney($lead->final_budget) : '-' }}</td>
                                 <td>{{ $lead->city ?? '-' }}</td>
                                 <td>
                                     @php

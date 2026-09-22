@@ -396,7 +396,7 @@ class ExpenseController extends Controller
     {
         $fyDates = getFinancialYearDates();
         $fyLabel = $fyDates ? $fyDates['start']->format('Y') . '_' . $fyDates['end']->format('Y') : 'all';
-        $filename = 'expenses_FY_' . $fyLabel . '_' . now()->format('d_m_Y_His') . '.xlsx';
+        $filename = safeFilename('expenses_FY_' . $fyLabel . '_' . now()->format('d_m_Y_His')) . '.xlsx';
         return (new ExpenseExport($request))->download($filename);
     }
 }

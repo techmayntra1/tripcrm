@@ -74,9 +74,9 @@
                             <tr>
                                 <th >SR</th>
                                 <th>Name</th>
-                                <th>Work Type</th>
+                                <th>Mobile</th>
                                 <th>Lead Source</th>
-                                <th>Budget</th>
+                                <th>Final Budget</th>
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -89,19 +89,7 @@
                                     <a href="{{ route('admin.leads.show', $lead) }}"><strong class="name-truncate" title="{{ $lead->name }}">{{ $lead->name }}</strong></a>
                                     <br><small class="text-muted">{{ $lead->created_at->format('d-m-Y') }}</small>
                                 </td>
-                                <td>
-                                    @if($lead->work_type && count($lead->work_type))
-                                        @php $workTypes = $lead->work_type; @endphp
-                                        @foreach(array_slice($workTypes, 0, 2) as $type)
-                                            <span class="badge bg-primary">{{ $type }}</span>
-                                        @endforeach
-                                        @if(count($workTypes) > 2)
-                                            <span class="badge bg-secondary" style="cursor: pointer;" title="{{ implode(', ', array_slice($workTypes, 2)) }}">+{{ count($workTypes) - 2 }}</span>
-                                        @endif
-                                    @else
-                                        -
-                                    @endif
-                                </td>
+                                <td>{{ $lead->mobile ? $lead->full_mobile : '-' }}</td>
                                 <td>
                                     @if($lead->work_lead)
                                         <span class="badge bg-info">{{ $lead->work_lead }}</span>
@@ -110,13 +98,8 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($lead->budget || $lead->final_budget)
-                                        @if($lead->final_budget)
-                                            <small class="text-muted">{{ formatMoney($lead->budget) }}</small>
-                                            <br><strong class="text-success">{{ formatMoney($lead->final_budget) }}</strong>
-                                        @else
-                                            {{ formatMoney($lead->budget) }}
-                                        @endif
+                                    @if($lead->final_budget)
+                                        <strong class="text-success">{{ formatMoney($lead->final_budget) }}</strong>
                                     @else
                                         -
                                     @endif
@@ -304,14 +287,11 @@
                         <label class="form-label">Lead</label>
                         <div class="p-2 bg-light rounded">
                             <strong>{{ $lead->name }}</strong>
-                            @if($lead->budget)
-                                <br><small class="text-muted">Initial Budget: {{ formatMoney($lead->budget) }}</small>
-                            @endif
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Final Budget <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" name="final_budget" value="{{ $lead->budget }}" step="1" min="0" required>
+                        <input type="number" class="form-control" name="final_budget" value="" step="1" min="0" required>
                         <small class="text-muted">Enter the final agreed budget amount</small>
                     </div>
                 </div>
@@ -339,9 +319,6 @@
                         <label class="form-label">Lead</label>
                         <div class="p-2 bg-light rounded">
                             <strong>{{ $lead->name }}</strong>
-                            @if($lead->budget)
-                                <br><small class="text-muted">Budget: {{ formatMoney($lead->budget) }}</small>
-                            @endif
                         </div>
                     </div>
                     <div class="mb-3">

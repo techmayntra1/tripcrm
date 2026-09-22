@@ -10,8 +10,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Lead extends Model
 {
     use SoftDeletes;
+    // Dialling codes offered on the lead form. India and UAE first, then the common Gulf/overseas ones.
+    public const COUNTRY_CODES = [
+        '+91' => 'India (+91)',
+        '+971' => 'UAE (+971)',
+        '+966' => 'Saudi Arabia (+966)',
+        '+974' => 'Qatar (+974)',
+        '+965' => 'Kuwait (+965)',
+        '+968' => 'Oman (+968)',
+        '+973' => 'Bahrain (+973)',
+        '+44' => 'UK (+44)',
+        '+1' => 'USA / Canada (+1)',
+    ];
+
     protected $fillable = [
         'name',
+        'country_code',
         'mobile',
         'email',
         'work_type',
@@ -32,6 +46,11 @@ class Lead extends Model
         'converted_at' => 'datetime',
         'work_type' => 'array',
     ];
+
+    public function getFullMobileAttribute(): string
+    {
+        return trim(($this->country_code ?: '+91') . ' ' . $this->mobile);
+    }
 
     public function customer(): HasOne
     {

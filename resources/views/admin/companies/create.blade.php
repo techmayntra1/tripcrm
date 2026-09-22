@@ -105,47 +105,7 @@
             @include('admin.companies._region_tax')
 
             
-            <div class="main-card mb-3 card">
-                <div class="card-header">
-                    <i class="bi bi-geo-alt me-2"></i> Address Information
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <label class="form-label">Address</label>
-                        <textarea class="form-control" name="address" rows="2" placeholder="Enter full address">{{ old('address') }}</textarea>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">City</label>
-                                <input type="text" class="form-control" name="city" value="{{ old('city') }}" placeholder="City">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">State</label>
-                                <select class="form-select" name="state">
-                                    <option value="">Select State</option>
-                                    <option value="Andhra Pradesh" {{ old('state') == 'Andhra Pradesh' ? 'selected' : '' }}>Andhra Pradesh</option>
-                                    <option value="Delhi" {{ old('state') == 'Delhi' ? 'selected' : '' }}>Delhi</option>
-                                    <option value="Gujarat" {{ old('state') == 'Gujarat' ? 'selected' : '' }}>Gujarat</option>
-                                    <option value="Karnataka" {{ old('state') == 'Karnataka' ? 'selected' : '' }}>Karnataka</option>
-                                    <option value="Maharashtra" {{ old('state') == 'Maharashtra' ? 'selected' : '' }}>Maharashtra</option>
-                                    <option value="Rajasthan" {{ old('state') == 'Rajasthan' ? 'selected' : '' }}>Rajasthan</option>
-                                    <option value="Tamil Nadu" {{ old('state') == 'Tamil Nadu' ? 'selected' : '' }}>Tamil Nadu</option>
-                                    <option value="Uttar Pradesh" {{ old('state') == 'Uttar Pradesh' ? 'selected' : '' }}>Uttar Pradesh</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label class="form-label">Pincode</label>
-                                <input type="text" class="form-control" name="pincode" value="{{ old('pincode') }}" maxlength="6" placeholder="Pincode">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @include('admin.companies._address')
         </div>
 
         <div class="col-md-4">

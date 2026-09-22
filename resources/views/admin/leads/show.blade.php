@@ -72,8 +72,8 @@
                         <span class="badge bg-{{ $lead->status_color }}">{{ ucfirst($lead->status) }}</span>
                     </div>
                     <div class="col-md-3">
-                        <small class="text-muted d-block">Budget</small>
-                        <strong class="text-success">{{ $lead->budget ? formatMoney($lead->budget, true) : '-' }}</strong>
+                        <small class="text-muted d-block">Final Budget</small>
+                        <strong class="text-success">{{ $lead->final_budget ? formatMoney($lead->final_budget) : '-' }}</strong>
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted d-block">Upcoming Meetings</small>
@@ -88,7 +88,7 @@
                 <div class="row mb-3">
                     <div class="col-md-3">
                         <small class="text-muted d-block">Mobile</small>
-                        <strong>{{ $lead->mobile ?? '-' }}</strong>
+                        <strong>{{ $lead->mobile ? $lead->full_mobile : '-' }}</strong>
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted d-block">Email</small>
@@ -103,23 +103,13 @@
                         <strong>{{ $lead->work_lead ?? '-' }}</strong>
                     </div>
                 </div>
-                @if(($lead->work_type && is_array($lead->work_type)) || $lead->address)
+                @if($lead->address)
                 <hr class="my-2">
                 <div class="row">
-                    @if($lead->work_type && is_array($lead->work_type))
-                    <div class="col-md-3">
-                        <small class="text-muted d-block">Work Type</small>
-                        @foreach($lead->work_type as $wt)
-                            <span class="badge bg-primary">{{ $wt }}</span>
-                        @endforeach
-                    </div>
-                    @endif
-                    @if($lead->address)
                     <div class="col-md-6">
                         <small class="text-muted d-block">Address</small>
                         <strong>{{ $lead->address }}</strong>
                     </div>
-                    @endif
                 </div>
                 @endif
             </div>

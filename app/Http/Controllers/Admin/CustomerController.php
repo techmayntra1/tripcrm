@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Customer;
+use App\Models\Lead;
 use App\Models\LeadStatus;
 use App\Models\Meeting;
 use App\Models\MeetingPurpose;
@@ -40,12 +41,10 @@ class CustomerController extends Controller
                     ->orWhere('city_other', 'like', "%{$search}%")
                     ->orWhere('work_lead', 'like', "%{$search}%")
                     ->orWhere('gst_number', 'like', "%{$search}%")
-                    ->orWhereJsonContains('work_type', $search);
+                    ->orWhere('company_name', 'like', "%{$search}%")
+                    ->orWhere('company_trn', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%");
             });
-        }
-
-        if ($request->filled('payment_type')) {
-            $query->where('payment_type', $request->payment_type);
         }
 
         $perPage = $request->input('per_page', 15);
@@ -78,12 +77,10 @@ class CustomerController extends Controller
                     ->orWhere('city_other', 'like', "%{$search}%")
                     ->orWhere('work_lead', 'like', "%{$search}%")
                     ->orWhere('gst_number', 'like', "%{$search}%")
-                    ->orWhereJsonContains('work_type', $search);
+                    ->orWhere('company_name', 'like', "%{$search}%")
+                    ->orWhere('company_trn', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%");
             });
-        }
-
-        if ($request->filled('payment_type')) {
-            $query->where('payment_type', $request->payment_type);
         }
 
         $perPage = $request->input('per_page', 15);
@@ -161,24 +158,23 @@ class CustomerController extends Controller
     public function create()
     {
         $cities = City::active()->orderBy('name')->get();
-        $workTypes = WorkType::active()->ordered()->get();
         $workLeads = WorkLead::active()->ordered()->get();
         $trips = Trip::orderBy('trip_number', 'desc')->get();
-        return view('admin.customers.create', compact('cities', 'workTypes', 'workLeads', 'trips'));
+        return view('admin.customers.create', compact('cities', 'workLeads', 'trips'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:30',
-            'mobile' => 'required|string|size:10',
+            'country_code' => 'nullable|string|in:' . implode(',', array_keys(Lead::COUNTRY_CODES)),
+            'mobile' => 'required|string|regex:/^[0-9]{7,15}$/',
             'email' => 'nullable|email|max:100',
-            'work_type' => 'nullable|array',
-            'work_type.*' => 'string|max:100',
+            'company_name' => 'nullable|string|max:100',
+            'company_trn' => 'nullable|string|max:30',
             'work_lead' => 'nullable|string|max:100',
-            'budget' => 'nullable|numeric|min:0|max:999999999',
-            'payment_type' => 'required|string|max:50',
             'gst_number' => 'nullable|string|max:15',
+            'country' => 'nullable|string|max:60',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:150',
@@ -186,12 +182,9 @@ class CustomerController extends Controller
             'name.required' => 'Name is required.',
             'name.min' => 'Name must be at least 2 characters.',
             'mobile.required' => 'Mobile number is required.',
-            'mobile.size' => 'Mobile number must be exactly 10 digits.',
-            'payment_type.required' => 'Payment type is required.',
+            'mobile.regex' => 'Mobile number must be 7 to 15 digits.',
             'gst_number.max' => 'GST number must not exceed 15 characters.',
             'email.email' => 'Please enter a valid email address.',
-            'budget.numeric' => 'Budget must be a valid number.',
-            'budget.min' => 'Budget cannot be negative.',
         ]);
 
         if (!empty($validated['city'])) {
@@ -277,7 +270,7 @@ class CustomerController extends Controller
     {
         $request->merge(['customer_id' => $customer->id]);
 
-        $filename = 'income-' . str()->slug($customer->name) . '-' . now()->format('Y-m-d') . '.xlsx';
+        $filename = safeFilename('income-' . str()->slug($customer->name) . '-' . now()->format('Y-m-d')) . '.xlsx';
 
         return (new IncomeExport($request))->download($filename);
     }
@@ -286,24 +279,23 @@ class CustomerController extends Controller
     {
         $customer->load('trips');
         $cities = City::active()->orderBy('name')->get();
-        $workTypes = WorkType::active()->ordered()->get();
         $workLeads = WorkLead::active()->ordered()->get();
         $trips = Trip::orderBy('trip_number', 'desc')->get();
-        return view('admin.customers.edit', compact('customer', 'cities', 'workTypes', 'workLeads', 'trips'));
+        return view('admin.customers.edit', compact('customer', 'cities', 'workLeads', 'trips'));
     }
 
     public function update(Request $request, Customer $customer)
     {
         $validated = $request->validate([
             'name' => 'required|string|min:2|max:30',
-            'mobile' => 'required|string|size:10',
+            'country_code' => 'nullable|string|in:' . implode(',', array_keys(Lead::COUNTRY_CODES)),
+            'mobile' => 'required|string|regex:/^[0-9]{7,15}$/',
             'email' => 'nullable|email|max:100',
-            'work_type' => 'nullable|array',
-            'work_type.*' => 'string|max:100',
+            'company_name' => 'nullable|string|max:100',
+            'company_trn' => 'nullable|string|max:30',
             'work_lead' => 'nullable|string|max:100',
-            'budget' => 'nullable|numeric|min:0|max:999999999',
-            'payment_type' => 'required|string|max:50',
             'gst_number' => 'nullable|string|max:15',
+            'country' => 'nullable|string|max:60',
             'city' => 'nullable|string|max:100',
             'address' => 'nullable|string|max:500',
             'notes' => 'nullable|string|max:150',
@@ -311,12 +303,9 @@ class CustomerController extends Controller
             'name.required' => 'Name is required.',
             'name.min' => 'Name must be at least 2 characters.',
             'mobile.required' => 'Mobile number is required.',
-            'mobile.size' => 'Mobile number must be exactly 10 digits.',
-            'payment_type.required' => 'Payment type is required.',
+            'mobile.regex' => 'Mobile number must be 7 to 15 digits.',
             'gst_number.max' => 'GST number must not exceed 15 characters.',
             'email.email' => 'Please enter a valid email address.',
-            'budget.numeric' => 'Budget must be a valid number.',
-            'budget.min' => 'Budget cannot be negative.',
         ]);
 
         if (isset($validated['city'])) {

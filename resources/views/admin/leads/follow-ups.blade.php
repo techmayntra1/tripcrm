@@ -46,7 +46,7 @@
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted d-block">Mobile</small>
-                        <strong>{{ $lead->mobile ?? '-' }}</strong>
+                        <strong>{{ $lead->mobile ? $lead->full_mobile : '-' }}</strong>
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted d-block">Status</small>

@@ -43,12 +43,19 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label for="mobile" class="form-label">Mobile <span class="text-danger">*</span></label>
-                        <input type="tel" class="form-control @error('mobile') is-invalid @enderror" id="mobile" name="mobile" value="{{ old('mobile', $lead->mobile) }}" placeholder="Enter 10-digit mobile number" required minlength="10" maxlength="10" inputmode="numeric">
+                        <div class="input-group has-validation">
+                            <select class="form-select flex-grow-0 w-auto @error('country_code') is-invalid @enderror" id="country_code" name="country_code" title="Country code">
+                                @foreach(\App\Models\Lead::COUNTRY_CODES as $code => $label)
+                                    <option value="{{ $code }}" {{ old('country_code', $lead->country_code ?? '+91') == $code ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <input type="tel" class="form-control @error('mobile') is-invalid @enderror" id="mobile" name="mobile" value="{{ old('mobile', $lead->mobile) }}" placeholder="Mobile number" required minlength="7" maxlength="15" inputmode="numeric" pattern="[0-9]{7,15}">
                         @error('mobile')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @else
-                            <div class="invalid-feedback">Please enter a 10-digit mobile number</div>
+                            <div class="invalid-feedback">Please enter a valid mobile number (7-15 digits)</div>
                         @enderror
+                        </div>
                     </div>
                 </div>
             </div>
@@ -64,21 +71,6 @@
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label for="work_type" class="form-label">Work Type</label>
-                        <select class="form-select select2-multiple @error('work_type') is-invalid @enderror" id="work_type" name="work_type[]" multiple>
-                            @foreach($workTypes as $type)
-                                <option value="{{ $type->name }}" {{ in_array($type->name, old('work_type', $lead->work_type ?? [])) ? 'selected' : '' }}>{{ $type->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('work_type')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
                         <label for="work_lead" class="form-label">Lead Source</label>
                         <select class="form-select @error('work_lead') is-invalid @enderror" id="work_lead" name="work_lead">
                             <option value="">Select Lead Source</option>
@@ -89,18 +81,6 @@
                         @error('work_lead')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label for="budget" class="form-label">Budget</label>
-                        <div class="input-group has-validation">
-                            <span class="input-group-text">₹</span>
-                            <input type="number" class="form-control @error('budget') is-invalid @enderror" id="budget" name="budget" value="{{ old('budget', $lead->budget) }}" min="0">
-                            @error('budget')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
                     </div>
                 </div>
             </div>
@@ -163,12 +143,6 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
-    $('#work_type').select2({
-        placeholder: 'Select Work Types',
-        allowClear: true,
-        width: '100%',
-        theme: 'bootstrap-5'
-    });
     $('#city').select2({
         placeholder: 'Type to search city...',
         allowClear: true,
@@ -190,12 +164,7 @@ $(document).ready(function() {
         $('#city').val(currentCity).trigger('change');
     }
     $('#mobile').on('input', function() {
-        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
-    });
-
-    $('#budget').on('input', function() {
-        var val = parseFloat($(this).val());
-        if (val < 0) $(this).val(0);
+        this.value = this.value.replace(/[^0-9]/g, '').slice(0, 15);
     });
 
     $('.needs-validation').on('submit', function(e) {

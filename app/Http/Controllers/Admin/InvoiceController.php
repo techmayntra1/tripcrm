@@ -371,6 +371,6 @@ class InvoiceController extends Controller
                 'isHtml5ParserEnabled' => true,
             ]);
 
-        return $pdf->download('Invoice-' . $invoice->invoice_number . '.pdf');
+        return $pdf->download(safeFilename('Invoice-' . $invoice->invoice_number, 'Invoice') . '.pdf');
     }
 }
