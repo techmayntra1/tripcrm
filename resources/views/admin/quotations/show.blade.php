@@ -58,6 +58,9 @@
     <div class="card-body">
         <div class="row mb-4">
             <div class="col-md-6">
+                @if($quotation->company?->logo_url)
+                <img src="{{ $quotation->company->logo_url }}" alt="{{ $quotation->company->name }}" class="mb-2" style="height: 70px; width: auto;">
+                @endif
                 <h4 class="mb-1">{{ $quotation->company->name ?? '-' }}</h4>
                 @if($quotation->company)
                 <p class="text-muted mb-0">{{ $quotation->company->address ?? '' }}</p>

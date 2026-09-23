@@ -7,7 +7,7 @@
             <div class="d-none d-lg-block col-lg-4">
                 <div class="position-relative h-100 d-flex flex-column justify-content-center align-items-center text-center px-4" style="background: linear-gradient(135deg, #2c3e50 0%, #4a6278 100%); color: #fff;">
                     <div style="background: #fff; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
-                        <img src="{{ asset('logo.png') }}" alt="{{ config('app.name') }}" style="max-width: 240px; width: 100%; height: auto; display: block;">
+                        <img src="{{ asset('logo.png') }}?v=2" alt="{{ config('app.name') }}" style="max-width: 160px; width: 100%; height: auto; display: block; margin: 0 auto;">
                     </div>
                     <h3 class="mb-0" style="color: #fff; font-weight: 500;">Welcome to {{ config('app.name') }}</h3>
                 </div>

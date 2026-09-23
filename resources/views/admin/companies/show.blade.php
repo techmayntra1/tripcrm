@@ -5,7 +5,11 @@
     <div class="page-title-wrapper">
         <div class="page-title-heading">
             <div class="page-title-icon">
+                @if($company->logo_url)
+                <img src="{{ $company->logo_url }}" alt="{{ $company->name }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                @else
                 <i class="bi bi-building icon-gradient bg-amy-crisp"></i>
+                @endif
             </div>
             <div>
                 <span class="d-flex align-items-center gap-2">

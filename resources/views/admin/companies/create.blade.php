@@ -31,7 +31,7 @@
 </div>
 @endif
 
-<form action="{{ route('admin.companies.store') }}" method="POST">
+<form action="{{ route('admin.companies.store') }}" method="POST" enctype="multipart/form-data">
     @csrf
 
     <div class="row">
@@ -109,7 +109,8 @@
         </div>
 
         <div class="col-md-4">
-            
+            @include('admin.companies._logo')
+
             <div class="main-card mb-3 card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span><i class="bi bi-bank me-2"></i> Bank Accounts</span>

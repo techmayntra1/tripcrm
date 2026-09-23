@@ -7,8 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="@yield('description', 'CRM & Accounts Management System')">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="icon" href="{{ asset('favicon.ico') }}?v=2" sizes="any">
+    <link rel="icon" type="image/png" href="{{ asset('favicon-32.png') }}?v=2" sizes="32x32">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}?v=2">
 
     {{-- Velzon layout config (must run before paint) --}}
     <script src="{{ asset('velzon/js/layout.js') }}"></script>
@@ -413,7 +414,7 @@
             if ('Notification' in window && Notification.permission === 'granted') {
                 const browserNotif = new Notification(typeLabel, {
                     body: notification.title + ' - ' + notification.subtitle,
-                    icon: '/assets/images/logo.png',
+                    icon: '/assets/images/logo.png?v=2',
                     tag: notification.id,
                     requireInteraction: true
                 });

@@ -45,6 +45,11 @@
             color: #333;
             margin-bottom: 5px;
         }
+        .company-logo {
+            height: 70px;
+            width: auto;
+            margin-bottom: 8px;
+        }
         .company-info {
             font-size: 12px;
             color: #666;
@@ -177,6 +182,10 @@
     
     <div class="header clearfix">
         <div class="company-section">
+            @php $logoDataUri = $invoice->company?->logo_data_uri; @endphp
+            @if($logoDataUri)
+            <img src="{{ $logoDataUri }}" class="company-logo" alt="">
+            @endif
             <div class="company-name">{{ $invoice->company->name ?? '' }}</div>
             <div class="company-info">
                 @if($invoice->company)

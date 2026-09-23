@@ -53,6 +53,9 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         @if($invoice->company)
+                        @if($invoice->company->logo_url)
+                        <img src="{{ $invoice->company->logo_url }}" alt="{{ $invoice->company->name }}" class="mb-2" style="height: 70px; width: auto;">
+                        @endif
                         <h4 class="mb-1">{{ $invoice->company->name }}</h4>
                         @if($invoice->company->address)
                         <p class="text-muted mb-0">{{ $invoice->company->address }}</p>

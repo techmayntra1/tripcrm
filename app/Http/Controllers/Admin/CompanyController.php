@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Bank;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
@@ -40,6 +41,7 @@ class CompanyController extends Controller
             'pincode' => 'nullable|string|max:10',
             'quotation_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
             'invoice_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'bank_ids' => 'nullable|array',
             'bank_ids.*' => 'exists:banks,id',
         ], [
@@ -47,10 +49,16 @@ class CompanyController extends Controller
             'quotation_number_series.regex' => 'Quotation series must contain only letters, numbers, hyphens, and slashes.',
             'invoice_number_series.required' => 'Invoice number series is required.',
             'invoice_number_series.regex' => 'Invoice series must contain only letters, numbers, hyphens, and slashes.',
+            'logo.mimes' => 'Logo must be a JPG or PNG image.',
+            'logo.max' => 'Logo must not be larger than 2 MB.',
         ]);
 
         unset($validated['bank_ids']);
         $validated = $this->clearTaxFieldsForOtherRegion($validated);
+
+        if ($request->hasFile('logo')) {
+            $validated['logo'] = $request->file('logo')->store('companies/logos', 'public');
+        }
 
         $company = Company::create($validated);
 
@@ -127,6 +135,8 @@ class CompanyController extends Controller
             'pincode' => 'nullable|string|max:10',
             'quotation_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
             'invoice_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'remove_logo' => 'nullable|boolean',
             'bank_ids' => 'nullable|array',
             'bank_ids.*' => 'exists:banks,id',
         ], [
@@ -134,10 +144,23 @@ class CompanyController extends Controller
             'quotation_number_series.regex' => 'Quotation series must contain only letters, numbers, hyphens, and slashes.',
             'invoice_number_series.required' => 'Invoice number series is required.',
             'invoice_number_series.regex' => 'Invoice series must contain only letters, numbers, hyphens, and slashes.',
+            'logo.mimes' => 'Logo must be a JPG or PNG image.',
+            'logo.max' => 'Logo must not be larger than 2 MB.',
         ]);
 
-        unset($validated['bank_ids']);
+        unset($validated['bank_ids'], $validated['remove_logo']);
         $validated = $this->clearTaxFieldsForOtherRegion($validated);
+
+        if ($request->hasFile('logo')) {
+            if ($company->logo) {
+                Storage::disk('public')->delete($company->logo);
+            }
+            $validated['logo'] = $request->file('logo')->store('companies/logos', 'public');
+        } elseif ($request->boolean('remove_logo') && $company->logo) {
+            Storage::disk('public')->delete($company->logo);
+            $validated['logo'] = null;
+        }
+
         $company->update($validated);
 
         $this->assignBanks($company, $request->input('bank_ids', []));

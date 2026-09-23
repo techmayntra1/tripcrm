@@ -6,10 +6,10 @@
                 {{-- Horizontal logo (mobile) --}}
                 <div class="navbar-brand-box horizontal-logo">
                     <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
-                        <span class="logo-lg"><img src="{{ asset('logo.png') }}" alt="" height="34"></span>
+                        <span class="logo-lg"><img src="{{ asset('logo.png') }}?v=2" alt="" height="36"></span>
                     </a>
                     <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
-                        <span class="logo-lg"><img src="{{ asset('logo.png') }}" alt="" height="34"></span>
+                        <span class="logo-lg"><img src="{{ asset('logo.png') }}?v=2" alt="" height="36"></span>
                     </a>
                 </div>
 

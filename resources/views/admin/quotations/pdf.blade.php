@@ -45,6 +45,11 @@
             color: #333;
             margin-bottom: 5px;
         }
+        .company-logo {
+            height: 70px;
+            width: auto;
+            margin-bottom: 8px;
+        }
         .company-info {
             font-size: 12px;
             color: #666;
@@ -250,6 +255,10 @@
     
     <div class="header clearfix">
         <div class="company-section">
+            @php $logoDataUri = $quotation->company?->logo_data_uri; @endphp
+            @if($logoDataUri)
+            <img src="{{ $logoDataUri }}" class="company-logo" alt="">
+            @endif
             <div class="company-name">{{ $quotation->company->name ?? '' }}</div>
             <div class="company-info">
                 @if($quotation->company)
@@ -405,6 +414,7 @@
                     <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #e74c3c;">- {{ $currencySymbol }} {{ number_format($quotation->discount, 0) }}</td>
                 </tr>
                 @endif
+                @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
                 @if($hasLineTax)
                     @if($lineTaxByType['gst'] > 0)
                         @if($quotation->gst_split)

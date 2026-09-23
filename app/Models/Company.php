@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Company extends Model
 {
@@ -111,6 +112,23 @@ class Company extends Model
     public function getCurrencySymbolAttribute(): string
     {
         return currencySymbol($this->country);
+    }
+
+    public function getLogoUrlAttribute(): ?string
+    {
+        return $this->logo ? asset('storage/' . $this->logo) : null;
+    }
+
+    // Inlined as base64 so dompdf renders it without remote fetches or the storage symlink.
+    public function getLogoDataUriAttribute(): ?string
+    {
+        if (!$this->logo || !Storage::disk('public')->exists($this->logo)) {
+            return null;
+        }
+
+        $mime = Storage::disk('public')->mimeType($this->logo) ?: 'image/png';
+
+        return 'data:' . $mime . ';base64,' . base64_encode(Storage::disk('public')->get($this->logo));
     }
 
 }

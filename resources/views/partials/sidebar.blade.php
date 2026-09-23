@@ -3,12 +3,12 @@
     {{-- LOGO --}}
     <div class="navbar-brand-box">
         <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
-            <span class="logo-sm"><img src="{{ asset('logo.png') }}" alt="" height="28"></span>
-            <span class="logo-lg"><img src="{{ asset('logo.png') }}" alt="TripMantra Travel Tourism Fz LLC" height="38"></span>
+            <span class="logo-sm"><img src="{{ asset('logo.png') }}?v=2" alt="" height="28"></span>
+            <span class="logo-lg"><img src="{{ asset('logo.png') }}?v=2" alt="TripMantra Travel Tourism Fz LLC" height="44"></span>
         </a>
         <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
-            <span class="logo-sm"><img src="{{ asset('logo.png') }}" alt="" height="28"></span>
-            <span class="logo-lg"><img src="{{ asset('logo.png') }}" alt="TripMantra Travel Tourism Fz LLC" height="38"></span>
+            <span class="logo-sm"><img src="{{ asset('logo.png') }}?v=2" alt="" height="28"></span>
+            <span class="logo-lg"><img src="{{ asset('logo.png') }}?v=2" alt="TripMantra Travel Tourism Fz LLC" height="44"></span>
         </a>
         <button type="button" class="btn btn-sm p-0 fs-20 header-item float-end btn-vertical-sm-hover" id="vertical-hover">
             <i class="ri-record-circle-line"></i>

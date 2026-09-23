@@ -182,6 +182,10 @@
     @endphp
     <div class="header clearfix">
         <div class="company-section">
+            @php $logoDataUri = $company?->logo_data_uri; @endphp
+            @if($logoDataUri)
+            <img src="{{ $logoDataUri }}" style="height: 70px; width: auto; margin-bottom: 8px;" alt="">
+            @endif
             <div class="company-name">{{ $company->name ?? config('app.name') }}</div>
             <div class="company-info">
                 @if($company)
