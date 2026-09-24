@@ -90,12 +90,18 @@
                 <h6 class="text-muted mb-2">BILL TO:</h6>
                 <h5 class="mb-1">{{ $quotation->customer->name ?? '-' }}</h5>
                 @if($quotation->customer)
+                @if($quotation->customer->company_name)
+                <p class="mb-0 fw-semibold">{{ $quotation->customer->company_name }}</p>
+                @endif
                 @if($quotation->customer->address)
                 <p class="mb-0">{{ $quotation->customer->address }}</p>
                 @endif
                 <p class="mb-0">Phone: {{ $quotation->customer->mobile ?? '-' }}</p>
                 @if($quotation->customer->gst_number)
                 <p class="mb-0">GST: {{ $quotation->customer->gst_number }}</p>
+                @endif
+                @if($quotation->customer->company_trn)
+                <p class="mb-0">TRN: {{ $quotation->customer->company_trn }}</p>
                 @endif
                 @endif
             </div>

@@ -87,6 +87,9 @@
                         <h6 class="text-muted mb-2">BILL TO:</h6>
                         @if($invoice->customer)
                         <h5 class="mb-1">{{ $invoice->customer->name }}</h5>
+                        @if($invoice->customer->company_name)
+                        <p class="mb-0 fw-semibold">{{ $invoice->customer->company_name }}</p>
+                        @endif
                         @if($invoice->customer->address)
                         <p class="mb-0">{{ $invoice->customer->address }}</p>
                         @endif
@@ -95,6 +98,9 @@
                         @endif
                         @if($invoice->customer->gst_number)
                         <p class="mb-0">GST: {{ $invoice->customer->gst_number }}</p>
+                        @endif
+                        @if($invoice->customer->company_trn)
+                        <p class="mb-0">TRN: {{ $invoice->customer->company_trn }}</p>
                         @endif
                         @endif
                     </div>

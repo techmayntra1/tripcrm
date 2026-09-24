@@ -8,12 +8,12 @@
     <style>
         @page {
             size: A4;
-            margin: 25mm 20mm;
+            margin: 12mm 12mm;
         }
         body {
             font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.4;
+            font-size: 10px;
+            line-height: 1.3;
             color: #333;
             margin: 0;
             padding: 0;
@@ -26,9 +26,9 @@
 
         
         .header {
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 3px solid #405189;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #405189;
         }
         .company-section {
             float: left;
@@ -40,44 +40,34 @@
             text-align: right;
         }
         .company-name {
-            font-size: 22px;
+            font-size: 12px;
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
         }
         .company-logo {
-            height: 70px;
+            height: 45px;
             width: auto;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .company-info {
-            font-size: 12px;
+            font-size: 10px;
             color: #666;
         }
         .quotation-title {
-            font-size: 28px;
+            font-size: 20px;
             font-weight: bold;
             color: #405189;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .quotation-details {
-            font-size: 12px;
+            font-size: 10px;
             color: #333;
-        }
-        .status-badge {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 5px 15px;
-            background-color: #405189;
-            color: #fff;
-            font-size: 11px;
-            font-weight: bold;
-            border-radius: 4px;
         }
 
         
         .info-row {
-            margin-bottom: 25px;
+            margin-bottom: 12px;
         }
         .bill-to-section {
             float: left;
@@ -88,14 +78,14 @@
             width: 45%;
         }
         .section-label {
-            font-size: 11px;
+            font-size: 9px;
             font-weight: bold;
             color: #888;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .customer-name {
-            font-size: 16px;
+            font-size: 12px;
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
@@ -104,15 +94,15 @@
             max-width: 250px;
         }
         .customer-info {
-            font-size: 12px;
+            font-size: 10px;
             color: #555;
-            line-height: 1.6;
+            line-height: 1.4;
             word-wrap: break-word;
             overflow-wrap: break-word;
             max-width: 250px;
         }
         .subject-text {
-            font-size: 12px;
+            font-size: 10px;
             color: #333;
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -123,13 +113,13 @@
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
+            margin-bottom: 12px;
         }
         .items-table th {
             background-color: #405189;
             color: #fff;
-            padding: 10px 8px;
-            font-size: 11px;
+            padding: 4px 6px;
+            font-size: 9px;
             font-weight: bold;
             text-align: left;
             border: 1px solid #405189;
@@ -137,8 +127,8 @@
         .items-table th.center { text-align: center; }
         .items-table th.right { text-align: right; }
         .items-table td {
-            padding: 12px 8px;
-            font-size: 12px;
+            padding: 6px;
+            font-size: 10px;
             border: 1px solid #ddd;
         }
         .items-table td.center { text-align: center; }
@@ -146,7 +136,7 @@
 
         
         .summary-row {
-            margin-top: 20px;
+            margin-top: 8px;
         }
         .terms-section {
             float: left;
@@ -157,23 +147,23 @@
             width: 50%;
         }
         .terms-title {
-            font-size: 13px;
+            font-size: 10px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
         .terms-text {
-            font-size: 11px;
+            font-size: 9px;
             color: #666;
-            line-height: 1.6;
+            line-height: 1.4;
         }
         .totals-table {
             width: 100%;
             border-collapse: collapse;
         }
         .totals-table td {
-            padding: 10px 8px;
-            font-size: 13px;
+            padding: 4px 6px;
+            font-size: 11px;
             border-bottom: 1px solid #eee;
         }
         .totals-table .label {
@@ -196,8 +186,8 @@
             background-color: #f0f4f8;
         }
         .totals-table .grand-total td {
-            padding: 12px 8px;
-            font-size: 14px;
+            padding: 6px;
+            font-size: 12px;
             border-bottom: none;
         }
         .totals-table .grand-total .label {
@@ -205,29 +195,29 @@
             color: #333;
         }
         .totals-table .grand-total .value {
-            font-size: 16px;
+            font-size: 12px;
             color: #333;
         }
 
         
         .footer {
-            margin-top: 60px;
+            margin-top: 25px;
             text-align: right;
         }
         .signature-box {
             display: inline-block;
             text-align: center;
             border-top: 1px solid #333;
-            padding-top: 10px;
+            padding-top: 5px;
             min-width: 180px;
         }
         .signature-company {
-            font-size: 12px;
+            font-size: 10px;
             font-weight: bold;
             color: #405189;
         }
         .signature-text {
-            font-size: 11px;
+            font-size: 9px;
             color: #888;
             margin-top: 3px;
         }
@@ -237,8 +227,8 @@
             background-color: #f8f9fa;
             border: 1px solid #ddd;
             border-left: 3px solid #405189;
-            padding: 15px;
-            margin-bottom: 25px;
+            padding: 8px;
+            margin-bottom: 12px;
         }
         .pdf-info-title {
             font-weight: bold;
@@ -247,7 +237,7 @@
         }
         .pdf-info-text {
             color: #666;
-            font-size: 11px;
+            font-size: 9px;
         }
     </style>
 </head>
@@ -273,7 +263,6 @@
                 <strong>Quotation #:</strong> {{ $quotation->quotation_number }}<br>
                 <strong>Date:</strong> {{ \Carbon\Carbon::parse($quotation->date)->format('d-m-Y') }}
             </div>
-            <span class="status-badge">{{ strtoupper($quotation->status) }}</span>
         </div>
     </div>
 
@@ -281,13 +270,7 @@
     <div class="info-row clearfix">
         <div class="bill-to-section">
             <div class="section-label">BILL TO:</div>
-            <div class="customer-name">{{ $quotation->customer->name ?? '-' }}</div>
-            <div class="customer-info">
-                @if($quotation->customer)
-                    @if($quotation->customer->address){{ $quotation->customer->address }}<br>@endif
-                    @if($quotation->customer->mobile)Phone: {{ $quotation->customer->mobile }}@endif
-                @endif
-            </div>
+            @include('partials._pdf_bill_to', ['customer' => $quotation->customer])
         </div>
         @if($quotation->subject)
         <div class="subject-section">
@@ -338,21 +321,21 @@
             }
         }
     @endphp
-    <table border="1" cellpadding="10" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 25px; border-color: #ccc;">
+    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 12px; border-color: #ccc;">
         <thead>
             <tr style="background-color: #405189; color: #fff;">
-                <th style="width: {{ $hasDimensions ? '5%' : '6%' }}; text-align: center; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">#</th>
-                <th style="width: {{ $hasDimensions ? '39%' : '54%' }}; text-align: left; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
+                <th style="width: {{ $hasDimensions ? '5%' : '6%' }}; text-align: center; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">#</th>
+                <th style="width: {{ $hasDimensions ? '39%' : '54%' }}; text-align: left; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
                 @if($hasDimensions)
-                <th style="width: 8%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">HEIGHT</th>
-                <th style="width: 8%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">WIDTH</th>
-                <th style="width: 8%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">SQFT</th>
+                <th style="width: 8%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">HEIGHT</th>
+                <th style="width: 8%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">WIDTH</th>
+                <th style="width: 8%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">SQFT</th>
                 @endif
-                <th style="width: {{ $hasDimensions ? '8%' : '13%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">QTY</th>
-                <th style="width: {{ $hasDimensions ? '12%' : '13%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">RATE ({{ $currencySymbol }})</th>
-                <th style="width: {{ $hasDimensions ? '12%' : '14%' }}; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">AMOUNT ({{ $currencySymbol }})</th>
+                <th style="width: {{ $hasDimensions ? '8%' : '13%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">QTY</th>
+                <th style="width: {{ $hasDimensions ? '12%' : '13%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">RATE ({{ $currencySymbol }})</th>
+                <th style="width: {{ $hasDimensions ? '12%' : '14%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">AMOUNT ({{ $currencySymbol }})</th>
                 @if($hasLineTax)
-                <th style="width: 10%; text-align: right; padding: 10px; font-size: 11px; font-weight: bold; border: 1px solid #ccc;">TAX</th>
+                <th style="width: 10%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">TAX</th>
                 @endif
             </tr>
         </thead>
@@ -367,19 +350,19 @@
                 }
             @endphp
             <tr>
-                <td style="text-align: center; padding: 10px; font-size: 12px; font-weight: bold; border: 1px solid #ccc;">{{ $index + 1 }}</td>
-                <td style="text-align: left; padding: 10px; font-size: 12px; border: 1px solid #ccc;">@if(!empty($item['service_name']))<strong>{{ $item['service_name'] }}</strong><br>@endif{{ $item['description'] ?? '-' }}@if(!empty($item['passenger_type']))<br><span style="font-size: 10px; color: #888;">{{ $item['passenger_type'] }}</span>@endif</td>
+                <td style="text-align: center; padding: 5px 6px; font-size: 10px; font-weight: bold; border: 1px solid #ccc;">{{ $index + 1 }}</td>
+                <td style="text-align: left; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">@if(!empty($item['service_name']))<strong>{{ $item['service_name'] }}</strong>@if(!empty($item['passenger_type'])) <span style="font-size: 8px; color: #888;">· {{ $item['passenger_type'] }}</span>@endif<br>@endif{{ $item['description'] ?? '-' }}@if(empty($item['service_name']) && !empty($item['passenger_type'])) <span style="font-size: 8px; color: #888;">· {{ $item['passenger_type'] }}</span>@endif</td>
                 @if($hasDimensions)
-                <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $formatDimension($item['height'] ?? null) }}</td>
-                <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $formatDimension($item['width'] ?? null) }}</td>
-                <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ $formatDimension($item['total'] ?? null) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ $formatDimension($item['height'] ?? null) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ $formatDimension($item['width'] ?? null) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ $formatDimension($item['total'] ?? null) }}</td>
                 @endif
-                <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ number_format($item['qty'] ?? 0, 0) }}</td>
-                <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ number_format($item['rate'] ?? 0, 0) }}</td>
-                <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">{{ number_format($itemAmount, 0) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($item['qty'] ?? 0, 0) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($item['rate'] ?? 0, 0) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($itemAmount, 0) }}</td>
                 @if($hasLineTax)
                 @php $rowTaxType = $item['tax_type'] ?? 'none'; $rowTaxRate = (float) ($item['tax_rate'] ?? 0); @endphp
-                <td style="text-align: right; padding: 10px; font-size: 12px; border: 1px solid #ccc;">@if($rowTaxType !== 'none' && $rowTaxRate > 0){{ strtoupper($rowTaxType) }} {{ rtrim(rtrim(number_format($rowTaxRate, 2), '0'), '.') }}%@else-@endif</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">@if($rowTaxType !== 'none' && $rowTaxRate > 0){{ strtoupper($rowTaxType) }} {{ rtrim(rtrim(number_format($rowTaxRate, 2), '0'), '.') }}%@else-@endif</td>
                 @endif
             </tr>
             @endforeach
@@ -402,20 +385,20 @@
             <div class="terms-text">{!! nl2br(e($quotation->terms)) !!}</div>
             @endif
             @if($quotation->payment_terms)
-            <div class="terms-title" style="margin-top: 12px;">Payment Terms:</div>
+            <div class="terms-title" style="margin-top: 6px;">Payment Terms:</div>
             <div class="terms-text">{!! nl2br(e($quotation->payment_terms)) !!}</div>
             @endif
         </div>
         <div class="totals-section">
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Subtotal:</td>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->subtotal, 0) }}</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Subtotal:</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->subtotal, 0) }}</td>
                 </tr>
                 @if($quotation->discount > 0)
                 <tr>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Discount:</td>
-                    <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #e74c3c;">- {{ $currencySymbol }} {{ number_format($quotation->discount, 0) }}</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Discount:</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #e74c3c;">- {{ $currencySymbol }} {{ number_format($quotation->discount, 0) }}</td>
                 </tr>
                 @endif
                 @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
@@ -423,46 +406,46 @@
                     @if($lineTaxByType['gst'] > 0)
                         @if($quotation->gst_split)
                         <tr>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
+                            <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                            <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
                         </tr>
                         <tr>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
+                            <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                            <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'] / 2, 0) }}</td>
                         </tr>
                         @else
                         <tr>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                            <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'], 0) }}</td>
+                            <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                            <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($lineTaxByType['gst'], 0) }}</td>
                         </tr>
                         @endif
                     @endif
                     @if($lineTaxByType['vat'] > 0)
                     <tr>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">VAT:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60;">+ {{ $currencySymbol }} {{ number_format($lineTaxByType['vat'], 0) }}</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">VAT:</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60;">+ {{ $currencySymbol }} {{ number_format($lineTaxByType['vat'], 0) }}</td>
                     </tr>
                     @endif
                 @elseif($quotation->gst_percent > 0)
                     @if($quotation->gst_split)
                     <tr>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst / 2, 0) }}</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">CGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst / 2, 0) }}</td>
                     </tr>
                     <tr>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst / 2, 0) }}</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">SGST ({{ $quotation->gst_percent / 2 }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst / 2, 0) }}</td>
                     </tr>
                     @else
                     <tr>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
-                        <td style="padding: 10px 8px; font-size: 13px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst, 0) }}</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst, 0) }}</td>
                     </tr>
                     @endif
                 @endif
                 <tr style="background-color: #f0f4f8;">
-                    <td style="padding: 12px 8px; font-size: 14px; text-align: right; font-weight: bold; color: #333;">Grand Total:</td>
-                    <td style="padding: 12px 8px; font-size: 16px; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->grand_total, 0) }}</td>
+                    <td style="padding: 6px; font-size: 12px; text-align: right; font-weight: bold; color: #333;">Grand Total:</td>
+                    <td style="padding: 6px; font-size: 13px; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->grand_total, 0) }}</td>
                 </tr>
             </table>
         </div>
