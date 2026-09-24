@@ -19,6 +19,7 @@ use App\Models\TaskStatus;
 use App\Models\StaffPosition;
 use App\Models\Service;
 use App\Models\PassengerType;
+use App\Models\TermTemplate;
 use Illuminate\Http\Request;
 
 class MasterController extends Controller
@@ -799,5 +800,106 @@ class MasterController extends Controller
         $passengerType->update(['is_active' => !$passengerType->is_active]);
         $message = $passengerType->is_active ? 'Passenger type activated.' : 'Passenger type deactivated.';
         return redirect()->back()->with('success', $message);
+    }
+
+    /*
+     * Terms & Conditions / Payment Terms share one table (term_templates),
+     * routed as /masters/terms-conditions and /masters/payment-terms.
+     */
+    private const TERM_TEMPLATE_TYPES = [
+        'terms-conditions' => ['type' => TermTemplate::TYPE_TERMS, 'label' => 'Terms & Conditions', 'singular' => 'Terms & Conditions', 'icon' => 'bi-file-text'],
+        'payment-terms'    => ['type' => TermTemplate::TYPE_PAYMENT, 'label' => 'Payment Terms', 'singular' => 'Payment Terms', 'icon' => 'bi-cash-coin'],
+    ];
+
+    private function termTemplateConfig(string $slug): array
+    {
+        abort_unless(isset(self::TERM_TEMPLATE_TYPES[$slug]), 404);
+        return self::TERM_TEMPLATE_TYPES[$slug] + ['slug' => $slug];
+    }
+
+    public function termTemplates(Request $request, string $type)
+    {
+        $config = $this->termTemplateConfig($type);
+        $query = TermTemplate::ofType($config['type'])->orderByDesc('is_default')->ordered();
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        $items = $query->get();
+        $inactiveCount = TermTemplate::ofType($config['type'])->onlyTrashed()->count();
+        return view('admin.masters.term-templates', compact('items', 'inactiveCount', 'config'));
+    }
+
+    public function termTemplatesTrashed(Request $request, string $type)
+    {
+        $config = $this->termTemplateConfig($type);
+        $query = TermTemplate::ofType($config['type'])->onlyTrashed()->orderBy('name');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        $items = $query->get();
+        $activeCount = TermTemplate::ofType($config['type'])->count();
+        return view('admin.masters.term-templates-trashed', compact('items', 'activeCount', 'config'));
+    }
+
+    public function storeTermTemplate(Request $request, string $type)
+    {
+        $config = $this->termTemplateConfig($type);
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'content' => 'required|string|max:5000',
+        ]);
+
+        $template = TermTemplate::create([
+            'type' => $config['type'],
+            'name' => $validated['name'],
+            'content' => $validated['content'],
+            'sort_order' => TermTemplate::withTrashed()->ofType($config['type'])->max('sort_order') + 1,
+        ]);
+        $this->syncDefaultTermTemplate($template, $request->boolean('is_default'));
+
+        return redirect()->route('admin.masters.term-templates', $type)->with('success', $config['singular'] . ' added successfully.');
+    }
+
+    public function updateTermTemplate(Request $request, string $type, TermTemplate $termTemplate)
+    {
+        $config = $this->termTemplateConfig($type);
+        abort_unless($termTemplate->type === $config['type'], 404);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'content' => 'required|string|max:5000',
+        ]);
+
+        $termTemplate->update($validated);
+        $this->syncDefaultTermTemplate($termTemplate, $request->boolean('is_default'));
+
+        return redirect()->route('admin.masters.term-templates', $type)->with('success', $config['singular'] . ' updated successfully.');
+    }
+
+    public function toggleTermTemplate(string $type, $id)
+    {
+        $config = $this->termTemplateConfig($type);
+        $template = TermTemplate::withTrashed()->ofType($config['type'])->findOrFail($id);
+        if ($template->trashed()) {
+            $template->restore();
+            return redirect()->back()->with('success', $config['singular'] . ' restored.');
+        }
+
+        $template->update(['is_default' => false]);
+        $template->delete();
+        return redirect()->back()->with('success', $config['singular'] . ' deleted.');
+    }
+
+    /**
+     * Only one default per type.
+     */
+    private function syncDefaultTermTemplate(TermTemplate $template, bool $isDefault): void
+    {
+        if ($isDefault) {
+            TermTemplate::withTrashed()->ofType($template->type)
+                ->where('id', '!=', $template->id)
+                ->update(['is_default' => false]);
+        }
+        $template->update(['is_default' => $isDefault]);
     }
 }

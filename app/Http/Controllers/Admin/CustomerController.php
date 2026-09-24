@@ -159,8 +159,7 @@ class CustomerController extends Controller
     {
         $cities = City::active()->orderBy('name')->get();
         $workLeads = WorkLead::active()->ordered()->get();
-        $trips = Trip::orderBy('trip_number', 'desc')->get();
-        return view('admin.customers.create', compact('cities', 'workLeads', 'trips'));
+        return view('admin.customers.create', compact('cities', 'workLeads'));
     }
 
     public function store(Request $request)
@@ -192,11 +191,7 @@ class CustomerController extends Controller
             unset($validated['city']);
         }
 
-        $customer = Customer::create($validated);
-
-        if ($request->filled('trip_ids')) {
-            Trip::whereIn('id', $request->trip_ids)->update(['customer_id' => $customer->id]);
-        }
+        Customer::create($validated);
 
         return redirect()->route('admin.customers.index')->with('success', 'Customer created successfully.');
     }

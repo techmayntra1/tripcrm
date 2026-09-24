@@ -36,7 +36,7 @@
         box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
     }
 </style>
-<form action="{{ route('admin.quotations.update', $quotation) }}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+<form action="{{ route('admin.quotations.update', $quotation) }}" method="POST" class="needs-validation" novalidate>
     @csrf
     @method('PUT')
     @if($errors->any())
@@ -127,41 +127,21 @@
             <div>
                 <i class="bi bi-list-check me-2"></i> Quotation Items
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <div class="btn-group" role="group">
-                    <input type="radio" class="btn-check" name="quotation_type" id="typePdf" value="pdf" {{ $quotation->quotation_type == 'pdf' ? 'checked' : '' }}>
-                    <label class="btn btn-outline-primary btn-sm" for="typePdf">
-                        <i class="bi bi-file-pdf me-1"></i> Upload PDF
-                    </label>
-                    <input type="radio" class="btn-check" name="quotation_type" id="typeItems" value="items" {{ $quotation->quotation_type == 'items' ? 'checked' : '' }}>
-                    <label class="btn btn-outline-primary btn-sm" for="typeItems">
-                        <i class="bi bi-list-ul me-1"></i> Add Items
-                    </label>
-                </div>
-                <button type="button" class="btn btn-sm btn-primary" id="addItemBtn" style="{{ $quotation->quotation_type == 'items' ? '' : 'display: none;' }}">
-                    <i class="bi bi-plus-lg me-1"></i> Add Item
-                </button>
-            </div>
+            <button type="button" class="btn btn-sm btn-primary" id="addItemBtn">
+                <i class="bi bi-plus-lg me-1"></i> Add Item
+            </button>
         </div>
-        <div class="card-body" id="pdfUploadSection" style="{{ $quotation->quotation_type == 'items' ? 'display: none;' : '' }}">
-            <div class="row">
-                <div class="col-md-5">
-                    <label for="quotation_pdf" class="form-label">Upload Quotation PDF @if(!$quotation->quotation_pdf)<span class="text-danger">*</span>@endif</label>
-                    <input type="file" class="form-control" id="quotation_pdf" name="quotation_pdf" accept=".pdf" {{ !$quotation->quotation_pdf && $quotation->quotation_type == 'pdf' ? 'required' : '' }}>
-                    <div class="invalid-feedback">Please upload a quotation PDF</div>
-                    @if($quotation->quotation_pdf)
-                    <small class="text-success"><i class="bi bi-check-circle me-1"></i>Current: {{ basename($quotation->quotation_pdf) }}</small>
-                    @else
-                    <small class="text-muted">Max 10MB. Leave empty to keep existing PDF.</small>
-                    @endif
-                </div>
-                <div class="col-md-7">
-                    <label for="pdf_description" class="form-label">Description</label>
-                    <input type="text" class="form-control" id="pdf_description" name="pdf_description" value="{{ old('pdf_description', $quotation->pdf_description) }}" placeholder="Brief description of the quotation...">
-                </div>
-            </div>
+        @if($quotation->quotation_type === 'pdf')
+        <div class="alert alert-warning rounded-0 mb-0 small">
+            <i class="bi bi-info-circle me-1"></i>
+            This quotation was created from an uploaded PDF.
+            @if($quotation->quotation_pdf)
+            <a href="{{ Storage::url($quotation->quotation_pdf) }}" target="_blank">View PDF</a>.
+            @endif
+            PDF upload is no longer supported — add line items below to save changes.
         </div>
-        <div class="card-body p-0" id="manualItemsSection" style="{{ $quotation->quotation_type == 'items' ? '' : 'display: none;' }}">
+        @endif
+        <div class="card-body p-0" id="manualItemsSection">
             @php
                 $hasSqft = false;
                 if($quotation->items && count($quotation->items) > 0) {
@@ -266,14 +246,8 @@
     </div>
     <div class="row">
         <div class="col-md-6">
-            <div class="main-card mb-3 card">
-                <div class="card-header">
-                    <i class="bi bi-card-text me-2"></i> Terms & Conditions
-                </div>
-                <div class="card-body">
-                    <textarea class="form-control" name="terms" rows="4" placeholder="Enter terms and conditions..." maxlength="2000">{{ old('terms', $quotation->terms) }}</textarea>
-                </div>
-            </div>
+            @include('partials._term_fields', ['name' => 'terms', 'label' => 'Terms & Conditions', 'icon' => 'bi-card-text', 'templates' => $termTemplates, 'value' => old('terms', $quotation->terms)])
+            @include('partials._term_fields', ['name' => 'payment_terms', 'label' => 'Payment Terms', 'icon' => 'bi-cash-coin', 'templates' => $paymentTermTemplates, 'value' => old('payment_terms', $quotation->payment_terms)])
         </div>
         <div class="col-md-6">
             <div class="main-card mb-3 card">
@@ -301,11 +275,11 @@
                             </td>
                         </tr>
                         <tr id="gstRow">
-                            <td class="py-2" id="gstLabel">GST</td>
+                            <td class="py-2" id="gstLabel">Tax</td>
                             <td class="py-2">
                                 <div class="input-group">
-                                    <span class="input-group-text d-none" id="gstPerLineNote" style="font-size:12px;">Per line</span>
-                                    <select class="form-select" style="max-width: 140px;" name="gst_percent" id="gstPercent">
+                                    <span class="input-group-text" id="gstPerLineNote" style="font-size:12px;">Per line</span>
+                                    <select class="form-select d-none" style="max-width: 140px;" name="gst_percent" id="gstPercent">
                                         @foreach($gstRates as $rate)
                                         <option value="{{ $rate->percentage }}" {{ old('gst_percent', $quotation->gst_percent) == $rate->percentage ? 'selected' : '' }}>{{ $rate->name }}</option>
                                         @endforeach
@@ -367,10 +341,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsBody = document.getElementById('itemsBody');
     const gstRow = document.getElementById('gstRow');
     const companySelect = document.getElementById('company');
-    const typePdf = document.getElementById('typePdf');
-    const typeItems = document.getElementById('typeItems');
-    const pdfSection = document.getElementById('pdfUploadSection');
-    const itemsSection = document.getElementById('manualItemsSection');
     const addItemBtn = document.getElementById('addItemBtn');
     const customerSelect = document.getElementById('customer');
     const tripSelect = document.getElementById('trip');
@@ -433,17 +403,6 @@ document.addEventListener('DOMContentLoaded', function() {
         filterTripsByCustomer(customerSelect.value);
     }
 
-    function toggleItemsRequired(isRequired) {
-        const inputs = itemsSection.querySelectorAll('input[name*="[description]"], input[name*="[qty]"], input[name*="[rate]"]');
-        inputs.forEach(function(input) {
-            if (isRequired) {
-                input.setAttribute('required', 'required');
-            } else {
-                input.removeAttribute('required');
-            }
-        });
-    }
-
     function calculateTotals() {
         const subtotalInput = document.getElementById('subtotalInput');
         const grandTotalInput = document.getElementById('grandTotalInput');
@@ -458,56 +417,37 @@ document.addEventListener('DOMContentLoaded', function() {
         let gstPortion = 0;  // GST-type tax only, used for CGST/SGST split
         let grandTotal;
 
-        if (typeItems.checked) {
-            // Per-line tax engine: each line has its own tax type + rate.
-            let gstTax = 0, vatTax = 0;
-            document.querySelectorAll('#itemsBody tr').forEach(function(row) {
-                const amtEl = row.querySelector('.amount');
-                const amt = amtEl ? (parseFloat(amtEl.value) || 0) : 0;
-                subtotal += amt;
-                if (!gstVisible) return;
-                const typeEl = row.querySelector('.tax-type');
-                const rateEl = row.querySelector('.tax-rate');
-                const type = typeEl ? typeEl.value : 'none';
-                const rate = rateEl ? (parseFloat(rateEl.value) || 0) : 0;
-                if (rate <= 0) return;
-                if (type === 'gst') {
-                    gstTax += gstInclusive ? (amt * rate) / (100 + rate) : (amt * rate) / 100;
-                } else if (type === 'vat') {
-                    vatTax += (amt * rate) / 100;
-                }
-            });
-            subtotal = Math.min(Math.round(subtotal), 99999999);
-            subtotalInput.value = subtotal;
-            gstPortion = gstTax;
-            gst = gstTax + vatTax;
-            // Inclusive GST is already embedded in the line amounts (subtotal); don't add it again.
-            const addTax = vatTax + (gstInclusive ? 0 : gstTax);
-            grandTotal = Math.round(subtotal - discount + addTax);
-            if (gstInclusive) {
-                gstSign.innerHTML = '<span class="js-currency-symbol">' + currencySymbol() + '</span>';
-                gstSign.classList.remove('text-success');
-            } else {
-                gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
-                gstSign.classList.add('text-success');
+        // Per-line tax engine: each line has its own tax type + rate.
+        let gstTax = 0, vatTax = 0;
+        document.querySelectorAll('#itemsBody tr').forEach(function(row) {
+            const amtEl = row.querySelector('.amount');
+            const amt = amtEl ? (parseFloat(amtEl.value) || 0) : 0;
+            subtotal += amt;
+            if (!gstVisible) return;
+            const typeEl = row.querySelector('.tax-type');
+            const rateEl = row.querySelector('.tax-rate');
+            const type = typeEl ? typeEl.value : 'none';
+            const rate = rateEl ? (parseFloat(rateEl.value) || 0) : 0;
+            if (rate <= 0) return;
+            if (type === 'gst') {
+                gstTax += gstInclusive ? (amt * rate) / (100 + rate) : (amt * rate) / 100;
+            } else if (type === 'vat') {
+                vatTax += (amt * rate) / 100;
             }
+        });
+        subtotal = Math.min(Math.round(subtotal), 99999999);
+        subtotalInput.value = subtotal;
+        gstPortion = gstTax;
+        gst = gstTax + vatTax;
+        // Inclusive GST is already embedded in the line amounts (subtotal); don't add it again.
+        const addTax = vatTax + (gstInclusive ? 0 : gstTax);
+        grandTotal = Math.round(subtotal - discount + addTax);
+        if (gstInclusive) {
+            gstSign.innerHTML = '<span class="js-currency-symbol">' + currencySymbol() + '</span>';
+            gstSign.classList.remove('text-success');
         } else {
-            // Document-level GST (PDF-upload mode, no line items).
-            subtotal = parseFloat(subtotalInput.value) || 0;
-            const gstPercent = gstVisible ? (parseFloat(document.getElementById('gstPercent').value) || 0) : 0;
-            const afterDiscount = subtotal - discount;
-            if (gstInclusive && gstPercent > 0) {
-                gst = (afterDiscount * gstPercent) / (100 + gstPercent);
-                grandTotal = Math.round(afterDiscount);
-                gstSign.innerHTML = '<span class="js-currency-symbol">' + currencySymbol() + '</span>';
-                gstSign.classList.remove('text-success');
-            } else {
-                gst = (afterDiscount * gstPercent) / 100;
-                grandTotal = Math.round(afterDiscount + gst);
-                gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
-                gstSign.classList.add('text-success');
-            }
-            gstPortion = gst;
+            gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
+            gstSign.classList.add('text-success');
         }
 
         document.getElementById('gstInput').value = Math.round(gst);
@@ -534,17 +474,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateTaxColumns() {
-        const show = typeItems.checked && gstRow.style.display !== 'none';
+        const show = gstRow.style.display !== 'none';
         document.querySelectorAll('.tax-col').forEach(function(el) {
             el.style.display = show ? '' : 'none';
         });
-    }
-
-    function updateSummaryTaxMode() {
-        const itemsMode = typeItems.checked;
-        document.getElementById('gstPercent').classList.toggle('d-none', itemsMode);
-        document.getElementById('gstPerLineNote').classList.toggle('d-none', !itemsMode);
-        document.getElementById('gstLabel').textContent = itemsMode ? 'Tax' : 'GST';
     }
 
     function updateGstVisibility() {
@@ -564,38 +497,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     companySelect.addEventListener('change', updateGstVisibility);
-
-    const pdfInput = document.getElementById('quotation_pdf');
-    const hasExistingPdf = {{ $quotation->quotation_pdf ? 'true' : 'false' }};
-
-    typePdf.addEventListener('change', function() {
-        if (this.checked) {
-            pdfSection.style.display = 'block';
-            itemsSection.style.display = 'none';
-            addItemBtn.style.display = 'none';
-            toggleItemsRequired(false);
-            if (!hasExistingPdf) {
-                pdfInput.setAttribute('required', 'required');
-            }
-            updateSummaryTaxMode();
-            updateTaxColumns();
-            calculateTotals();
-        }
-    });
-
-    typeItems.addEventListener('change', function() {
-        if (this.checked) {
-            pdfSection.style.display = 'none';
-            itemsSection.style.display = 'block';
-            addItemBtn.style.display = 'inline-block';
-            toggleItemsRequired(true);
-            pdfInput.removeAttribute('required');
-            pdfInput.classList.remove('is-invalid');
-            updateSummaryTaxMode();
-            updateTaxColumns();
-            calculateTotals();
-        }
-    });
 
     function hasSqftSelected() {
         const unitSelects = itemsBody.querySelectorAll('.unit-select');
@@ -785,35 +686,27 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
 
-        if (typePdf.checked && !hasExistingPdf && (!pdfInput.files || pdfInput.files.length === 0)) {
-            pdfInput.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        if (typeItems.checked) {
-            const rows = itemsBody.querySelectorAll('tr');
-            rows.forEach(function(row) {
-                const description = row.querySelector('textarea[name*="[description]"]');
-                const qty = row.querySelector('input[name*="[qty]"]');
-                const rate = row.querySelector('input[name*="[rate]"]');
-                const unitSelect = row.querySelector('.unit-select');
-                const isSqft = unitSelect && unitSelect.value.toLowerCase() === 'sqft';
-                if (description && qty && rate) {
-                    if (!description.value.trim()) {
-                        description.classList.add('is-invalid');
-                        isValid = false;
-                    }
-                    if ((parseFloat(qty.value) || 0) <= 0) {
-                        qty.classList.add('is-invalid');
-                        isValid = false;
-                    }
-                    if (!isSqft && (parseFloat(rate.value) || 0) <= 0) {
-                        rate.classList.add('is-invalid');
-                        isValid = false;
-                    }
+        itemsBody.querySelectorAll('tr').forEach(function(row) {
+            const description = row.querySelector('textarea[name*="[description]"]');
+            const qty = row.querySelector('input[name*="[qty]"]');
+            const rate = row.querySelector('input[name*="[rate]"]');
+            const unitSelect = row.querySelector('.unit-select');
+            const isSqft = unitSelect && unitSelect.value.toLowerCase() === 'sqft';
+            if (description && qty && rate) {
+                if (!description.value.trim()) {
+                    description.classList.add('is-invalid');
+                    isValid = false;
                 }
-            });
-        }
+                if ((parseFloat(qty.value) || 0) <= 0) {
+                    qty.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if (!isSqft && (parseFloat(rate.value) || 0) <= 0) {
+                    rate.classList.add('is-invalid');
+                    isValid = false;
+                }
+            }
+        });
 
         if (!isValid) {
             const firstError = document.querySelector('.is-invalid');
@@ -884,8 +777,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    toggleItemsRequired(typeItems.checked);
-    updateSummaryTaxMode();
     updateGstVisibility();
 });
 </script>

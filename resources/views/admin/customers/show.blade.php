@@ -124,7 +124,7 @@
                         <strong>{{ $customer->city_name }}</strong>
                     </div>
                     <div class="col-md-3">
-                        <small class="text-muted d-block">Lead Source</small>
+                        <small class="text-muted d-block">Customer Source</small>
                         <strong>{{ $customer->work_lead ?: '-' }}</strong>
                     </div>
                 </div>

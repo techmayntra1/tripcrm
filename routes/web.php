@@ -357,6 +357,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::get('/masters/services/trashed', [MasterController::class, 'servicesTrashed'])->name('masters.services.trashed');
         Route::get('/masters/passenger-types', [MasterController::class, 'passengerTypes'])->name('masters.passenger-types');
         Route::get('/masters/passenger-types/trashed', [MasterController::class, 'passengerTypesTrashed'])->name('masters.passenger-types.trashed');
+        Route::get('/masters/{type}', [MasterController::class, 'termTemplates'])->whereIn('type', ['terms-conditions', 'payment-terms'])->name('masters.term-templates');
+        Route::get('/masters/{type}/trashed', [MasterController::class, 'termTemplatesTrashed'])->whereIn('type', ['terms-conditions', 'payment-terms'])->name('masters.term-templates.trashed');
     });
     Route::middleware(['permission:masters,create'])->group(function () {
         Route::post('/masters/work-types', [MasterController::class, 'storeWorkType'])->name('masters.work-types.store');
@@ -375,6 +377,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/masters/staff-positions', [MasterController::class, 'storeStaffPosition'])->name('masters.staff-positions.store');
         Route::post('/masters/services', [MasterController::class, 'storeService'])->name('masters.services.store');
         Route::post('/masters/passenger-types', [MasterController::class, 'storePassengerType'])->name('masters.passenger-types.store');
+        Route::post('/masters/{type}', [MasterController::class, 'storeTermTemplate'])->whereIn('type', ['terms-conditions', 'payment-terms'])->name('masters.term-templates.store');
     });
     Route::middleware(['permission:masters,edit'])->group(function () {
         Route::put('/masters/work-types/{workType}', [MasterController::class, 'updateWorkType'])->name('masters.work-types.update');
@@ -409,6 +412,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         Route::post('/masters/services/{service}/toggle', [MasterController::class, 'toggleService'])->name('masters.services.toggle');
         Route::put('/masters/passenger-types/{passengerType}', [MasterController::class, 'updatePassengerType'])->name('masters.passenger-types.update');
         Route::post('/masters/passenger-types/{passengerType}/toggle', [MasterController::class, 'togglePassengerType'])->name('masters.passenger-types.toggle');
+        Route::put('/masters/{type}/{termTemplate}', [MasterController::class, 'updateTermTemplate'])->whereIn('type', ['terms-conditions', 'payment-terms'])->name('masters.term-templates.update');
+        Route::post('/masters/{type}/{id}/toggle', [MasterController::class, 'toggleTermTemplate'])->whereIn('type', ['terms-conditions', 'payment-terms'])->name('masters.term-templates.toggle');
     });
 
 

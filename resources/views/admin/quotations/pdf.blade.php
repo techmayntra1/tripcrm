@@ -399,7 +399,11 @@
         <div class="terms-section">
             @if($quotation->terms)
             <div class="terms-title">Terms & Conditions:</div>
-            <div class="terms-text">{{ $quotation->terms }}</div>
+            <div class="terms-text">{!! nl2br(e($quotation->terms)) !!}</div>
+            @endif
+            @if($quotation->payment_terms)
+            <div class="terms-title" style="margin-top: 12px;">Payment Terms:</div>
+            <div class="terms-text">{!! nl2br(e($quotation->payment_terms)) !!}</div>
             @endif
         </div>
         <div class="totals-section">

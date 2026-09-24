@@ -307,9 +307,11 @@
                     <i class="bi bi-card-text me-2"></i> Notes
                 </div>
                 <div class="card-body">
-                    <textarea class="form-control" name="notes" rows="4" maxlength="150">{{ old('notes', $invoice->notes) }}</textarea>
+                    <textarea class="form-control" name="notes" rows="3" placeholder="Notes..." maxlength="150">{{ old('notes', $invoice->notes) }}</textarea>
                 </div>
             </div>
+            @include('partials._term_fields', ['name' => 'terms', 'label' => 'Terms & Conditions', 'icon' => 'bi-file-text', 'templates' => $termTemplates, 'value' => old('terms', $invoice->terms)])
+            @include('partials._term_fields', ['name' => 'payment_terms', 'label' => 'Payment Terms', 'icon' => 'bi-cash-coin', 'templates' => $paymentTermTemplates, 'value' => old('payment_terms', $invoice->payment_terms)])
         </div>
         <div class="col-md-6">
             <div class="main-card mb-3 card">

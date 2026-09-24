@@ -24,6 +24,8 @@ class Invoice extends Model
         'pdf_description',
         'items',
         'notes',
+        'terms',
+        'payment_terms',
         'subtotal',
         'discount',
         'gst_percent',

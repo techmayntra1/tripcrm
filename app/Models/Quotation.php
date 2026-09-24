@@ -31,6 +31,7 @@ class Quotation extends Model
         'gst',
         'grand_total',
         'terms',
+        'payment_terms',
         'status',
     ];
 

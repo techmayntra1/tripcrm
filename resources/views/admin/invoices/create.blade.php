@@ -108,14 +108,13 @@
             <div class="row">
                 <div class="col-md-3">
                     <div class="mb-3">
-                        <label for="trip" class="form-label">Trip <span class="text-danger">*</span></label>
-                        <select class="form-select" id="trip" name="trip_id" {{ isset($selectedTripId) && $selectedTripId ? 'disabled' : '' }} required>
-                            <option value="">Select Trip</option>
+                        <label for="trip" class="form-label">Trip</label>
+                        <select class="form-select" id="trip" name="trip_id" {{ isset($selectedTripId) && $selectedTripId ? 'disabled' : '' }}>
+                            <option value="">Select Trip (Optional)</option>
                             @foreach($trips as $trip)
                                 <option value="{{ $trip->id }}" data-customer="{{ $trip->customer_id }}" {{ (old('trip_id', $selectedTripId ?? '') == $trip->id) ? 'selected' : '' }}>{{ $trip->trip_number }} - {{ $trip->name }}</option>
                             @endforeach
                         </select>
-                        <div class="invalid-feedback">Please select a trip</div>
                         @if(isset($selectedTripId) && $selectedTripId)
                             <input type="hidden" name="trip_id" value="{{ $selectedTripId }}">
                         @endif
@@ -138,6 +137,8 @@
                                     data-gst-split="{{ $quotation->gst_split ? '1' : '0' }}"
                                     data-gst="{{ $quotation->gst }}"
                                     data-grand-total="{{ $quotation->grand_total }}"
+                                    data-terms="{{ $quotation->terms }}"
+                                    data-payment-terms="{{ $quotation->payment_terms }}"
                                     {{ (old('quotation_id', $selectedQuotationId ?? '') == $quotation->id) ? 'selected' : '' }}>
                                     {{ $quotation->quotation_number }}{{ $quotation->customer ? ' - '.$quotation->customer->name : '' }}
                                 </option>
@@ -259,9 +260,11 @@
                     <i class="bi bi-card-text me-2"></i> Notes
                 </div>
                 <div class="card-body">
-                    <textarea class="form-control" name="notes" rows="4" placeholder="Payment terms, notes, etc." maxlength="150">{{ old('notes') }}</textarea>
+                    <textarea class="form-control" name="notes" rows="3" placeholder="Notes..." maxlength="150">{{ old('notes') }}</textarea>
                 </div>
             </div>
+            @include('partials._term_fields', ['name' => 'terms', 'label' => 'Terms & Conditions', 'icon' => 'bi-file-text', 'templates' => $termTemplates, 'value' => old('terms'), 'useDefault' => !session()->hasOldInput()])
+            @include('partials._term_fields', ['name' => 'payment_terms', 'label' => 'Payment Terms', 'icon' => 'bi-cash-coin', 'templates' => $paymentTermTemplates, 'value' => old('payment_terms'), 'useDefault' => !session()->hasOldInput()])
         </div>
         <div class="col-md-6">
             <div class="main-card mb-3 card">
@@ -748,6 +751,13 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('gstInclusive').checked = gstInclusive;
             document.getElementById('gstSplit').checked = gstSplit;
 
+            // Carry the quotation's terms over (keeps current text when the quotation has none)
+            [['terms_input', 'data-terms'], ['payment_terms_input', 'data-payment-terms']].forEach(function(pair) {
+                const text = option.getAttribute(pair[1]);
+                const field = document.getElementById(pair[0]);
+                if (field && text) field.value = text;
+            });
+
             if (items && items.length > 0) {
                 typeItems.checked = true;
                 typeItems.dispatchEvent(new Event('change'));
@@ -860,12 +870,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const customerInput = document.getElementById('customer');
         if (customerInput.selectedIndex === 0 || !customerInput.value) {
             customerInput.classList.add('is-invalid');
-            isValid = false;
-        }
-
-        const tripInput = document.getElementById('trip');
-        if ((tripInput.selectedIndex === 0 || !tripInput.value) && !tripInput.disabled) {
-            tripInput.classList.add('is-invalid');
             isValid = false;
         }
 

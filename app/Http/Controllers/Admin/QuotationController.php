@@ -11,9 +11,9 @@ use App\Models\Quotation;
 use App\Models\Service;
 use App\Models\Unit;
 use App\Models\PassengerType;
+use App\Models\TermTemplate;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class QuotationController extends Controller
 {
@@ -112,46 +112,47 @@ class QuotationController extends Controller
         $gstRates = GstRate::active()->get();
         $passengerTypes = PassengerType::active()->ordered()->get();
         $services = Service::active()->ordered()->get();
+        $termTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_TERMS);
+        $paymentTermTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_PAYMENT);
 
-        return view('admin.quotations.create', compact('companies', 'customers', 'trips', 'units', 'gstRates', 'passengerTypes', 'services'));
+        return view('admin.quotations.create', compact('companies', 'customers', 'trips', 'units', 'gstRates', 'passengerTypes', 'services', 'termTemplates', 'paymentTermTemplates'));
     }
 
-    public function store(Request $request)
+    private function validationRules(): array
     {
-        $rules = [
+        return [
             'date' => 'required|date',
             'company_id' => 'required|exists:companies,id',
             'customer_id' => 'required|exists:customers,id',
             'trip_id' => 'nullable|exists:trips,id',
             'subject' => 'nullable|string|max:150',
-            'quotation_type' => 'required|in:pdf,items',
-            'quotation_pdf' => 'nullable|file|mimes:pdf|max:10240',
-            'pdf_description' => 'nullable|string|max:500',
             'subtotal' => 'required|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'gst_percent' => 'nullable|numeric',
             'gst' => 'nullable|numeric|min:0',
             'grand_total' => 'required|numeric|min:0',
-            'terms' => 'nullable|string|max:2000',
+            'terms' => 'nullable|string|max:5000',
+            'payment_terms' => 'nullable|string|max:5000',
+            'items' => 'required|array|min:1',
+            'items.*.description' => 'required|string|min:1',
+            'items.*.service_id' => 'nullable|exists:services,id',
+            'items.*.service_name' => 'nullable|string|max:100',
+            'items.*.passenger_type' => 'nullable|string|max:100',
+            'items.*.tax_type' => 'nullable|in:none,gst,vat',
+            'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+            'items.*.unit' => 'nullable|string',
+            'items.*.height' => 'nullable|numeric|min:0',
+            'items.*.width' => 'nullable|numeric|min:0',
+            'items.*.total' => 'nullable|numeric|min:0',
+            'items.*.qty' => 'required|numeric|min:0.01',
+            'items.*.rate' => 'nullable|numeric|min:0',
+            'items.*.amount' => 'nullable|numeric|min:0',
         ];
+    }
 
-
-        if ($request->input('quotation_type') === 'items') {
-            $rules['items'] = 'required|array|min:1';
-            $rules['items.*.description'] = 'required|string|min:1';
-            $rules['items.*.service_id'] = 'nullable|exists:services,id';
-            $rules['items.*.service_name'] = 'nullable|string|max:100';
-            $rules['items.*.passenger_type'] = 'nullable|string|max:100';
-            $rules['items.*.tax_type'] = 'nullable|in:none,gst,vat';
-            $rules['items.*.tax_rate'] = 'nullable|numeric|min:0|max:100';
-            $rules['items.*.unit'] = 'nullable|string';
-            $rules['items.*.height'] = 'nullable|numeric|min:0';
-            $rules['items.*.width'] = 'nullable|numeric|min:0';
-            $rules['items.*.total'] = 'nullable|numeric|min:0';
-            $rules['items.*.qty'] = 'required|numeric|min:0.01';
-            $rules['items.*.rate'] = 'nullable|numeric|min:0';
-            $rules['items.*.amount'] = 'nullable|numeric|min:0';
-        }
+    public function store(Request $request)
+    {
+        $rules = $this->validationRules();
 
         $validated = $request->validate($rules, [
             'company_id.required' => 'Please select a company.',
@@ -171,25 +172,6 @@ class QuotationController extends Controller
             }
         }
 
-        $pdfPath = null;
-        if ($request->hasFile('quotation_pdf')) {
-            $pdfPath = $request->file('quotation_pdf')->store('quotations', 'public');
-        }
-
-        $items = null;
-        if ($validated['quotation_type'] === 'items' && !empty($validated['items'] ?? null)) {
-            $items = collect($validated['items'])->map(function ($item) {
-                if (!isset($item['amount']) || $item['amount'] === null || $item['amount'] === '') {
-                    if (strtolower($item['unit'] ?? '') === 'sqft') {
-                        $item['amount'] = ($item['total'] ?? 0) * ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
-                    } else {
-                        $item['amount'] = ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
-                    }
-                }
-                return $item;
-            })->toArray();
-        }
-
         $status = 'sent';
 
         $quotation = Quotation::create([
@@ -198,10 +180,8 @@ class QuotationController extends Controller
             'customer_id' => $validated['customer_id'],
             'trip_id' => $validated['trip_id'] ?? null,
             'subject' => $validated['subject'] ?? null,
-            'quotation_type' => $validated['quotation_type'],
-            'quotation_pdf' => $pdfPath,
-            'pdf_description' => $validated['pdf_description'] ?? null,
-            'items' => $items,
+            'quotation_type' => 'items',
+            'items' => $this->normalizeItems($validated['items']),
             'subtotal' => $validated['subtotal'] ?? 0,
             'discount' => $validated['discount'] ?? 0,
             'gst_percent' => $validated['gst_percent'] ?? 0,
@@ -210,6 +190,7 @@ class QuotationController extends Controller
             'gst' => $validated['gst'] ?? 0,
             'grand_total' => $validated['grand_total'] ?? 0,
             'terms' => $validated['terms'] ?? null,
+            'payment_terms' => $validated['payment_terms'] ?? null,
             'status' => $status,
         ]);
 
@@ -236,8 +217,24 @@ class QuotationController extends Controller
         $gstRates = GstRate::active()->get();
         $passengerTypes = PassengerType::active()->ordered()->get();
         $services = Service::active()->ordered()->get();
+        $termTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_TERMS);
+        $paymentTermTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_PAYMENT);
 
-        return view('admin.quotations.edit', compact('quotation', 'companies', 'customers', 'trips', 'units', 'gstRates', 'passengerTypes', 'services'));
+        return view('admin.quotations.edit', compact('quotation', 'companies', 'customers', 'trips', 'units', 'gstRates', 'passengerTypes', 'services', 'termTemplates', 'paymentTermTemplates'));
+    }
+
+    private function normalizeItems(array $items): array
+    {
+        return collect($items)->map(function ($item) {
+            if (!isset($item['amount']) || $item['amount'] === null || $item['amount'] === '') {
+                if (strtolower($item['unit'] ?? '') === 'sqft') {
+                    $item['amount'] = ($item['total'] ?? 0) * ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
+                } else {
+                    $item['amount'] = ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
+                }
+            }
+            return $item;
+        })->toArray();
     }
 
     public function update(Request $request, Quotation $quotation)
@@ -246,41 +243,9 @@ class QuotationController extends Controller
             return redirect()->route('admin.quotations.show', $quotation);
         }
 
-        $rules = [
-            'date' => 'required|date',
-            'company_id' => 'required|exists:companies,id',
-            'customer_id' => 'required|exists:customers,id',
-            'trip_id' => 'nullable|exists:trips,id',
-            'subject' => 'nullable|string|max:150',
-            'quotation_type' => 'required|in:pdf,items',
-            'quotation_pdf' => 'nullable|file|mimes:pdf|max:10240',
-            'pdf_description' => 'nullable|string|max:500',
-            'subtotal' => 'required|numeric|min:0',
-            'discount' => 'nullable|numeric|min:0',
-            'gst_percent' => 'nullable|numeric',
-            'gst' => 'nullable|numeric|min:0',
-            'grand_total' => 'required|numeric|min:0',
-            'terms' => 'nullable|string|max:2000',
+        $rules = $this->validationRules() + [
             'status' => 'nullable|in:sent,accepted,rejected,expired',
         ];
-
-
-        if ($request->input('quotation_type') === 'items') {
-            $rules['items'] = 'required|array|min:1';
-            $rules['items.*.description'] = 'required|string|min:1';
-            $rules['items.*.service_id'] = 'nullable|exists:services,id';
-            $rules['items.*.service_name'] = 'nullable|string|max:100';
-            $rules['items.*.passenger_type'] = 'nullable|string|max:100';
-            $rules['items.*.tax_type'] = 'nullable|in:none,gst,vat';
-            $rules['items.*.tax_rate'] = 'nullable|numeric|min:0|max:100';
-            $rules['items.*.unit'] = 'nullable|string';
-            $rules['items.*.height'] = 'nullable|numeric|min:0';
-            $rules['items.*.width'] = 'nullable|numeric|min:0';
-            $rules['items.*.total'] = 'nullable|numeric|min:0';
-            $rules['items.*.qty'] = 'required|numeric|min:0.01';
-            $rules['items.*.rate'] = 'nullable|numeric|min:0';
-            $rules['items.*.amount'] = 'nullable|numeric|min:0';
-        }
 
         $validated = $request->validate($rules, [
             'company_id.required' => 'Please select a company.',
@@ -300,38 +265,15 @@ class QuotationController extends Controller
             }
         }
 
-        if ($request->hasFile('quotation_pdf')) {
-            if ($quotation->quotation_pdf) {
-                Storage::disk('public')->delete($quotation->quotation_pdf);
-            }
-            $validated['quotation_pdf'] = $request->file('quotation_pdf')->store('quotations', 'public');
-        }
-
-        if ($validated['quotation_type'] === 'items' && !empty($validated['items'] ?? null)) {
-            $validated['items'] = collect($validated['items'])->map(function ($item) {
-                if (!isset($item['amount']) || $item['amount'] === null || $item['amount'] === '') {
-                    if (strtolower($item['unit'] ?? '') === 'sqft') {
-                        $item['amount'] = ($item['total'] ?? 0) * ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
-                    } else {
-                        $item['amount'] = ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
-                    }
-                }
-                return $item;
-            })->toArray();
-        } else {
-            $validated['items'] = null;
-        }
-
+        // Uploaded-PDF quotations are no longer supported; saving converts them to item-based.
         $quotation->update([
             'date' => $validated['date'],
             'company_id' => $validated['company_id'],
             'customer_id' => $validated['customer_id'],
             'trip_id' => $validated['trip_id'] ?? null,
             'subject' => $validated['subject'] ?? null,
-            'quotation_type' => $validated['quotation_type'],
-            'quotation_pdf' => $validated['quotation_pdf'] ?? $quotation->quotation_pdf,
-            'pdf_description' => $validated['pdf_description'] ?? null,
-            'items' => $validated['items'],
+            'quotation_type' => 'items',
+            'items' => $this->normalizeItems($validated['items']),
             'subtotal' => $validated['subtotal'] ?? 0,
             'discount' => $validated['discount'] ?? 0,
             'gst_percent' => $validated['gst_percent'] ?? 0,
@@ -340,6 +282,7 @@ class QuotationController extends Controller
             'gst' => $validated['gst'] ?? 0,
             'grand_total' => $validated['grand_total'] ?? 0,
             'terms' => $validated['terms'] ?? null,
+            'payment_terms' => $validated['payment_terms'] ?? null,
             'status' => $validated['status'] ?? $quotation->status,
         ]);
 

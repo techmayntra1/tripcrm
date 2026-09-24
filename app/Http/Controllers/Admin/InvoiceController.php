@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\Trip;
 use App\Models\Quotation;
 use App\Models\Service;
+use App\Models\TermTemplate;
 use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -141,6 +142,8 @@ class InvoiceController extends Controller
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
         $services = Service::active()->ordered()->get();
+        $termTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_TERMS);
+        $paymentTermTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_PAYMENT);
 
         return view('admin.invoices.create', compact(
             'customers',
@@ -152,7 +155,9 @@ class InvoiceController extends Controller
             'selectedQuotationId',
             'units',
             'gstRates',
-            'services'
+            'services',
+            'termTemplates',
+            'paymentTermTemplates'
         ));
     }
 
@@ -163,7 +168,7 @@ class InvoiceController extends Controller
             'due_date' => 'nullable|date|after_or_equal:date',
             'company_id' => 'nullable|exists:companies,id',
             'customer_id' => 'required|exists:customers,id',
-            'trip_id' => 'required|exists:trips,id',
+            'trip_id' => 'nullable|exists:trips,id',
             'quotation_id' => 'nullable|exists:quotations,id',
             'subject' => 'nullable|string|max:200',
             'invoice_type' => 'required|in:items,pdf',
@@ -174,6 +179,8 @@ class InvoiceController extends Controller
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string|max:150',
+            'terms' => 'nullable|string|max:5000',
+            'payment_terms' => 'nullable|string|max:5000',
             'subtotal' => 'required|numeric|min:0.01',
             'discount' => 'nullable|numeric|min:0',
             'gst_percent' => 'nullable|in:5,18',
@@ -255,8 +262,10 @@ class InvoiceController extends Controller
         $units = Unit::active()->get();
         $gstRates = GstRate::active()->get();
         $services = Service::active()->ordered()->get();
+        $termTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_TERMS);
+        $paymentTermTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_PAYMENT);
 
-        return view('admin.invoices.edit', compact('invoice', 'customers', 'trips', 'companies', 'quotations', 'fromTrip', 'units', 'gstRates', 'services'));
+        return view('admin.invoices.edit', compact('invoice', 'customers', 'trips', 'companies', 'quotations', 'fromTrip', 'units', 'gstRates', 'services', 'termTemplates', 'paymentTermTemplates'));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -283,6 +292,8 @@ class InvoiceController extends Controller
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'notes' => 'nullable|string|max:150',
+            'terms' => 'nullable|string|max:5000',
+            'payment_terms' => 'nullable|string|max:5000',
             'subtotal' => 'nullable|numeric|min:0',
             'discount' => 'nullable|numeric|min:0',
             'gst_percent' => 'nullable|in:5,18',

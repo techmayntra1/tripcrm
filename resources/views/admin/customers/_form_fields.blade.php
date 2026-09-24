@@ -1,4 +1,4 @@
-{{-- Customer form fields shared by create and edit. Expects $workLeads, $trips and an optional $customer. --}}
+{{-- Customer form fields shared by create and edit. Expects $workLeads, an optional $customer, and $trips when editing. --}}
 @php
     $c = $customer ?? null;
     $selectedCountry = old('country', $c->country ?? 'India');
@@ -48,9 +48,9 @@
     </div>
     <div class="col-md-6">
         <div class="mb-3">
-            <label for="work_lead" class="form-label">Lead Source</label>
+            <label for="work_lead" class="form-label">Customer Source</label>
             <select class="form-select @error('work_lead') is-invalid @enderror" id="work_lead" name="work_lead">
-                <option value="">Select Lead Source</option>
+                <option value="">Select Customer Source</option>
                 @foreach($workLeads as $source)
                     <option value="{{ $source->name }}" {{ old('work_lead', $c->work_lead ?? '') == $source->name ? 'selected' : '' }}>{{ $source->name }}</option>
                 @endforeach
@@ -119,6 +119,8 @@
         </div>
     </div>
 </div>
+@if($c)
+{{-- Trips are linked from the trip side on create; only editable on an existing customer. --}}
 <div class="row">
     <div class="col-md-12">
         <div class="mb-3">
@@ -135,6 +137,7 @@
         </div>
     </div>
 </div>
+@endif
 <div class="mb-3">
     <label for="address" class="form-label">Address</label>
     <textarea class="form-control @error('address') is-invalid @enderror" id="address" name="address" rows="2" placeholder="Enter full address" maxlength="150">{{ old('address', $c->address ?? '') }}</textarea>
@@ -198,7 +201,7 @@ $(document).ready(function() {
 
     $('#country').select2({ width: '100%', theme: 'bootstrap-5', placeholder: 'Select Country' });
 
-    $('#trip_ids').select2({
+    $('#trip_ids').length && $('#trip_ids').select2({
         placeholder: 'Select Trips',
         allowClear: true,
         width: '100%',

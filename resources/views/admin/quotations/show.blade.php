@@ -221,6 +221,10 @@
                 <h6>Terms & Conditions:</h6>
                 <p class="text-muted small" style="white-space: pre-line;">{{ $quotation->terms }}</p>
                 @endif
+                @if($quotation->payment_terms)
+                <h6>Payment Terms:</h6>
+                <p class="text-muted small" style="white-space: pre-line;">{{ $quotation->payment_terms }}</p>
+                @endif
             </div>
             <div class="col-md-6">
                 <table class="table table-sm">

@@ -226,6 +226,14 @@
                         <h6>Notes:</h6>
                         <p class="text-muted small mb-0" style="white-space: pre-line;">{{ $invoice->notes }}</p>
                         @endif
+                        @if($invoice->terms)
+                        <h6 class="mt-3">Terms & Conditions:</h6>
+                        <p class="text-muted small mb-0" style="white-space: pre-line;">{{ $invoice->terms }}</p>
+                        @endif
+                        @if($invoice->payment_terms)
+                        <h6 class="mt-3">Payment Terms:</h6>
+                        <p class="text-muted small mb-0" style="white-space: pre-line;">{{ $invoice->payment_terms }}</p>
+                        @endif
                     </div>
                     <div class="col-md-6">
                         <table class="table table-sm">

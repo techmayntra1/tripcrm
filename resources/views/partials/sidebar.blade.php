@@ -255,6 +255,16 @@
                             <i class="bi bi-cash-stack"></i> <span>Expense Types</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.masters.term-templates', 'terms-conditions') }}" class="nav-link menu-link {{ request()->routeIs('admin.masters.term-templates*') && request()->route('type') === 'terms-conditions' ? 'active' : '' }}">
+                            <i class="bi bi-file-text"></i> <span>Terms &amp; Conditions</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.masters.term-templates', 'payment-terms') }}" class="nav-link menu-link {{ request()->routeIs('admin.masters.term-templates*') && request()->route('type') === 'payment-terms' ? 'active' : '' }}">
+                            <i class="bi bi-cash-coin"></i> <span>Payment Terms</span>
+                        </a>
+                    </li>
                 </div>
                 @endif
 

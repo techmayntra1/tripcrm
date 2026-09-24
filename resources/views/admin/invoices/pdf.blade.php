@@ -339,6 +339,14 @@
             <div class="notes-title">Notes:</div>
             <div class="notes-text">{{ $invoice->notes }}</div>
             @endif
+            @if($invoice->terms)
+            <div class="notes-title" style="margin-top: 12px;">Terms & Conditions:</div>
+            <div class="notes-text">{!! nl2br(e($invoice->terms)) !!}</div>
+            @endif
+            @if($invoice->payment_terms)
+            <div class="notes-title" style="margin-top: 12px;">Payment Terms:</div>
+            <div class="notes-text">{!! nl2br(e($invoice->payment_terms)) !!}</div>
+            @endif
         </div>
         <div class="totals-section">
             <table style="width: 100%; border-collapse: collapse;">
