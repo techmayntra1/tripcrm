@@ -88,11 +88,12 @@ if (!function_exists('formatIndianCurrency')) {
 
 if (!function_exists('currencyMap')) {
     // Region => [code, symbol]. Only India and UAE are supported.
+    // U+20C3 is the new UAE Dirham sign (Unicode 17); public/fonts/uae-dirham.* supplies the glyph.
     function currencyMap(): array
     {
         return [
             'india' => ['code' => 'INR', 'symbol' => '₹'],
-            'uae' => ['code' => 'AED', 'symbol' => 'AED'],
+            'uae' => ['code' => 'AED', 'symbol' => "\u{20C3}"],
         ];
     }
 }
@@ -128,6 +129,31 @@ if (!function_exists('currencySymbol')) {
     function currencySymbol($context = null): string
     {
         return currencyMap()[resolveCountry($context)]['symbol'];
+    }
+}
+
+if (!function_exists('pdfCurrencySymbol')) {
+    /**
+     * Currency symbol for dompdf views. dompdf has no per-glyph font fallback, so the
+     * Dirham sign is wrapped in a span that uses the bundled UAE Dirham font.
+     */
+    function pdfCurrencySymbol($context = null): \Illuminate\Support\HtmlString
+    {
+        $symbol = e(currencySymbol($context));
+        if (resolveCountry($context) === 'uae') {
+            $symbol = '<span style="font-family: \'UAE Dirham\'; font-weight: normal;">' . $symbol . '</span>';
+        }
+        return new \Illuminate\Support\HtmlString($symbol);
+    }
+}
+
+if (!function_exists('pdfCurrencyFontFace')) {
+    // @font-face rule for the Dirham sign; output inside a PDF view's <style>.
+    // Needs dompdf's font cache dir (storage/fonts) to exist.
+    function pdfCurrencyFontFace(): \Illuminate\Support\HtmlString
+    {
+        $path = str_replace('\\', '/', public_path('fonts/uae-dirham.ttf'));
+        return new \Illuminate\Support\HtmlString("@font-face { font-family: 'UAE Dirham'; font-style: normal; font-weight: normal; src: url('{$path}') format('truetype'); }");
     }
 }
 

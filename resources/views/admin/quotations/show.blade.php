@@ -68,6 +68,9 @@
                 @if($quotation->company->gst_number)
                 <p class="text-muted mb-0">GST: {{ $quotation->company->gst_number }}</p>
                 @endif
+                @if($quotation->company->is_uae && $quotation->company->vat_number)
+                <p class="text-muted mb-0">TRN: {{ $quotation->company->vat_number }}</p>
+                @endif
                 @endif
             </div>
             <div class="col-md-6 text-md-end">
@@ -281,7 +284,7 @@
                         </tr>
                         @else
                         <tr>
-                            <td>GST ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                            <td>{{ $quotation->company?->is_uae ? 'VAT' : 'GST' }} ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
                             <td class="text-end {{ $quotation->gst_inclusive ? '' : 'text-success' }}">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ formatMoney($quotation->gst, 0, $quotation) }}</td>
                         </tr>
                         @endif

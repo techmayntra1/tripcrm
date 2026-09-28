@@ -99,6 +99,21 @@ class Company extends Model
         return $this->country === self::COUNTRY_UAE;
     }
 
+    /** UAE VAT is a flat 5%. */
+    public const UAE_VAT_PERCENT = 5;
+
+    /**
+     * How quotations/invoices are taxed: 'vat' (UAE, Dirham), 'gst' (India with a GSTIN, Rupee)
+     * or 'none' (India without a GSTIN).
+     */
+    public function getTaxModeAttribute(): string
+    {
+        if ($this->is_uae) {
+            return 'vat';
+        }
+        return !empty($this->gst_number) ? 'gst' : 'none';
+    }
+
     public function getCountryLabelAttribute(): string
     {
         return self::COUNTRIES[$this->country] ?? 'India';

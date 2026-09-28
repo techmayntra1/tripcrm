@@ -30,6 +30,13 @@
     <link href="{{ asset('assets/styles/custom.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/styles/velzon-compat.css') }}" rel="stylesheet">
 
+    {{-- New UAE Dirham sign (U+20C3): few system fonts have it yet, so a bundled glyph is used for that code point only --}}
+    <style>
+        @font-face { font-family: 'UAE Dirham'; src: url('{{ asset('fonts/uae-dirham.woff2') }}') format('woff2'), url('{{ asset('fonts/uae-dirham.ttf') }}') format('truetype'); unicode-range: U+20C3; font-display: swap; }
+        :root { --vz-font-sans-serif: "UAE Dirham", "Poppins", sans-serif; }
+        body, input, select, textarea, button { font-family: "UAE Dirham", var(--vz-body-font-family, "Poppins"), sans-serif; }
+    </style>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
     @if(session('success') || session('error') || session('warning') || session('info'))

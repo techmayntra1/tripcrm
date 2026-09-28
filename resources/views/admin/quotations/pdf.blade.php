@@ -1,4 +1,4 @@
-@php $currencySymbol = currencySymbol($quotation); @endphp
+@php $currencySymbol = pdfCurrencySymbol($quotation); @endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,6 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Quotation {{ $quotation->quotation_number }}</title>
     <style>
+        {{ pdfCurrencyFontFace() }}
         @page {
             size: A4;
             margin: 12mm 12mm;
@@ -254,6 +255,7 @@
                 @if($quotation->company)
                     @if($quotation->company->phone)Phone: {{ $quotation->company->phone }}<br>@endif
                     @if($quotation->company->gst_number)GST: {{ $quotation->company->gst_number }}@endif
+                    @if($quotation->company->is_uae && $quotation->company->vat_number)TRN: {{ $quotation->company->vat_number }}@endif
                 @endif
             </div>
         </div>
@@ -438,7 +440,7 @@
                     </tr>
                     @else
                     <tr>
-                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">GST ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">{{ $quotation->company?->is_uae ? 'VAT' : 'GST' }} ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
                         <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst, 0) }}</td>
                     </tr>
                     @endif

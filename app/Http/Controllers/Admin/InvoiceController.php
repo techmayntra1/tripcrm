@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agent;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\GstRate;
@@ -11,9 +12,9 @@ use App\Models\Trip;
 use App\Models\Quotation;
 use App\Models\Service;
 use App\Models\TermTemplate;
-use App\Models\Unit;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class InvoiceController extends Controller
 {
@@ -139,7 +140,7 @@ class InvoiceController extends Controller
             }
         }
 
-        $units = Unit::active()->get();
+        $agents = Agent::active()->ordered()->get();
         $gstRates = GstRate::active()->get();
         $services = Service::active()->ordered()->get();
         $termTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_TERMS);
@@ -153,7 +154,7 @@ class InvoiceController extends Controller
             'selectedTripId',
             'selectedCustomerId',
             'selectedQuotationId',
-            'units',
+            'agents',
             'gstRates',
             'services',
             'termTemplates',
@@ -178,6 +179,16 @@ class InvoiceController extends Controller
             'items.*.service_name' => 'nullable|string|max:100',
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+            'items.*.service_fee' => 'nullable|numeric|min:0',
+            'items.*.description' => 'nullable|string|max:150',
+            'items.*.passenger_type' => 'nullable|string|max:100',
+            'items.*.qty' => 'nullable|numeric|min:0',
+            'items.*.rate' => 'nullable|numeric|min:0',
+            'items.*.amount' => 'nullable|numeric|min:0',
+            'agent_id' => 'nullable|exists:agents,id',
+            'agent_commission' => 'nullable|numeric|min:0',
+            'service_fee' => 'nullable|numeric|min:0',
+            'vat_percent' => 'nullable|in:0,5',
             'notes' => 'nullable|string|max:150',
             'terms' => 'nullable|string|max:5000',
             'payment_terms' => 'nullable|string|max:5000',
@@ -218,12 +229,15 @@ class InvoiceController extends Controller
             }
         }
 
+        if ($validated['invoice_type'] === 'items' && ($rateErrors = Service::rateFloorErrors($validated['items'] ?? []))) {
+            return back()->withInput()->withErrors($rateErrors);
+        }
+
+        $validated = array_merge($validated, $this->taxFields($validated, $request));
         $validated['status'] = $validated['status'] ?? 'sent';
         $validated['amount_paid'] = 0;
         $validated['discount'] = $validated['discount'] ?? 0;
         $validated['balance_due'] = $validated['grand_total'];
-        $validated['gst_inclusive'] = $request->has('gst_inclusive');
-        $validated['gst_split'] = $request->has('gst_split');
 
         if ($request->hasFile('invoice_pdf')) {
             $validated['invoice_pdf'] = $request->file('invoice_pdf')->store('invoices', 'public');
@@ -242,7 +256,7 @@ class InvoiceController extends Controller
 
     public function show(Request $request, Invoice $invoice)
     {
-        $invoice->load(['customer', 'trip', 'company', 'quotation', 'incomes']);
+        $invoice->load(['customer', 'trip', 'company', 'quotation', 'incomes', 'agent']);
         $fromTrip = $request->from_trip;
         return view('admin.invoices.show', compact('invoice', 'fromTrip'));
     }
@@ -259,13 +273,13 @@ class InvoiceController extends Controller
         $companies = Company::orderBy('name')->get();
         $quotations = Quotation::orderBy('quotation_number', 'desc')->get();
         $fromTrip = $request->from_trip;
-        $units = Unit::active()->get();
+        $agents = Agent::where(fn ($q) => $q->where('is_active', true)->orWhere('id', $invoice->agent_id))->ordered()->get();
         $gstRates = GstRate::active()->get();
         $services = Service::active()->ordered()->get();
         $termTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_TERMS);
         $paymentTermTemplates = TermTemplate::optionsFor(TermTemplate::TYPE_PAYMENT);
 
-        return view('admin.invoices.edit', compact('invoice', 'customers', 'trips', 'companies', 'quotations', 'fromTrip', 'units', 'gstRates', 'services', 'termTemplates', 'paymentTermTemplates'));
+        return view('admin.invoices.edit', compact('invoice', 'customers', 'trips', 'companies', 'quotations', 'fromTrip', 'agents', 'gstRates', 'services', 'termTemplates', 'paymentTermTemplates'));
     }
 
     public function update(Request $request, Invoice $invoice)
@@ -291,6 +305,16 @@ class InvoiceController extends Controller
             'items.*.service_name' => 'nullable|string|max:100',
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+            'items.*.service_fee' => 'nullable|numeric|min:0',
+            'items.*.description' => 'nullable|string|max:150',
+            'items.*.passenger_type' => 'nullable|string|max:100',
+            'items.*.qty' => 'nullable|numeric|min:0',
+            'items.*.rate' => 'nullable|numeric|min:0',
+            'items.*.amount' => 'nullable|numeric|min:0',
+            'agent_id' => 'nullable|exists:agents,id',
+            'agent_commission' => 'nullable|numeric|min:0',
+            'service_fee' => 'nullable|numeric|min:0',
+            'vat_percent' => 'nullable|in:0,5',
             'notes' => 'nullable|string|max:150',
             'terms' => 'nullable|string|max:5000',
             'payment_terms' => 'nullable|string|max:5000',
@@ -314,9 +338,15 @@ class InvoiceController extends Controller
             $validated['invoice_pdf'] = $request->file('invoice_pdf')->store('invoices', 'public');
         }
 
+        if ($validated['invoice_type'] === 'items' && ($rateErrors = Service::rateFloorErrors($validated['items'] ?? []))) {
+            return back()->withInput()->withErrors($rateErrors);
+        }
+
+        // The status quick-form on the show page posts only a few fields; leave tax/agent data alone then.
+        if ($request->has('company_id')) {
+            $validated = array_merge($validated, $this->taxFields($validated, $request));
+        }
         $validated['balance_due'] = $validated['grand_total'] - $invoice->amount_paid;
-        $validated['gst_inclusive'] = $request->has('gst_inclusive');
-        $validated['gst_split'] = $request->has('gst_split');
 
         $invoice->update($validated);
 
@@ -332,6 +362,66 @@ class InvoiceController extends Controller
 
         return redirect()->route('admin.invoices.show', $invoice)
             ->with('success', 'Invoice updated successfully.');
+    }
+
+    /**
+     * Tax, service fee and agent fields as they should be saved.
+     * UAE (VAT) invoices: VAT of 5% or 0% is charged on the service fee only (per-line fees
+     * in item mode, a single fee for uploaded PDFs) and totals are recomputed here.
+     * Agent commission is recorded for reference and never added to the grand total.
+     */
+    private function taxFields(array $validated, Request $request): array
+    {
+        $agentId = $validated['agent_id'] ?? null;
+        $fields = [
+            'agent_id' => $agentId,
+            'agent_commission' => $agentId ? ($validated['agent_commission'] ?? 0) : 0,
+        ];
+        $items = $validated['items'] ?? null;
+        $isItems = $validated['invoice_type'] === 'items';
+        $company = !empty($validated['company_id']) ? Company::find($validated['company_id']) : null;
+
+        if ($company && $company->tax_mode === 'vat') {
+            if ($items) {
+                $items = array_map(fn ($item) => array_merge($item, [
+                    'tax_type' => 'none',
+                    'tax_rate' => 0,
+                    'service_fee' => (float) ($item['service_fee'] ?? 0),
+                ]), $items);
+            }
+            $serviceFee = $isItems
+                ? array_sum(array_column($items ?? [], 'service_fee'))
+                : (float) ($validated['service_fee'] ?? 0);
+            $vatPercent = (float) ($validated['vat_percent'] ?? Company::UAE_VAT_PERCENT);
+            $vat = $serviceFee * $vatPercent / 100;
+            $taxable = (float) ($validated['subtotal'] ?? 0) + $serviceFee - (float) ($validated['discount'] ?? 0);
+
+            $fields += [
+                'service_fee' => $serviceFee,
+                'vat_percent' => $vatPercent,
+                'gst_percent' => 0,
+                'gst_inclusive' => false,
+                'gst_split' => false,
+                'gst' => round($vat),
+                'grand_total' => round($taxable + $vat),
+            ];
+        } else {
+            if ($items) {
+                $items = array_map(fn ($item) => Arr::except($item, ['service_fee']), $items);
+            }
+            $fields += [
+                'service_fee' => 0,
+                'vat_percent' => null,
+                'gst_inclusive' => $request->has('gst_inclusive'),
+                'gst_split' => $request->has('gst_split'),
+            ];
+        }
+
+        if (array_key_exists('items', $validated)) {
+            $fields['items'] = $items;
+        }
+
+        return $fields;
     }
 
     public function destroy(Request $request, Invoice $invoice)
@@ -380,7 +470,8 @@ class InvoiceController extends Controller
                 'defaultFont' => 'DejaVu Sans',
                 'isRemoteEnabled' => true,
                 'isHtml5ParserEnabled' => true,
-            ]);
+                'isFontSubsettingEnabled' => true,
+            ], true); // merged with the dompdf config so chroot/font cache allow the bundled Dirham font
 
         return $pdf->download(safeFilename('Invoice-' . $invoice->invoice_number, 'Invoice') . '.pdf');
     }

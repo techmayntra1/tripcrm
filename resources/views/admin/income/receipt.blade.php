@@ -1,4 +1,4 @@
-@php $currencySymbol = currencySymbol($income); @endphp
+@php $currencySymbol = pdfCurrencySymbol($income); @endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,6 +6,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Receipt {{ $income->receipt_number }}</title>
     <style>
+        {{ pdfCurrencyFontFace() }}
         @page {
             size: A4;
             margin: 25mm 20mm;

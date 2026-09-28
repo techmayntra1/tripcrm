@@ -322,7 +322,8 @@ class IncomeController extends Controller
                 'defaultFont' => 'DejaVu Sans',
                 'isRemoteEnabled' => true,
                 'isHtml5ParserEnabled' => true,
-            ]);
+                'isFontSubsettingEnabled' => true,
+            ], true); // merged with the dompdf config so chroot/font cache allow the bundled Dirham font
 
         return $pdf->download(safeFilename('Receipt-' . $income->receipt_number, 'Receipt') . '.pdf');
     }

@@ -84,9 +84,9 @@
                     <div class="mb-3">
                         <label for="company" class="form-label">Company <span class="text-danger">*</span></label>
                         <select class="form-select js-currency-source" id="company" name="company_id" data-currency-default="₹" required>
-                            <option value="" data-has-gst="0">Select Company</option>
+                            <option value="" data-has-gst="0" data-tax-mode="none">Select Company</option>
                             @foreach($companies as $company)
-                                <option value="{{ $company->id }}" data-currency="{{ $company->currency_symbol }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                <option value="{{ $company->id }}" data-currency="{{ $company->currency_symbol }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" data-tax-mode="{{ $company->tax_mode }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback">Please select a company</div>
@@ -198,14 +198,10 @@
                             <th width="40">#</th>
                             <th width="160">Service</th>
                             <th>Description <span class="text-danger">*</span></th>
-                            <th width="100">HSN/SAC</th>
-                            <th width="110">Unit</th>
-                            <th width="110" class="sqft-col" style="display:none;">Height</th>
-                            <th width="110" class="sqft-col" style="display:none;">Width</th>
-                            <th width="110" class="sqft-col" style="display:none;">Total Sqft</th>
                             <th width="95">Qty <span class="text-danger">*</span></th>
                             <th width="100">Rate (<span class="js-currency-symbol">₹</span>)</th>
                             <th width="120">Amount (<span class="js-currency-symbol">₹</span>)</th>
+                        <th width="110" class="fee-col" style="display:none;">Service Fee (<span class="js-currency-symbol">₹</span>)</th>
                             <th width="110" class="tax-col" style="display:none;">Tax Type</th>
                             <th width="90" class="tax-col" style="display:none;">Tax %</th>
                             <th></th>
@@ -224,20 +220,10 @@
                                 <input type="hidden" class="service-name" name="items[0][service_name]" value="">
                             </td>
                             <td><textarea class="form-control form-control-sm item-description" name="items[0][description]" placeholder="Item description" minlength="3" maxlength="150" rows="1"></textarea></td>
-                            <td><input type="text" class="form-control form-control-sm" name="items[0][hsn]" placeholder="HSN" maxlength="8"></td>
-                            <td>
-                                <select class="form-select form-select-sm unit-select" name="items[0][unit]">
-                                    @foreach($units as $unit)
-                                    <option value="{{ $unit->short_name }}">{{ $unit->name }}</option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td class="sqft-col" style="display:none;"><input type="number" class="form-control form-control-sm item-height" name="items[0][height]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                            <td class="sqft-col" style="display:none;"><input type="number" class="form-control form-control-sm item-width" name="items[0][width]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                            <td class="sqft-col" style="display:none;"><input type="number" class="form-control form-control-sm item-total" name="items[0][total]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
                             <td><input type="number" class="form-control form-control-sm qty" name="items[0][qty]" value="1" min="1" max="99999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm rate" name="items[0][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm amount" name="items[0][amount]" value="0" min="0" step="1" inputmode="numeric"></td>
+                            <td class="fee-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[0][service_fee]" value="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td class="tax-col" style="display:none;">
                                 <select class="form-select form-select-sm tax-type" name="items[0][tax_type]">
                                     <option value="none">None</option>
@@ -282,6 +268,15 @@
                                 </div>
                             </td>
                         </tr>
+                        <tr id="serviceFeeRow" style="display:none;">
+                            <td class="py-2">Service Fee</td>
+                            <td class="py-2">
+                                <div class="input-group">
+                                    <span class="input-group-text js-currency-symbol">₹</span>
+                                    <input type="number" class="form-control" min="0" step="1" max="999999999" name="service_fee" id="serviceFeeInput" value="{{ old('service_fee') }}" placeholder="0" inputmode="numeric" disabled>
+                                </div>
+                            </td>
+                        </tr>
                         <tr>
                             <td class="py-2">Discount</td>
                             <td class="py-2">
@@ -301,6 +296,10 @@
                                         <option value="{{ $rate->percentage }}" {{ $rate->percentage == 18 ? 'selected' : '' }}>{{ $rate->name }}</option>
                                         @endforeach
                                     </select>
+                                    <select class="form-select d-none" style="max-width: 140px;" name="vat_percent" id="vatPercent" title="VAT on service fee" disabled>
+                                        <option value="5">VAT 5%</option>
+                                        <option value="0" {{ old('vat_percent') === '0' ? 'selected' : '' }}>VAT 0%</option>
+                                    </select>
                                     <span class="input-group-text text-success" id="gstSign">+ <span class="js-currency-symbol">₹</span></span>
                                     <input type="number" class="form-control" name="gst" id="gstInput" value="0" readonly style="background-color: #e9ecef;">
                                 </div>
@@ -318,7 +317,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="d-flex flex-wrap gap-3 mt-2">
+                                <div class="d-flex flex-wrap gap-3 mt-2" id="gstToggles">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" name="gst_inclusive" id="gstInclusive" value="1">
                                         <label class="form-check-label small" for="gstInclusive">GST Inclusive</label>
@@ -336,6 +335,26 @@
                                 <div class="input-group">
                                     <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control fw-bold" min="0" step="1" max="999999999" name="grand_total" id="grandTotalInput" value="{{ old('grand_total') }}" placeholder="0" required inputmode="numeric">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="border-top">
+                            <td class="py-2">Agent</td>
+                            <td class="py-2">
+                                <select class="form-select" name="agent_id" id="agentSelect">
+                                    <option value="">No Agent</option>
+                                    @foreach($agents as $agent)
+                                    <option value="{{ $agent->id }}" {{ old('agent_id') == $agent->id ? 'selected' : '' }}>{{ $agent->name }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-2">Agent Commission<div class="small text-muted">Not added to grand total</div></td>
+                            <td class="py-2">
+                                <div class="input-group">
+                                    <span class="input-group-text js-currency-symbol">₹</span>
+                                    <input type="number" class="form-control" min="0" step="1" max="999999999" name="agent_commission" id="agentCommissionInput" value="{{ old('agent_commission') }}" placeholder="0" inputmode="numeric">
                                 </div>
                             </td>
                         </tr>
@@ -422,10 +441,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    const serviceFeeInput = document.getElementById('serviceFeeInput');
+    const vatPercentSelect = document.getElementById('vatPercent');
+    const agentSelect = document.getElementById('agentSelect');
+    const agentCommissionInput = document.getElementById('agentCommissionInput');
+
+    // 'vat' (UAE: VAT on service fee only), 'gst' (India: per-line tax) or 'none'.
+    function taxMode() {
+        const opt = companySelect.options[companySelect.selectedIndex];
+        return (opt && opt.getAttribute('data-tax-mode')) || 'none';
+    }
+
+    // A catalogue service can be sold above its master price, never below it.
+    function servicePriceFloor(row) {
+        const sel = row.querySelector('.service-select');
+        if (!sel || !sel.value) return 0;
+        return parseFloat(sel.options[sel.selectedIndex].getAttribute('data-price')) || 0;
+    }
+
+    function applyServiceMin(row) {
+        const rateEl = row.querySelector('.rate');
+        if (!rateEl) return;
+        const floor = servicePriceFloor(row);
+        rateEl.min = floor;
+        rateEl.title = floor > 0 ? 'Cannot be less than service price ' + currencySymbol() + ' ' + floor : '';
+        rateEl.classList.toggle('is-invalid', floor > 0 && (parseFloat(rateEl.value) || 0) < floor);
+    }
+
+    // Commission is only recorded against an agent
+    function updateAgentCommission() {
+        agentCommissionInput.disabled = !agentSelect.value;
+    }
+
     function updateGstVisibility() {
-        const selectedOption = companySelect.options[companySelect.selectedIndex];
-        const hasGst = selectedOption && selectedOption.getAttribute('data-has-gst') === '1';
-        gstRow.style.display = hasGst ? '' : 'none';
+        const mode = taxMode();
+        const vatMode = mode === 'vat';
+        gstRow.style.display = mode === 'none' ? 'none' : '';
+        document.getElementById('gstToggles').classList.toggle('d-none', vatMode);
+        document.getElementById('serviceFeeRow').style.display = vatMode ? '' : 'none';
+        serviceFeeInput.disabled = !vatMode;
+        vatPercentSelect.disabled = !vatMode;
+        if (vatMode) {
+            document.getElementById('gstInclusive').checked = false;
+            document.getElementById('gstSplit').checked = false;
+        }
         updateTaxColumns();
         updateSummaryTaxMode();
         calculateTotals();
@@ -440,6 +499,34 @@ document.addEventListener('DOMContentLoaded', function() {
         const gstVisible = gstRow.style.display !== 'none';
 
         let gst, grandTotal, gstPortion;
+
+        if (taxMode() === 'vat') {
+            // UAE: VAT (5% or 0%) on the service fee only; the fee is added to the total
+            const discount = parseFloat(document.getElementById('discountInput').value) || 0;
+            let fees = 0;
+            if (typeItems.checked) {
+                itemsTableBody.querySelectorAll('tr').forEach(function(row) {
+                    subtotal += parseFloat((row.querySelector('.amount') || {}).value) || 0;
+                    fees += parseFloat((row.querySelector('.service-fee') || {}).value) || 0;
+                });
+                subtotal = Math.min(Math.round(subtotal), 99999999);
+                subtotalInput.value = subtotal;
+                serviceFeeInput.value = Math.round(fees);
+            } else {
+                subtotal = parseFloat(subtotalInput.value) || 0;
+                fees = parseFloat(serviceFeeInput.value) || 0;
+            }
+            const vat = fees * (parseFloat(vatPercentSelect.value) || 0) / 100;
+            grandTotal = Math.round(subtotal + fees - discount + vat);
+            document.getElementById('gstInput').value = Math.round(vat);
+            gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
+            gstSign.classList.add('text-success');
+            document.getElementById('gstSplitDisplay').style.display = 'none';
+            grandTotalInput.value = grandTotal;
+            grandTotalInput.classList.toggle('is-invalid', grandTotal > 99999999);
+            subtotalInput.classList.toggle('is-invalid', subtotal > 99999999);
+            return;
+        }
 
         if (typeItems.checked) {
             // Items mode: per-line tax (GST/VAT summed across lines).
@@ -553,69 +640,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function hasSqftSelected() {
-        const unitSelects = itemsTableBody.querySelectorAll('.unit-select');
-        for (let i = 0; i < unitSelects.length; i++) {
-            if (unitSelects[i].value.toLowerCase() === 'sqft') return true;
-        }
-        return false;
-    }
-
-    function toggleSqftColumns() {
-        const show = hasSqftSelected();
-        document.querySelectorAll('.sqft-col').forEach(function(el) {
-            el.style.display = show ? '' : 'none';
-        });
-    }
-
     function updateTaxColumns() {
-        const show = typeItems.checked && gstRow.style.display !== 'none';
+        const mode = taxMode();
         document.querySelectorAll('.tax-col').forEach(function(el) {
-            el.style.display = show ? '' : 'none';
+            el.style.display = typeItems.checked && mode === 'gst' ? '' : 'none';
+            // VAT invoices tax the service fee only, so line-level tax is not submitted
+            el.querySelectorAll('input, select').forEach(function(input) { input.disabled = mode === 'vat'; });
+        });
+        document.querySelectorAll('.fee-col').forEach(function(el) {
+            el.style.display = typeItems.checked && mode === 'vat' ? '' : 'none';
+            el.querySelectorAll('input').forEach(function(input) { input.disabled = mode !== 'vat'; });
         });
     }
 
     function updateSummaryTaxMode() {
-        const perLine = typeItems.checked && gstRow.style.display !== 'none';
+        const vatMode = taxMode() === 'vat';
+        const perLine = typeItems.checked && taxMode() === 'gst';
         const gstPercent = document.getElementById('gstPercent');
         const gstPerLineNote = document.getElementById('gstPerLineNote');
         const gstLabel = document.getElementById('gstLabel');
-        if (gstPercent) gstPercent.classList.toggle('d-none', perLine);
-        if (gstPerLineNote) gstPerLineNote.classList.toggle('d-none', !perLine);
-        if (gstLabel) gstLabel.textContent = perLine ? 'Tax' : 'GST';
-    }
-
-    function calculateTotalSqft(row) {
-        const heightInput = row.querySelector('.item-height');
-        const widthInput = row.querySelector('.item-width');
-        const totalInput = row.querySelector('.item-total');
-        if (heightInput && widthInput && totalInput) {
-            const height = parseFloat(heightInput.value) || 0;
-            const width = parseFloat(widthInput.value) || 0;
-            if (height > 0 && width > 0) {
-                totalInput.value = (height * width).toFixed(2);
-            }
+        if (gstPercent) {
+            gstPercent.classList.toggle('d-none', perLine || vatMode);
+            gstPercent.disabled = vatMode;
         }
+        vatPercentSelect.classList.toggle('d-none', !vatMode);
+        if (gstPerLineNote) gstPerLineNote.classList.toggle('d-none', !perLine);
+        if (gstLabel) gstLabel.textContent = vatMode ? 'Total VAT' : (perLine ? 'Tax' : 'GST');
+        // Item mode sums the per-line fees; an uploaded PDF takes the fee directly
+        serviceFeeInput.readOnly = typeItems.checked;
     }
 
     function calculateRowAmount(row) {
-        const unitSelect = row.querySelector('.unit-select');
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const rate = parseFloat(row.querySelector('.rate').value) || 0;
-        const amountInput = row.querySelector('.amount');
-
-        let amount;
-        if (unitSelect && unitSelect.value.toLowerCase() === 'sqft') {
-            const total = parseFloat(row.querySelector('.item-total').value) || 0;
-            amount = total * qty * rate;
-        } else {
-            amount = qty * rate;
-        }
-        amountInput.value = Math.round(amount);
+        row.querySelector('.amount').value = Math.round(qty * rate);
     }
 
     addItemBtn.addEventListener('click', function() {
-        const showSqft = hasSqftSelected();
         const showTax = gstRow.style.display !== 'none';
         const newRow = `
             <tr>
@@ -630,20 +691,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <input type="hidden" class="service-name" name="items[${itemIndex}][service_name]" value="">
                 </td>
                 <td><textarea class="form-control form-control-sm item-description" name="items[${itemIndex}][description]" placeholder="Item description" maxlength="150" rows="1"></textarea></td>
-                <td><input type="text" class="form-control form-control-sm" name="items[${itemIndex}][hsn]" placeholder="HSN"></td>
-                <td>
-                    <select class="form-select form-select-sm unit-select" name="items[${itemIndex}][unit]">
-                        @foreach($units as $unit)
-                        <option value="{{ $unit->short_name }}">{{ $unit->name }}</option>
-                        @endforeach
-                    </select>
-                </td>
-                <td class="sqft-col" style="${showSqft ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-height" name="items[${itemIndex}][height]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                <td class="sqft-col" style="${showSqft ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-width" name="items[${itemIndex}][width]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                <td class="sqft-col" style="${showSqft ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-total" name="items[${itemIndex}][total]" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
                 <td><input type="number" class="form-control form-control-sm qty" name="items[${itemIndex}][qty]" value="1" min="1" max="99999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm rate" name="items[${itemIndex}][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm amount" name="items[${itemIndex}][amount]" value="0" min="0" step="1" inputmode="numeric"></td>
+                <td class="fee-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[${itemIndex}][service_fee]" value="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                 <td class="tax-col" style="${showTax ? '' : 'display:none;'}">
                     <select class="form-select form-select-sm tax-type" name="items[${itemIndex}][tax_type]">
                         <option value="none">None</option>
@@ -658,6 +709,7 @@ document.addEventListener('DOMContentLoaded', function() {
         itemsTableBody.insertAdjacentHTML('beforeend', newRow);
         itemIndex++;
         reindexRows();
+        updateTaxColumns();
     });
 
     itemsTableBody.addEventListener('click', function(e) {
@@ -666,25 +718,21 @@ document.addEventListener('DOMContentLoaded', function() {
             if (rows.length > 1) {
                 e.target.closest('tr').remove();
                 reindexRows();
-                toggleSqftColumns();
                 calculateTotals();
             }
         }
     });
 
     itemsTableBody.addEventListener('input', function(e) {
-        if (e.target.classList.contains('item-height') || e.target.classList.contains('item-width')) {
-            const row = e.target.closest('tr');
-            calculateTotalSqft(row);
-            calculateRowAmount(row);
-            calculateTotals();
-        }
-        if (e.target.classList.contains('qty') || e.target.classList.contains('rate') || e.target.classList.contains('item-total')) {
+        if (e.target.classList.contains('qty') || e.target.classList.contains('rate')) {
             const row = e.target.closest('tr');
             calculateRowAmount(row);
             calculateTotals();
         }
-        if (e.target.classList.contains('amount')) {
+        if (e.target.classList.contains('rate')) {
+            applyServiceMin(e.target.closest('tr'));
+        }
+        if (e.target.classList.contains('amount') || e.target.classList.contains('service-fee')) {
             calculateTotals();
         }
         if (e.target.classList.contains('tax-rate')) {
@@ -693,11 +741,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     itemsTableBody.addEventListener('change', function(e) {
-        if (e.target.classList.contains('unit-select')) {
-            toggleSqftColumns();
+        // A rate below the service price is raised back to the price
+        if (e.target.classList.contains('rate')) {
             const row = e.target.closest('tr');
-            calculateRowAmount(row);
-            calculateTotals();
+            const floor = servicePriceFloor(row);
+            if (floor > 0 && (parseFloat(e.target.value) || 0) < floor) {
+                e.target.value = Math.ceil(floor);
+                calculateRowAmount(row);
+                calculateTotals();
+            }
+            applyServiceMin(row);
         }
         if (e.target.classList.contains('tax-type')) {
             calculateTotals();
@@ -718,6 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (descEl && desc) descEl.value = desc;
                 calculateRowAmount(row);
             }
+            applyServiceMin(row);
             calculateTotals();
         }
     });
@@ -762,15 +816,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 typeItems.checked = true;
                 typeItems.dispatchEvent(new Event('change'));
 
-                let hasSqftItem = items.some(item => (item.unit || '').toLowerCase() === 'sqft' || item.height || item.width || item.total);
                 const showTaxItem = gstRow.style.display !== 'none';
                 let itemsHtml = '';
                 items.forEach((item, index) => {
-                    const isSqft = (item.unit || '').toLowerCase() === 'sqft';
-                    const total = parseFloat(item.total) || 0;
                     const qty = parseFloat(item.qty) || 0;
                     const rate = parseFloat(item.rate) || 0;
-                    const amount = item.amount || (isSqft ? Math.round(total * qty * rate) : Math.round(qty * rate));
+                    const amount = item.amount || Math.round(qty * rate);
                     itemsHtml += `
                         <tr>
                             <td class="text-center">${index + 1}</td>
@@ -784,20 +835,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <input type="hidden" class="service-name" name="items[${index}][service_name]" value="${item.service_name || ''}">
                             </td>
                             <td><textarea class="form-control form-control-sm item-description" name="items[${index}][description]" placeholder="Item description" maxlength="150" rows="1">${item.description || ''}</textarea></td>
-                            <td><input type="text" class="form-control form-control-sm" name="items[${index}][hsn]" value="${item.hsn || ''}" placeholder="HSN"></td>
-                            <td>
-                                <select class="form-select form-select-sm unit-select" name="items[${index}][unit]">
-                                    @foreach($units as $unit)
-                                    <option value="{{ $unit->short_name }}" ${(item.unit || '').toLowerCase() === '{{ strtolower($unit->short_name) }}' ? 'selected' : ''}>{{ $unit->name }}</option>
-                                    @endforeach
-                                </select>
-                            </td>
-                            <td class="sqft-col" style="${hasSqftItem ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-height" name="items[${index}][height]" value="${item.height || ''}" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                            <td class="sqft-col" style="${hasSqftItem ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-width" name="items[${index}][width]" value="${item.width || ''}" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
-                            <td class="sqft-col" style="${hasSqftItem ? '' : 'display:none;'}"><input type="number" class="form-control form-control-sm item-total" name="items[${index}][total]" value="${item.total || ''}" placeholder="0" min="0" step="0.01" inputmode="decimal"></td>
                             <td><input type="number" class="form-control form-control-sm qty" name="items[${index}][qty]" value="${item.qty || 1}" min="1" max="99999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm rate" name="items[${index}][rate]" value="${item.rate || 0}" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm amount" name="items[${index}][amount]" value="${amount}" min="0" step="1" inputmode="numeric">${item.passenger_type ? `<input type="hidden" name="items[${index}][passenger_type]" value="${item.passenger_type}">` : ''}</td>
+                            <td class="fee-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[${index}][service_fee]" value="${item.service_fee || 0}" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td class="tax-col" style="${showTaxItem ? '' : 'display:none;'}">
                                 <select class="form-select form-select-sm tax-type" name="items[${index}][tax_type]">
                                     <option value="none" ${(item.tax_type || 'gst') === 'none' ? 'selected' : ''}>None</option>
@@ -812,7 +853,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 itemsTableBody.innerHTML = itemsHtml;
                 itemIndex = items.length;
-                toggleSqftColumns();
+                itemsTableBody.querySelectorAll('tr').forEach(applyServiceMin);
             }
 
             document.getElementById('subtotalInput').value = Math.round(subtotal);
@@ -830,7 +871,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('gstPercent').addEventListener('change', calculateTotals);
     document.getElementById('gstInclusive').addEventListener('change', calculateTotals);
     document.getElementById('gstSplit').addEventListener('change', calculateTotals);
+    vatPercentSelect.addEventListener('change', calculateTotals);
+    serviceFeeInput.addEventListener('input', calculateTotals);
+    agentSelect.addEventListener('change', updateAgentCommission);
 
+    itemsTableBody.querySelectorAll('tr').forEach(applyServiceMin);
+    updateAgentCommission();
     updateSummaryTaxMode();
     updateGstVisibility();
     calculateTotals();
@@ -901,8 +947,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const description = row.querySelector('textarea[name$="[description]"]');
                 const qty = row.querySelector('input[name$="[qty]"]');
                 const rate = row.querySelector('input[name$="[rate]"]');
-                const unitSelect = row.querySelector('.unit-select');
-                const isSqft = unitSelect && unitSelect.value.toLowerCase() === 'sqft';
+                if (rate && (parseFloat(rate.value) || 0) < servicePriceFloor(row)) {
+                    rate.classList.add('is-invalid');
+                    isValid = false;
+                }
 
                 if (description && qty && rate) {
                     const descVal = description.value.trim();
@@ -919,7 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         isValid = false;
                     }
 
-                    if (!isSqft && rateVal <= 0) {
+                    if (rateVal <= 0) {
                         rate.classList.add('is-invalid');
                         isValid = false;
                     }
@@ -1020,12 +1068,6 @@ document.addEventListener('DOMContentLoaded', function() {
 #itemsTable {
     min-width: 1080px;
 }
-#itemsTable .sqft-col {
-    min-width: 110px;
-}
-#itemsTable .item-height,
-#itemsTable .item-width,
-#itemsTable .item-total,
 #itemsTable .qty {
     min-width: 85px;
 }

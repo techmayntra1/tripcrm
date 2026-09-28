@@ -172,6 +172,12 @@ class QuotationController extends Controller
             }
         }
 
+        if ($rateErrors = Service::rateFloorErrors($validated['items'])) {
+            return back()->withInput()->withErrors($rateErrors);
+        }
+
+        $tax = $this->taxFields($validated, $request);
+
         $status = 'sent';
 
         $quotation = Quotation::create([
@@ -181,14 +187,9 @@ class QuotationController extends Controller
             'trip_id' => $validated['trip_id'] ?? null,
             'subject' => $validated['subject'] ?? null,
             'quotation_type' => 'items',
-            'items' => $this->normalizeItems($validated['items']),
             'subtotal' => $validated['subtotal'] ?? 0,
             'discount' => $validated['discount'] ?? 0,
-            'gst_percent' => $validated['gst_percent'] ?? 0,
-            'gst_inclusive' => $request->has('gst_inclusive'),
-            'gst_split' => $request->has('gst_split'),
-            'gst' => $validated['gst'] ?? 0,
-            'grand_total' => $validated['grand_total'] ?? 0,
+            ...$tax,
             'terms' => $validated['terms'] ?? null,
             'payment_terms' => $validated['payment_terms'] ?? null,
             'status' => $status,
@@ -237,6 +238,41 @@ class QuotationController extends Controller
         })->toArray();
     }
 
+    /**
+     * Items and tax totals as they should be saved. UAE companies charge a flat VAT on the
+     * final amount (subtotal - discount), so line-level tax is dropped and the totals are
+     * recomputed here rather than trusted from the form.
+     */
+    private function taxFields(array $validated, Request $request): array
+    {
+        $items = $this->normalizeItems($validated['items']);
+        $company = Company::find($validated['company_id']);
+
+        if ($company && $company->tax_mode === 'vat') {
+            $items = array_map(fn ($item) => array_merge($item, ['tax_type' => 'none', 'tax_rate' => 0]), $items);
+            $taxable = max((float) ($validated['subtotal'] ?? 0) - (float) ($validated['discount'] ?? 0), 0);
+            $vat = $taxable * Company::UAE_VAT_PERCENT / 100;
+
+            return [
+                'items' => $items,
+                'gst_percent' => Company::UAE_VAT_PERCENT,
+                'gst_inclusive' => false,
+                'gst_split' => false,
+                'gst' => round($vat),
+                'grand_total' => round($taxable + $vat),
+            ];
+        }
+
+        return [
+            'items' => $items,
+            'gst_percent' => $validated['gst_percent'] ?? 0,
+            'gst_inclusive' => $request->has('gst_inclusive'),
+            'gst_split' => $request->has('gst_split'),
+            'gst' => $validated['gst'] ?? 0,
+            'grand_total' => $validated['grand_total'] ?? 0,
+        ];
+    }
+
     public function update(Request $request, Quotation $quotation)
     {
         if ($quotation->status === 'accepted') {
@@ -265,6 +301,12 @@ class QuotationController extends Controller
             }
         }
 
+        if ($rateErrors = Service::rateFloorErrors($validated['items'])) {
+            return back()->withInput()->withErrors($rateErrors);
+        }
+
+        $tax = $this->taxFields($validated, $request);
+
         // Uploaded-PDF quotations are no longer supported; saving converts them to item-based.
         $quotation->update([
             'date' => $validated['date'],
@@ -273,14 +315,9 @@ class QuotationController extends Controller
             'trip_id' => $validated['trip_id'] ?? null,
             'subject' => $validated['subject'] ?? null,
             'quotation_type' => 'items',
-            'items' => $this->normalizeItems($validated['items']),
             'subtotal' => $validated['subtotal'] ?? 0,
             'discount' => $validated['discount'] ?? 0,
-            'gst_percent' => $validated['gst_percent'] ?? 0,
-            'gst_inclusive' => $request->has('gst_inclusive'),
-            'gst_split' => $request->has('gst_split'),
-            'gst' => $validated['gst'] ?? 0,
-            'grand_total' => $validated['grand_total'] ?? 0,
+            ...$tax,
             'terms' => $validated['terms'] ?? null,
             'payment_terms' => $validated['payment_terms'] ?? null,
             'status' => $validated['status'] ?? $quotation->status,
@@ -317,7 +354,8 @@ class QuotationController extends Controller
                 'defaultFont' => 'DejaVu Sans',
                 'isRemoteEnabled' => true,
                 'isHtml5ParserEnabled' => true,
-            ]);
+                'isFontSubsettingEnabled' => true,
+            ], true); // merged with the dompdf config so chroot/font cache allow the bundled Dirham font
 
         return $pdf->download(safeFilename('Quotation-' . $quotation->quotation_number, 'Quotation') . '.pdf');
     }

@@ -69,6 +69,9 @@
                         @if($invoice->company->gst_number)
                         <p class="text-muted mb-0">GST: {{ $invoice->company->gst_number }}</p>
                         @endif
+                        @if($invoice->company->is_uae && $invoice->company->vat_number)
+                        <p class="text-muted mb-0">TRN: {{ $invoice->company->vat_number }}</p>
+                        @endif
                         @endif
                     </div>
                     <div class="col-md-6 text-md-end">
@@ -143,6 +146,8 @@
                         return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
                     };
 
+                    $hasServiceFee = collect($invoice->items)->contains(fn ($i) => (float) ($i['service_fee'] ?? 0) > 0);
+
                     // Per-line tax rollup (GST/VAT summed across line items).
                     $lineTaxByType = ['gst' => 0, 'vat' => 0];
                     $hasLineTax = false;
@@ -174,8 +179,6 @@
                         <tr>
                             <th width="40" style="border: 1px solid #405189; padding: 10px;">#</th>
                             <th style="border: 1px solid #405189; padding: 10px;">DESCRIPTION</th>
-                            <th width="80" style="border: 1px solid #405189; padding: 10px;">HSN</th>
-                            <th width="60" class="text-center" style="border: 1px solid #405189; padding: 10px;">UNIT</th>
                             @if($hasDimensions)
                             <th width="70" class="text-end" style="border: 1px solid #405189; padding: 10px;">HEIGHT</th>
                             <th width="70" class="text-end" style="border: 1px solid #405189; padding: 10px;">WIDTH</th>
@@ -184,6 +187,9 @@
                             <th width="60" class="text-end" style="border: 1px solid #405189; padding: 10px;">QTY</th>
                             <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE ({{ currencySymbol($invoice) }})</th>
                             <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT ({{ currencySymbol($invoice) }})</th>
+                            @if($hasServiceFee)
+                            <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">SERVICE FEE ({{ currencySymbol($invoice) }})</th>
+                            @endif
                             @if($hasLineTax)
                             <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">TAX</th>
                             @endif
@@ -202,8 +208,6 @@
                         <tr>
                             <td style="border: 1px solid #ddd; padding: 10px;">{{ $index + 1 }}</td>
                             <td style="border: 1px solid #ddd; padding: 10px;">{{ $item['description'] ?? '-' }}@if(!empty($item['passenger_type']))<br><span style="font-size: 11px; color: #888;">{{ $item['passenger_type'] }}</span>@endif</td>
-                            <td style="border: 1px solid #ddd; padding: 10px;">{{ $item['hsn'] ?? '-' }}</td>
-                            <td class="text-center" style="border: 1px solid #ddd; padding: 10px;">{{ strtoupper($item['unit'] ?? '-') }}</td>
                             @if($hasDimensions)
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ $formatDimension($item['height'] ?? null) }}</td>
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ $formatDimension($item['width'] ?? null) }}</td>
@@ -212,6 +216,9 @@
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['qty'] ?? 0, 0) }}</td>
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['rate'] ?? 0, 0) }}</td>
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($itemAmount, 0) }}</td>
+                            @if($hasServiceFee)
+                            <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['service_fee'] ?? 0, 0) }}</td>
+                            @endif
                             @if($hasLineTax)
                             @php $rowTaxType = $item['tax_type'] ?? 'none'; $rowTaxRate = (float) ($item['tax_rate'] ?? 0); @endphp
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">@if($rowTaxType !== 'none' && $rowTaxRate > 0){{ strtoupper($rowTaxType) }} {{ rtrim(rtrim(number_format($rowTaxRate, 2), '0'), '.') }}%@else-@endif</td>
@@ -247,6 +254,12 @@
                                 <td>Subtotal:</td>
                                 <td class="text-end">{{ formatMoney($invoice->subtotal, 0, $invoice) }}</td>
                             </tr>
+                            @if($invoice->service_fee > 0)
+                            <tr>
+                                <td>Service Fee:</td>
+                                <td class="text-end">{{ formatMoney($invoice->service_fee, 0, $invoice) }}</td>
+                            </tr>
+                            @endif
                             @if($invoice->discount > 0)
                             <tr>
                                 <td>Discount:</td>
@@ -254,7 +267,12 @@
                             </tr>
                             @endif
                             @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
-                            @if($hasLineTax)
+                            @if($invoice->is_vat)
+                            <tr>
+                                <td>Total VAT ({{ rtrim(rtrim(number_format($invoice->vat_percent, 2), '0'), '.') }}% on service fee):</td>
+                                <td class="text-end text-success">+ {{ formatMoney($invoice->gst, 0, $invoice) }}</td>
+                            </tr>
+                            @elseif($hasLineTax)
                                 @if($lineTaxByType['gst'] > 0)
                                     @if($invoice->gst_split)
                                     <tr>
@@ -299,6 +317,12 @@
                                 <td><strong>Grand Total:</strong></td>
                                 <td class="text-end"><strong>{{ formatMoney($invoice->grand_total, 0, $invoice) }}</strong></td>
                             </tr>
+                            @if($invoice->agent)
+                            <tr class="text-muted">
+                                <td>Agent Commission ({{ $invoice->agent->name }}):<div class="small">Not included in grand total</div></td>
+                                <td class="text-end">{{ formatMoney($invoice->agent_commission, 0, $invoice) }}</td>
+                            </tr>
+                            @endif
                         </table>
                     </div>
                 </div>

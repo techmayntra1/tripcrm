@@ -19,6 +19,7 @@ use App\Models\TaskStatus;
 use App\Models\StaffPosition;
 use App\Models\Service;
 use App\Models\PassengerType;
+use App\Models\Agent;
 use App\Models\TermTemplate;
 use Illuminate\Http\Request;
 
@@ -799,6 +800,58 @@ class MasterController extends Controller
     {
         $passengerType->update(['is_active' => !$passengerType->is_active]);
         $message = $passengerType->is_active ? 'Passenger type activated.' : 'Passenger type deactivated.';
+        return redirect()->back()->with('success', $message);
+    }
+
+    public function agents(Request $request)
+    {
+        $query = Agent::orderBy('sort_order')->orderBy('name');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        $items = $query->get();
+        $inactiveCount = Agent::where('is_active', false)->count();
+        return view('admin.masters.agents', compact('items', 'inactiveCount'));
+    }
+
+    public function agentsTrashed(Request $request)
+    {
+        $query = Agent::where('is_active', false)->orderBy('name');
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+        $items = $query->get();
+        $activeCount = Agent::where('is_active', true)->count();
+        return view('admin.masters.agents-trashed', compact('items', 'activeCount'));
+    }
+
+    public function storeAgent(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100|unique:agents,name',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100',
+        ]);
+        $validated['sort_order'] = Agent::max('sort_order') + 1;
+        Agent::create($validated);
+        return redirect()->route('admin.masters.agents')->with('success', 'Agent added successfully.');
+    }
+
+    public function updateAgent(Request $request, Agent $agent)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:100|unique:agents,name,' . $agent->id,
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:100',
+        ]);
+        $agent->update($validated);
+        return redirect()->route('admin.masters.agents')->with('success', 'Agent updated successfully.');
+    }
+
+    public function toggleAgent(Agent $agent)
+    {
+        $agent->update(['is_active' => !$agent->is_active]);
+        $message = $agent->is_active ? 'Agent activated.' : 'Agent deactivated.';
         return redirect()->back()->with('success', $message);
     }
 

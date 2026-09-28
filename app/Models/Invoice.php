@@ -18,6 +18,7 @@ class Invoice extends Model
         'customer_id',
         'trip_id',
         'quotation_id',
+        'agent_id',
         'subject',
         'invoice_type',
         'invoice_pdf',
@@ -28,11 +29,14 @@ class Invoice extends Model
         'payment_terms',
         'subtotal',
         'discount',
+        'service_fee',
+        'vat_percent',
         'gst_percent',
         'gst_inclusive',
         'gst_split',
         'gst',
         'grand_total',
+        'agent_commission',
         'amount_paid',
         'balance_due',
         'status',
@@ -44,10 +48,13 @@ class Invoice extends Model
         'items' => 'array',
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
+        'service_fee' => 'decimal:2',
+        'vat_percent' => 'decimal:2',
         'gst' => 'decimal:2',
         'gst_inclusive' => 'boolean',
         'gst_split' => 'boolean',
         'grand_total' => 'decimal:2',
+        'agent_commission' => 'decimal:2',
         'amount_paid' => 'decimal:2',
         'balance_due' => 'decimal:2',
     ];
@@ -109,6 +116,20 @@ class Invoice extends Model
     public function quotation(): BelongsTo
     {
         return $this->belongsTo(Quotation::class);
+    }
+
+    public function agent(): BelongsTo
+    {
+        return $this->belongsTo(Agent::class);
+    }
+
+    /**
+     * UAE invoices: VAT (5% or 0%) is charged on the service fee only and stored in `gst`.
+     * vat_percent is null for GST/no-tax invoices.
+     */
+    public function getIsVatAttribute(): bool
+    {
+        return $this->vat_percent !== null;
     }
 
     public function incomes(): HasMany

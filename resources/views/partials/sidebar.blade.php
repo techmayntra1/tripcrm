@@ -206,6 +206,11 @@
                             <i class="bi bi-people"></i> <span>Passenger Types</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('admin.masters.agents') }}" class="nav-link menu-link {{ request()->routeIs('admin.masters.agents*') ? 'active' : '' }}">
+                            <i class="bi bi-person-badge"></i> <span>Agents</span>
+                        </a>
+                    </li>
 
                     <li class="sidebar-subheading">Trips</li>
                     <li class="nav-item">

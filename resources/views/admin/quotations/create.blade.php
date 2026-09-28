@@ -76,9 +76,9 @@
                     <div class="mb-3">
                         <label for="company" class="form-label">Company <span class="text-danger">*</span></label>
                         <select class="form-select js-currency-source @error('company_id') is-invalid @enderror" id="company" name="company_id" data-currency-default="₹" required>
-                            <option value="" data-has-gst="0">Select Company</option>
+                            <option value="" data-has-gst="0" data-tax-mode="none">Select Company</option>
                             @foreach($companies as $company)
-                                <option value="{{ $company->id }}" data-currency="{{ $company->currency_symbol }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
+                                <option value="{{ $company->id }}" data-currency="{{ $company->currency_symbol }}" data-has-gst="{{ !empty($company->gst_number) ? '1' : '0' }}" data-tax-mode="{{ $company->tax_mode }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>{{ $company->name }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback">Please select a company</div>
@@ -217,6 +217,7 @@
                             <td class="py-2">
                                 <div class="input-group">
                                     <span class="input-group-text" id="gstPerLineNote" style="font-size:12px;">Per line</span>
+                                    <input type="hidden" name="gst_percent" id="vatPercentHidden" value="{{ \App\Models\Company::UAE_VAT_PERCENT }}" disabled>
                                     <select class="form-select d-none" style="max-width: 140px;" name="gst_percent" id="gstPercent">
                                         @foreach($gstRates as $rate)
                                         <option value="{{ $rate->percentage }}" {{ $rate->percentage == 18 ? 'selected' : '' }}>{{ $rate->name }}</option>
@@ -239,7 +240,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="d-flex flex-wrap gap-3 mt-2">
+                                <div class="d-flex flex-wrap gap-3 mt-2" id="gstToggles">
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" name="gst_inclusive" id="gstInclusive" value="1">
                                         <label class="form-check-label small" for="gstInclusive">GST Inclusive</label>
@@ -349,6 +350,30 @@ document.addEventListener('DOMContentLoaded', function() {
         filterTripsByCustomer(customerSelect.value);
     }
 
+    const VAT_PERCENT = {{ \App\Models\Company::UAE_VAT_PERCENT }};
+
+    // 'vat' (UAE: flat VAT on the final amount), 'gst' (India: per-line tax) or 'none'.
+    function taxMode() {
+        const opt = companySelect.options[companySelect.selectedIndex];
+        return (opt && opt.getAttribute('data-tax-mode')) || 'none';
+    }
+
+    // A catalogue service can be sold above its master price, never below it.
+    function servicePriceFloor(row) {
+        const sel = row.querySelector('.service-select');
+        if (!sel || !sel.value) return 0;
+        return parseFloat(sel.options[sel.selectedIndex].getAttribute('data-price')) || 0;
+    }
+
+    function applyServiceMin(row) {
+        const rateEl = row.querySelector('.rate');
+        if (!rateEl) return;
+        const floor = servicePriceFloor(row);
+        rateEl.min = floor;
+        rateEl.title = floor > 0 ? 'Cannot be less than service price ' + currencySymbol() + ' ' + floor : '';
+        rateEl.classList.toggle('is-invalid', floor > 0 && (parseFloat(rateEl.value) || 0) < floor);
+    }
+
     function calculateTotals() {
         const subtotalInput = document.getElementById('subtotalInput');
         const grandTotalInput = document.getElementById('grandTotalInput');
@@ -365,11 +390,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Per-line tax engine: each line has its own tax type + rate.
         let gstTax = 0, vatTax = 0;
+        const vatMode = taxMode() === 'vat';
         document.querySelectorAll('#itemsBody tr').forEach(function(row) {
             const amtEl = row.querySelector('.amount');
             const amt = amtEl ? (parseFloat(amtEl.value) || 0) : 0;
             subtotal += amt;
-            if (!gstVisible) return;
+            if (!gstVisible || vatMode) return;
             const typeEl = row.querySelector('.tax-type');
             const rateEl = row.querySelector('.tax-rate');
             const type = typeEl ? typeEl.value : 'none';
@@ -383,6 +409,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         subtotal = Math.min(Math.round(subtotal), 99999999);
         subtotalInput.value = subtotal;
+        if (vatMode) {
+            // UAE: VAT on the final amount (after discount)
+            vatTax = Math.max(subtotal - discount, 0) * VAT_PERCENT / 100;
+        }
         gstPortion = gstTax;
         gst = gstTax + vatTax;
         // Inclusive GST is already embedded in the line amounts (subtotal); don't add it again.
@@ -420,16 +450,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateTaxColumns() {
-        const show = gstRow.style.display !== 'none';
+        const mode = taxMode();
         document.querySelectorAll('.tax-col').forEach(function(el) {
-            el.style.display = show ? '' : 'none';
+            el.style.display = mode === 'gst' ? '' : 'none';
+            // VAT is charged on the total, so line-level tax is not submitted
+            el.querySelectorAll('input, select').forEach(function(input) { input.disabled = mode === 'vat'; });
         });
     }
 
     function updateGstVisibility() {
-        const selectedOption = companySelect.options[companySelect.selectedIndex];
-        const hasGst = selectedOption && selectedOption.getAttribute('data-has-gst') === '1';
-        gstRow.style.display = hasGst ? '' : 'none';
+        const mode = taxMode();
+        const vatMode = mode === 'vat';
+        gstRow.style.display = mode === 'none' ? 'none' : '';
+        document.getElementById('gstLabel').textContent = vatMode ? 'VAT' : 'Tax';
+        document.getElementById('gstPerLineNote').textContent = vatMode ? VAT_PERCENT + '%' : 'Per line';
+        document.getElementById('gstToggles').classList.toggle('d-none', vatMode);
+        document.getElementById('vatPercentHidden').disabled = !vatMode;
+        document.getElementById('gstPercent').disabled = vatMode;
+        if (vatMode) {
+            document.getElementById('gstInclusive').checked = false;
+            document.getElementById('gstSplit').checked = false;
+        }
         updateTaxColumns();
         calculateTotals();
     }
@@ -529,6 +570,7 @@ document.addEventListener('DOMContentLoaded', function() {
         itemsBody.insertAdjacentHTML('beforeend', newRow);
         itemIndex++;
         reindexRows();
+        updateTaxColumns();
     });
 
     itemsBody.addEventListener('click', function(e) {
@@ -554,6 +596,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const row = e.target.closest('tr');
             calculateRowAmount(row);
             calculateTotals();
+        }
+        if (e.target.classList.contains('rate')) {
+            applyServiceMin(e.target.closest('tr'));
         }
         if (e.target.classList.contains('amount') || e.target.classList.contains('tax-rate')) {
             calculateTotals();
@@ -583,10 +628,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (descEl && desc) descEl.value = desc;
                 calculateRowAmount(row);
             }
+            applyServiceMin(row);
             calculateTotals();
         }
         if (e.target.classList.contains('tax-type')) {
             calculateTotals();
+        }
+        // A rate below the service price is raised back to the price
+        if (e.target.classList.contains('rate')) {
+            const row = e.target.closest('tr');
+            const floor = servicePriceFloor(row);
+            if (floor > 0 && (parseFloat(e.target.value) || 0) < floor) {
+                e.target.value = Math.ceil(floor);
+                calculateRowAmount(row);
+                calculateTotals();
+            }
+            applyServiceMin(row);
         }
     });
 
@@ -648,6 +705,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValid = false;
                 }
                 if (!isSqft && (parseFloat(rate.value) || 0) <= 0) {
+                    rate.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if ((parseFloat(rate.value) || 0) < servicePriceFloor(row)) {
                     rate.classList.add('is-invalid');
                     isValid = false;
                 }
@@ -723,6 +784,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    itemsBody.querySelectorAll('tr').forEach(applyServiceMin);
     updateGstVisibility();
 });
 </script>
