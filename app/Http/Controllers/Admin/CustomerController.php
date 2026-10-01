@@ -43,6 +43,7 @@ class CustomerController extends Controller
                     ->orWhere('gst_number', 'like', "%{$search}%")
                     ->orWhere('company_name', 'like', "%{$search}%")
                     ->orWhere('company_trn', 'like', "%{$search}%")
+                    ->orWhere('company_lrn', 'like', "%{$search}%")
                     ->orWhere('country', 'like', "%{$search}%");
             });
         }
@@ -79,6 +80,7 @@ class CustomerController extends Controller
                     ->orWhere('gst_number', 'like', "%{$search}%")
                     ->orWhere('company_name', 'like', "%{$search}%")
                     ->orWhere('company_trn', 'like', "%{$search}%")
+                    ->orWhere('company_lrn', 'like', "%{$search}%")
                     ->orWhere('country', 'like', "%{$search}%");
             });
         }
@@ -171,6 +173,7 @@ class CustomerController extends Controller
             'email' => 'nullable|email|max:100',
             'company_name' => 'nullable|string|max:100',
             'company_trn' => 'nullable|string|max:30',
+            'company_lrn' => 'nullable|string|max:30',
             'work_lead' => 'nullable|string|max:100',
             'gst_number' => 'nullable|string|max:15',
             'country' => 'nullable|string|max:60',
@@ -288,6 +291,7 @@ class CustomerController extends Controller
             'email' => 'nullable|email|max:100',
             'company_name' => 'nullable|string|max:100',
             'company_trn' => 'nullable|string|max:30',
+            'company_lrn' => 'nullable|string|max:30',
             'work_lead' => 'nullable|string|max:100',
             'gst_number' => 'nullable|string|max:15',
             'country' => 'nullable|string|max:60',

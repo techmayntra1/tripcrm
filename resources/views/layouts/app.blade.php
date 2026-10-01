@@ -32,7 +32,7 @@
 
     {{-- New UAE Dirham sign (U+20C3): few system fonts have it yet, so a bundled glyph is used for that code point only --}}
     <style>
-        @font-face { font-family: 'UAE Dirham'; src: url('{{ asset('fonts/uae-dirham.woff2') }}') format('woff2'), url('{{ asset('fonts/uae-dirham.ttf') }}') format('truetype'); unicode-range: U+20C3; font-display: swap; }
+        @font-face { font-family: 'UAE Dirham'; src: url('{{ asset('fonts/uae-dirham.woff2') }}?v=2') format('woff2'), url('{{ asset('fonts/uae-dirham.ttf') }}?v=2') format('truetype'); unicode-range: U+20C3; font-display: swap; }
         :root { --vz-font-sans-serif: "UAE Dirham", "Poppins", sans-serif; }
         body, input, select, textarea, button { font-family: "UAE Dirham", var(--vz-body-font-family, "Poppins"), sans-serif; }
     </style>

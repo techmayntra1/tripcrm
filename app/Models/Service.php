@@ -21,9 +21,15 @@ class Service extends Model
         'admin_price' => 'decimal:2',
     ];
 
+    /** Selling price of a service line: price + admin price. */
+    public function getFinalPriceAttribute(): float
+    {
+        return (float) $this->price + (float) $this->admin_price;
+    }
+
     /**
-     * A line item using a catalogue service may be priced above the service's master
-     * price but never below it. Returns validation errors keyed "items.{i}.rate".
+     * A line item using a catalogue service may be priced above the service's final
+     * price (price + admin price) but never below it. Returns errors keyed "items.{i}.rate".
      */
     public static function rateFloorErrors(array $items): array
     {
@@ -31,12 +37,12 @@ class Service extends Model
         if ($ids->isEmpty()) {
             return [];
         }
-        $prices = self::whereIn('id', $ids)->pluck('price', 'id');
+        $prices = self::whereIn('id', $ids)->get()->mapWithKeys(fn ($s) => [$s->id => $s->final_price]);
 
         $errors = [];
         foreach ($items as $i => $item) {
             $price = $prices[$item['service_id'] ?? null] ?? null;
-            if ($price !== null && (float) ($item['rate'] ?? 0) + 0.001 < (float) $price) {
+            if ($price !== null && $price > 0 && (float) ($item['rate'] ?? 0) + 0.001 < $price) {
                 $errors["items.{$i}.rate"] = 'Rate for "' . ($item['service_name'] ?? 'service') . '" cannot be less than its service price ' . number_format((float) $price, 2) . '.';
             }
         }

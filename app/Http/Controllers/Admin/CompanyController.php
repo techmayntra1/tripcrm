@@ -35,6 +35,7 @@ class CompanyController extends Controller
             'gst_number' => 'nullable|string|max:20',
             'pan_number' => 'nullable|string|max:10',
             'vat_number' => 'nullable|string|max:30',
+            'lrn_number' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
@@ -42,6 +43,7 @@ class CompanyController extends Controller
             'quotation_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
             'invoice_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
             'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'stamp' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'bank_ids' => 'nullable|array',
             'bank_ids.*' => 'exists:banks,id',
         ], [
@@ -51,6 +53,8 @@ class CompanyController extends Controller
             'invoice_number_series.regex' => 'Invoice series must contain only letters, numbers, hyphens, and slashes.',
             'logo.mimes' => 'Logo must be a JPG or PNG image.',
             'logo.max' => 'Logo must not be larger than 2 MB.',
+            'stamp.mimes' => 'Stamp must be a JPG or PNG image.',
+            'stamp.max' => 'Stamp must not be larger than 2 MB.',
         ]);
 
         unset($validated['bank_ids']);
@@ -58,6 +62,9 @@ class CompanyController extends Controller
 
         if ($request->hasFile('logo')) {
             $validated['logo'] = $request->file('logo')->store('companies/logos', 'public');
+        }
+        if ($request->hasFile('stamp')) {
+            $validated['stamp'] = $request->file('stamp')->store('companies/stamps', 'public');
         }
 
         $company = Company::create($validated);
@@ -129,6 +136,7 @@ class CompanyController extends Controller
             'gst_number' => 'nullable|string|max:20',
             'pan_number' => 'nullable|string|max:10',
             'vat_number' => 'nullable|string|max:30',
+            'lrn_number' => 'nullable|string|max:30',
             'address' => 'nullable|string',
             'city' => 'nullable|string|max:100',
             'state' => 'nullable|string|max:100',
@@ -136,7 +144,9 @@ class CompanyController extends Controller
             'quotation_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
             'invoice_number_series' => ['required', 'string', 'max:20', 'regex:/^[a-zA-Z0-9\-\/]+$/'],
             'logo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'stamp' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'remove_logo' => 'nullable|boolean',
+            'remove_stamp' => 'nullable|boolean',
             'bank_ids' => 'nullable|array',
             'bank_ids.*' => 'exists:banks,id',
         ], [
@@ -146,9 +156,11 @@ class CompanyController extends Controller
             'invoice_number_series.regex' => 'Invoice series must contain only letters, numbers, hyphens, and slashes.',
             'logo.mimes' => 'Logo must be a JPG or PNG image.',
             'logo.max' => 'Logo must not be larger than 2 MB.',
+            'stamp.mimes' => 'Stamp must be a JPG or PNG image.',
+            'stamp.max' => 'Stamp must not be larger than 2 MB.',
         ]);
 
-        unset($validated['bank_ids'], $validated['remove_logo']);
+        unset($validated['bank_ids'], $validated['remove_logo'], $validated['remove_stamp']);
         $validated = $this->clearTaxFieldsForOtherRegion($validated);
 
         if ($request->hasFile('logo')) {
@@ -159,6 +171,16 @@ class CompanyController extends Controller
         } elseif ($request->boolean('remove_logo') && $company->logo) {
             Storage::disk('public')->delete($company->logo);
             $validated['logo'] = null;
+        }
+
+        if ($request->hasFile('stamp')) {
+            if ($company->stamp) {
+                Storage::disk('public')->delete($company->stamp);
+            }
+            $validated['stamp'] = $request->file('stamp')->store('companies/stamps', 'public');
+        } elseif ($request->boolean('remove_stamp') && $company->stamp) {
+            Storage::disk('public')->delete($company->stamp);
+            $validated['stamp'] = null;
         }
 
         $company->update($validated);

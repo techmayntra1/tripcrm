@@ -128,7 +128,7 @@
                         <strong>{{ $customer->work_lead ?: '-' }}</strong>
                     </div>
                 </div>
-                @if($customer->company_name || $customer->company_trn || $customer->gst_number || $customer->address)
+                @if($customer->company_name || $customer->company_trn || $customer->company_lrn || $customer->gst_number || $customer->address)
                 <hr class="my-2">
                 <div class="row mb-3">
                     @if($customer->company_name)
@@ -141,6 +141,12 @@
                     <div class="col-md-3">
                         <small class="text-muted d-block">Company TRN</small>
                         <strong>{{ $customer->company_trn }}</strong>
+                    </div>
+                    @endif
+                    @if($customer->company_lrn)
+                    <div class="col-md-3">
+                        <small class="text-muted d-block">Company LRN</small>
+                        <strong>{{ $customer->company_lrn }}</strong>
                     </div>
                     @endif
                     @if($customer->gst_number)

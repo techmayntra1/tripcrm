@@ -26,6 +26,7 @@
                         @if($company->gst_number) | GST: {{ $company->gst_number }}@endif
                         @if($company->pan_number) | PAN: {{ $company->pan_number }}@endif
                     @endif
+                    @if($company->lrn_number) | LRN: {{ $company->lrn_number }}@endif
                 </div>
             </div>
         </div>
@@ -50,55 +51,30 @@
 @endif
 
 
-<div class="row mb-3">
-    <div class="col-md-3">
-        <div class="card widget-content bg-success">
-            <div class="widget-content-wrapper text-white">
-                <div class="widget-content-left">
-                    <div class="widget-heading">Total Income</div>
+<div class="row g-3 mb-3">
+    @php
+        $stats = [
+            ['label' => 'Total Income', 'value' => formatMoney($totalIncome, 0, $company), 'icon' => 'bi-graph-up-arrow', 'color' => 'success'],
+            ['label' => 'Receivable', 'value' => formatMoney($totalReceivable, 0, $company), 'icon' => 'bi-hourglass-split', 'color' => 'warning'],
+            ['label' => 'Bank Balance', 'value' => formatMoney($company->total_bank_balance, 0, $company), 'icon' => 'bi-bank', 'color' => 'info'],
+            ['label' => 'Quotations', 'value' => $company->quotations->count(), 'icon' => 'bi-file-earmark-text', 'color' => 'primary'],
+        ];
+    @endphp
+    @foreach($stats as $stat)
+    <div class="col-sm-6 col-xl-3">
+        <div class="card company-stat border-0 shadow-sm h-100 mb-0">
+            <div class="card-body d-flex align-items-center gap-3">
+                <div class="company-stat-icon bg-{{ $stat['color'] }}-subtle text-{{ $stat['color'] }}">
+                    <i class="bi {{ $stat['icon'] }}"></i>
                 </div>
-                <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ formatMoney($totalIncome, 0, $company) }}</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card widget-content bg-warning">
-            <div class="widget-content-wrapper text-white">
-                <div class="widget-content-left">
-                    <div class="widget-heading">Receivable</div>
-                </div>
-                <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ formatMoney($totalReceivable, 0, $company) }}</span></div>
+                <div class="min-w-0">
+                    <div class="company-stat-label">{{ $stat['label'] }}</div>
+                    <div class="company-stat-value text-truncate" title="{{ $stat['value'] }}">{{ $stat['value'] }}</div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card widget-content bg-info">
-            <div class="widget-content-wrapper text-white">
-                <div class="widget-content-left">
-                    <div class="widget-heading">Bank Balance</div>
-                </div>
-                <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ formatMoney($company->total_bank_balance, 0, $company) }}</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card widget-content bg-primary">
-            <div class="widget-content-wrapper text-white">
-                <div class="widget-content-left">
-                    <div class="widget-heading">Quotations</div>
-                </div>
-                <div class="widget-content-right">
-                    <div class="widget-numbers text-white"><span>{{ $company->quotations->count() }}</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @endforeach
 </div>
 
 <div class="row">
@@ -319,3 +295,17 @@
     </div>
 </div>
 @endsection
+@push('styles')
+<style>
+.company-stat { border-radius: 10px; }
+.company-stat .card-body { padding: 1.1rem 1.25rem; }
+.company-stat-icon {
+    width: 48px; height: 48px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 10px; font-size: 1.35rem;
+}
+.company-stat-label { font-size: 13px; color: var(--vz-secondary-color, #878a99); margin-bottom: 2px; }
+.company-stat-value { font-size: 1.35rem; font-weight: 600; color: var(--vz-heading-color, #212529); line-height: 1.3; }
+.min-w-0 { min-width: 0; }
+</style>
+@endpush

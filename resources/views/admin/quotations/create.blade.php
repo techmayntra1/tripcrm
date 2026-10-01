@@ -132,15 +132,16 @@
             <table class="table table-bordered mb-0" id="itemsTable">
                 <thead class="table-light">
                     <tr>
-                        <th width="40">#</th>
-                        <th width="170">Service</th>
+                        <th width="32">#</th>
+                        <th width="170">Service / Passenger</th>
                         <th>Description <span class="text-danger">*</span></th>
-                        <th width="130">Passenger Type</th>
-                        <th width="95">Qty <span class="text-danger">*</span></th>
+                        <th width="70">Qty <span class="text-danger">*</span></th>
                         <th width="100">Rate (<span class="js-currency-symbol">₹</span>)</th>
-                        <th width="120">Amount (<span class="js-currency-symbol">₹</span>)</th>
-                        <th width="110" class="tax-col" style="display:none;">Tax Type</th>
-                        <th width="90" class="tax-col" style="display:none;">Tax %</th>
+                        <th width="100">Amount (<span class="js-currency-symbol">₹</span>)</th>
+                        <th width="95" class="vat-col" style="display:none;">Service Fee (<span class="js-currency-symbol">₹</span>)</th>
+                        <th width="95" class="vat-col" style="display:none;">VAT (<span class="js-currency-symbol">₹</span>)</th>
+                        <th width="95" class="tax-col" style="display:none;">Tax Type</th>
+                        <th width="75" class="tax-col" style="display:none;">Tax %</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -151,23 +152,23 @@
                                 <select class="form-select form-select-sm service-select" name="items[0][service_id]">
                                     <option value="">— Custom —</option>
                                     @foreach($services as $svc)
-                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->final_price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
                                     @endforeach
                                 </select>
                                 <input type="hidden" class="service-name" name="items[0][service_name]" value="">
-                            </td>
-                            <td><textarea class="form-control form-control-sm item-description" name="items[0][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
-                            <td>
-                                <select class="form-select form-select-sm" name="items[0][passenger_type]">
-                                    <option value="">—</option>
+                                <select class="form-select form-select-sm mt-1" title="Passenger type" name="items[0][passenger_type]">
+                                    <option value="">Passenger —</option>
                                     @foreach($passengerTypes as $pt)
                                     <option value="{{ $pt->name }}">{{ $pt->name }}</option>
                                     @endforeach
                                 </select>
                             </td>
+                            <td><textarea class="form-control form-control-sm item-description" name="items[0][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
                             <td><input type="number" class="form-control form-control-sm qty" name="items[0][qty]" value="1" min="1" max="99999" step="1" required inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm rate" name="items[0][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm amount" name="items[0][amount]" placeholder="0" min="0" step="1" inputmode="numeric"></td>
+                            <td class="vat-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[0][service_fee]" value="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
+                            <td class="vat-col" style="display:none;"><select class="form-select form-select-sm vat-rate" name="items[0][vat_rate]"><option value="5">5%</option><option value="0" >0%</option></select><input type="number" class="form-control form-control-sm vat-amount mt-1" title="VAT amount" value="0" readonly tabindex="-1" style="background-color: #e9ecef;"></td>
                             <td class="tax-col" style="display:none;">
                                 <select class="form-select form-select-sm tax-type" name="items[0][tax_type]">
                                     <option value="none">None</option>
@@ -200,6 +201,15 @@
                                 <div class="input-group">
                                     <span class="input-group-text js-currency-symbol">₹</span>
                                     <input type="number" class="form-control" min="0" step="1" max="999999999" name="subtotal" id="subtotalInput" placeholder="0" inputmode="numeric">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="serviceFeeRow" style="display:none;">
+                            <td class="py-2">Service Fee</td>
+                            <td class="py-2">
+                                <div class="input-group">
+                                    <span class="input-group-text js-currency-symbol">₹</span>
+                                    <input type="number" class="form-control" name="service_fee" id="serviceFeeInput" value="{{ old('service_fee') }}" placeholder="0" readonly style="background-color: #e9ecef;">
                                 </div>
                             </td>
                         </tr>
@@ -391,11 +401,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // Per-line tax engine: each line has its own tax type + rate.
         let gstTax = 0, vatTax = 0;
         const vatMode = taxMode() === 'vat';
+        let fees = 0;
         document.querySelectorAll('#itemsBody tr').forEach(function(row) {
             const amtEl = row.querySelector('.amount');
             const amt = amtEl ? (parseFloat(amtEl.value) || 0) : 0;
             subtotal += amt;
-            if (!gstVisible || vatMode) return;
+            if (vatMode) {
+                // UAE: VAT is charged on the line's service fee only, never on the amount
+                const fee = parseFloat((row.querySelector('.service-fee') || {}).value) || 0;
+                const lineVat = fee * (parseFloat((row.querySelector('.vat-rate') || {}).value) || 0) / 100;
+                fees += fee;
+                vatTax += lineVat;
+                const vatEl = row.querySelector('.vat-amount');
+                if (vatEl) vatEl.value = Math.round(lineVat * 100) / 100;
+                return;
+            }
+            if (!gstVisible) return;
             const typeEl = row.querySelector('.tax-type');
             const rateEl = row.querySelector('.tax-rate');
             const type = typeEl ? typeEl.value : 'none';
@@ -408,16 +429,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         subtotal = Math.min(Math.round(subtotal), 99999999);
-        subtotalInput.value = subtotal;
-        if (vatMode) {
-            // UAE: VAT on the final amount (after discount)
-            vatTax = Math.max(subtotal - discount, 0) * VAT_PERCENT / 100;
-        }
+        // UAE: shown with the service fees included; the server stores the amounts-only subtotal
+        subtotalInput.value = Math.round(subtotal + fees);
+        document.getElementById('serviceFeeInput').value = Math.round(fees);
         gstPortion = gstTax;
         gst = gstTax + vatTax;
         // Inclusive GST is already embedded in the line amounts (subtotal); don't add it again.
         const addTax = vatTax + (gstInclusive ? 0 : gstTax);
-        grandTotal = Math.round(subtotal - discount + addTax);
+        grandTotal = Math.round(subtotal + fees - discount + addTax);
         if (gstInclusive) {
             gstSign.innerHTML = '<span class="js-currency-symbol">' + currencySymbol() + '</span>';
             gstSign.classList.remove('text-success');
@@ -453,8 +472,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const mode = taxMode();
         document.querySelectorAll('.tax-col').forEach(function(el) {
             el.style.display = mode === 'gst' ? '' : 'none';
-            // VAT is charged on the total, so line-level tax is not submitted
+            // UAE lines carry VAT instead of GST, so GST line tax is not submitted
             el.querySelectorAll('input, select').forEach(function(input) { input.disabled = mode === 'vat'; });
+        });
+        document.querySelectorAll('.vat-col').forEach(function(el) {
+            el.style.display = mode === 'vat' ? '' : 'none';
+            el.querySelectorAll('input, select').forEach(function(input) { input.disabled = mode !== 'vat'; });
         });
     }
 
@@ -463,7 +486,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const vatMode = mode === 'vat';
         gstRow.style.display = mode === 'none' ? 'none' : '';
         document.getElementById('gstLabel').textContent = vatMode ? 'VAT' : 'Tax';
-        document.getElementById('gstPerLineNote').textContent = vatMode ? VAT_PERCENT + '%' : 'Per line';
+        document.getElementById('serviceFeeInput').disabled = !vatMode;
+        document.getElementById('gstPerLineNote').textContent = 'Per line';
         document.getElementById('gstToggles').classList.toggle('d-none', vatMode);
         document.getElementById('vatPercentHidden').disabled = !vatMode;
         document.getElementById('gstPercent').disabled = vatMode;
@@ -539,23 +563,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     <select class="form-select form-select-sm service-select" name="items[${itemIndex}][service_id]">
                         <option value="">— Custom —</option>
                         @foreach($services as $svc)
-                        <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                        <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->final_price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
                         @endforeach
                     </select>
                     <input type="hidden" class="service-name" name="items[${itemIndex}][service_name]" value="">
-                </td>
-                <td><textarea class="form-control form-control-sm item-description" name="items[${itemIndex}][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
-                <td>
-                    <select class="form-select form-select-sm" name="items[${itemIndex}][passenger_type]">
-                        <option value="">—</option>
+                    <select class="form-select form-select-sm mt-1" title="Passenger type" name="items[${itemIndex}][passenger_type]">
+                        <option value="">Passenger —</option>
                         @foreach($passengerTypes as $pt)
                         <option value="{{ $pt->name }}">{{ $pt->name }}</option>
                         @endforeach
                     </select>
                 </td>
+                <td><textarea class="form-control form-control-sm item-description" name="items[${itemIndex}][description]" placeholder="Item description" required minlength="1" maxlength="150" rows="1"></textarea></td>
                 <td><input type="number" class="form-control form-control-sm qty" name="items[${itemIndex}][qty]" value="1" min="1" max="99999" step="1" required inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm rate" name="items[${itemIndex}][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm amount" name="items[${itemIndex}][amount]" placeholder="0" min="0" step="1" inputmode="numeric"></td>
+                <td class="vat-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[${itemIndex}][service_fee]" value="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
+                <td class="vat-col" style="display:none;"><select class="form-select form-select-sm vat-rate" name="items[${itemIndex}][vat_rate]"><option value="5">5%</option><option value="0" >0%</option></select><input type="number" class="form-control form-control-sm vat-amount mt-1" title="VAT amount" value="0" readonly tabindex="-1" style="background-color: #e9ecef;"></td>
                 <td class="tax-col" style="${showTax ? '' : 'display:none;'}">
                     <select class="form-select form-select-sm tax-type" name="items[${itemIndex}][tax_type]">
                         <option value="none">None</option>
@@ -600,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.target.classList.contains('rate')) {
             applyServiceMin(e.target.closest('tr'));
         }
-        if (e.target.classList.contains('amount') || e.target.classList.contains('tax-rate')) {
+        if (e.target.classList.contains('amount') || e.target.classList.contains('tax-rate') || e.target.classList.contains('service-fee')) {
             calculateTotals();
         }
     });
@@ -631,7 +655,7 @@ document.addEventListener('DOMContentLoaded', function() {
             applyServiceMin(row);
             calculateTotals();
         }
-        if (e.target.classList.contains('tax-type')) {
+        if (e.target.classList.contains('tax-type') || e.target.classList.contains('vat-rate')) {
             calculateTotals();
         }
         // A rate below the service price is raised back to the price
@@ -802,7 +826,33 @@ document.addEventListener('DOMContentLoaded', function() {
     overflow-x: auto;
 }
 #itemsTable {
-    min-width: 980px;
+    min-width: 860px;
+}
+/* Compact item grid so all columns fit without scrolling on typical screens */
+#itemsTable > :not(caption) > * > * {
+    padding: 0.3rem 0.35rem;
+    vertical-align: top;
+}
+#itemsTable thead th {
+    font-size: 12px;
+    white-space: nowrap;
+}
+#itemsTable .form-control-sm,
+#itemsTable .form-select-sm {
+    padding-left: 0.4rem;
+    font-size: 13px;
+}
+#itemsTable .form-select-sm {
+    padding-right: 1.5rem;
+    background-position: right 0.35rem center;
+}
+#itemsTable input[type=number]::-webkit-outer-spin-button,
+#itemsTable input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+#itemsTable input[type=number] {
+    -moz-appearance: textfield;
 }
 #itemsTable .sqft-col {
     min-width: 110px;

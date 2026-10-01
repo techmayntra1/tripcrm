@@ -82,6 +82,15 @@
     </div>
     <div class="col-md-4">
         <div class="mb-3">
+            <label for="company_lrn" class="form-label">Company LRN Number</label>
+            <input type="text" class="form-control @error('company_lrn') is-invalid @enderror" id="company_lrn" name="company_lrn" value="{{ old('company_lrn', $c->company_lrn ?? '') }}" placeholder="e.g., 47025775" maxlength="30">
+            @error('company_lrn')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
             <label for="gst_number" class="form-label">GST Number</label>
             <input type="text" class="form-control @error('gst_number') is-invalid @enderror" id="gst_number" name="gst_number" value="{{ old('gst_number', $c->gst_number ?? '') }}" placeholder="e.g., 24AABCT1234D1ZH" maxlength="15" style="text-transform: uppercase;">
             @error('gst_number')

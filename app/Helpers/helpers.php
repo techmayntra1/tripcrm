@@ -147,11 +147,53 @@ if (!function_exists('pdfCurrencySymbol')) {
     }
 }
 
+if (!function_exists('preparePdfFontCache')) {
+    /**
+     * Make dompdf's font cache (storage/fonts) usable. Call BEFORE Pdf::loadView(): dompdf reads
+     * its font registry when the PDF object is created. Creates the folder if it was never deployed
+     * and drops a registered Dirham font whose cache files are gone, so dompdf rebuilds it.
+     * Returns false when the folder can't be written; the Dirham font is then skipped.
+     */
+    function preparePdfFontCache(): bool
+    {
+        static $ready = null;
+        if ($ready !== null) {
+            return $ready;
+        }
+
+        $cacheDir = storage_path('fonts');
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0775, true);
+        }
+        if (!is_dir($cacheDir) || !is_writable($cacheDir) || !is_file(public_path('fonts/uae-dirham.ttf'))) {
+            return $ready = false;
+        }
+
+        $registry = $cacheDir . '/installed-fonts.json';
+        if (is_file($registry)) {
+            $fonts = json_decode((string) @file_get_contents($registry), true);
+            $entry = is_array($fonts) ? ($fonts['uae dirham']['normal'] ?? null) : null;
+            if ($entry !== null) {
+                $file = str_contains($entry, '/') || str_contains($entry, '\\') ? $entry : $cacheDir . '/' . $entry;
+                if (!is_file($file . '.ufm') && !is_file($file . '.ufm.json')) {
+                    unset($fonts['uae dirham']);
+                    @file_put_contents($registry, json_encode($fonts, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                }
+            }
+        }
+
+        return $ready = true;
+    }
+}
+
 if (!function_exists('pdfCurrencyFontFace')) {
     // @font-face rule for the Dirham sign; output inside a PDF view's <style>.
-    // Needs dompdf's font cache dir (storage/fonts) to exist.
+    // Empty when the font cache is unusable, so the PDF still renders instead of failing.
     function pdfCurrencyFontFace(): \Illuminate\Support\HtmlString
     {
+        if (!preparePdfFontCache()) {
+            return new \Illuminate\Support\HtmlString('');
+        }
         $path = str_replace('\\', '/', public_path('fonts/uae-dirham.ttf'));
         return new \Illuminate\Support\HtmlString("@font-face { font-family: 'UAE Dirham'; font-style: normal; font-weight: normal; src: url('{$path}') format('truetype'); }");
     }
@@ -261,6 +303,63 @@ if (!function_exists('numberToWords')) {
         }
 
         return ($isNegative ? 'minus ' : '') . implode(' ', $parts);
+    }
+}
+
+if (!function_exists('vatLineDisplay')) {
+    /**
+     * Customer-facing figures for a UAE (VAT) line item. The service fee is never shown on its
+     * own: it is folded into the line's amount and rate, then VAT and the line total follow.
+     */
+    function vatLineDisplay(array $item): array
+    {
+        $amount = $item['amount'] ?? null;
+        if ($amount === null || $amount === '') {
+            $amount = (float) ($item['qty'] ?? 0) * (float) ($item['rate'] ?? 0);
+        }
+        $amount = (float) $amount + (float) ($item['service_fee'] ?? 0);
+        $qty = (float) ($item['qty'] ?? 0);
+        $vat = (float) ($item['vat_amount'] ?? 0);
+
+        return [
+            'rate' => $qty > 0 ? $amount / $qty : (float) ($item['rate'] ?? 0),
+            'amount' => $amount,
+            'vat' => $vat,
+            'vat_rate' => rtrim(rtrim(number_format((float) ($item['vat_rate'] ?? 0), 2), '0'), '.'),
+            'total' => $amount + $vat,
+        ];
+    }
+}
+
+if (!function_exists('amountInWords')) {
+    /**
+     * "Five Thousand Nine Hundred Thirty Dirham Only" for UAE, "Rupees Five Lakh ... Only" for India.
+     * UAE uses the international scale (million/billion); India uses lakh/crore via numberToWords().
+     */
+    function amountInWords($amount, $context = null): string
+    {
+        $number = (int) round(abs((float) $amount));
+
+        if (resolveCountry($context) !== 'uae') {
+            return 'Rupees ' . ucwords(numberToWords($number)) . ' Only';
+        }
+
+        if ($number === 0) {
+            return 'Zero Dirham Only';
+        }
+
+        $parts = [];
+        foreach ([1000000000 => 'billion', 1000000 => 'million', 1000 => 'thousand'] as $size => $label) {
+            if ($number >= $size) {
+                $parts[] = numberToWords(intdiv($number, $size)) . ' ' . $label;
+                $number %= $size;
+            }
+        }
+        if ($number > 0) {
+            $parts[] = numberToWords($number);
+        }
+
+        return ucwords(implode(' ', $parts)) . ' Dirham Only';
     }
 }
 

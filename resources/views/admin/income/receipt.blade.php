@@ -179,7 +179,7 @@
 <body>
     @php
         $company = $invoice->company ?? null;
-        $amountWords = 'Rupees ' . ucfirst(trim(numberToWords((int) round($income->amount)))) . ' only';
+        $amountWords = amountInWords($income->amount, $invoice ?? $income);
     @endphp
     <div class="header clearfix">
         <div class="company-section">

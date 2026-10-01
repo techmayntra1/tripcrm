@@ -14,6 +14,7 @@ use App\Models\PassengerType;
 use App\Models\TermTemplate;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class QuotationController extends Controller
 {
@@ -140,6 +141,8 @@ class QuotationController extends Controller
             'items.*.passenger_type' => 'nullable|string|max:100',
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
+            'items.*.vat_rate' => 'nullable|in:0,5',
+            'items.*.service_fee' => 'nullable|numeric|min:0',
             'items.*.unit' => 'nullable|string',
             'items.*.height' => 'nullable|numeric|min:0',
             'items.*.width' => 'nullable|numeric|min:0',
@@ -239,9 +242,9 @@ class QuotationController extends Controller
     }
 
     /**
-     * Items and tax totals as they should be saved. UAE companies charge a flat VAT on the
-     * final amount (subtotal - discount), so line-level tax is dropped and the totals are
-     * recomputed here rather than trusted from the form.
+     * Items and tax totals as they should be saved. UAE companies charge VAT (5% or 0% per
+     * line) on each line's service fee only; the fees are added to the total and the totals
+     * are recomputed here rather than trusted from the form.
      */
     private function taxFields(array $validated, Request $request): array
     {
@@ -249,12 +252,30 @@ class QuotationController extends Controller
         $company = Company::find($validated['company_id']);
 
         if ($company && $company->tax_mode === 'vat') {
-            $items = array_map(fn ($item) => array_merge($item, ['tax_type' => 'none', 'tax_rate' => 0]), $items);
-            $taxable = max((float) ($validated['subtotal'] ?? 0) - (float) ($validated['discount'] ?? 0), 0);
-            $vat = $taxable * Company::UAE_VAT_PERCENT / 100;
+            // UAE: VAT per line (5% or 0%) on that line's service fee only, never on the amount
+            $fees = 0;
+            $vat = 0;
+            $items = array_map(function ($item) use (&$fees, &$vat) {
+                $fee = (float) ($item['service_fee'] ?? 0);
+                $rate = (float) ($item['vat_rate'] ?? Company::UAE_VAT_PERCENT);
+                $fees += $fee;
+                $vat += $fee * $rate / 100;
+                return array_merge($item, [
+                    'tax_type' => 'none',
+                    'tax_rate' => 0,
+                    'service_fee' => $fee,
+                    'vat_rate' => $rate,
+                    'vat_amount' => round($fee * $rate / 100, 2),
+                ]);
+            }, $items);
+            // The form's subtotal box shows amounts + fees, so the stored subtotal (amounts only) comes from the lines
+            $subtotal = array_sum(array_map(fn ($i) => (float) ($i['amount'] ?? 0), $items));
+            $taxable = $subtotal + $fees - (float) ($validated['discount'] ?? 0);
 
             return [
                 'items' => $items,
+                'subtotal' => $subtotal,
+                'service_fee' => $fees,
                 'gst_percent' => Company::UAE_VAT_PERCENT,
                 'gst_inclusive' => false,
                 'gst_split' => false,
@@ -264,7 +285,8 @@ class QuotationController extends Controller
         }
 
         return [
-            'items' => $items,
+            'items' => array_map(fn ($item) => Arr::except($item, ['service_fee', 'vat_rate', 'vat_amount']), $items),
+            'service_fee' => 0,
             'gst_percent' => $validated['gst_percent'] ?? 0,
             'gst_inclusive' => $request->has('gst_inclusive'),
             'gst_split' => $request->has('gst_split'),
@@ -347,6 +369,8 @@ class QuotationController extends Controller
     public function downloadPdf(Quotation $quotation)
     {
         $quotation->load(['company', 'customer']);
+
+        preparePdfFontCache(); // before loadView: dompdf reads its font cache on creation
 
         $pdf = Pdf::loadView('admin.quotations.pdf', compact('quotation'))
             ->setPaper('a4', 'portrait')

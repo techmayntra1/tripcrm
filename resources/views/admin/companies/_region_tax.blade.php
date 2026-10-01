@@ -38,6 +38,12 @@
                     <input type="text" class="form-control" name="vat_number" value="{{ old('vat_number', $company->vat_number ?? '') }}" maxlength="30" placeholder="e.g., 100123456700003">
                 </div>
             </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label class="form-label">LRN Number</label>
+                    <input type="text" class="form-control" name="lrn_number" value="{{ old('lrn_number', $company->lrn_number ?? '') }}" maxlength="30" placeholder="e.g., 47025775">
+                </div>
+            </div>
         </div>
     </div>
 </div>

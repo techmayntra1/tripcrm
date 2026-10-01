@@ -140,6 +140,10 @@ class IncomeController extends Controller
             'attachment.max' => 'Attachment must not exceed 2MB.',
         ]);
 
+        if ($error = $this->overpaymentError($validated)) {
+            return back()->withInput()->withErrors(['amount' => $error]);
+        }
+
         if ($isCash && empty($validated['bank_id'])) {
             $cashAccount = Bank::where('is_protected', true)->first();
             $validated['bank_id'] = $cashAccount?->id;
@@ -202,6 +206,10 @@ class IncomeController extends Controller
             'attachment.max' => 'Attachment must not exceed 2MB.',
         ]);
 
+        if ($error = $this->overpaymentError($validated, $income)) {
+            return back()->withInput()->withErrors(['amount' => $error]);
+        }
+
         if ($isCash && empty($validated['bank_id'])) {
             $cashAccount = Bank::where('is_protected', true)->first();
             $validated['bank_id'] = $cashAccount?->id;
@@ -235,6 +243,29 @@ class IncomeController extends Controller
 
         return redirect()->route('admin.income.index')
             ->with('success', 'Income updated successfully.');
+    }
+
+    /**
+     * A payment against an invoice may be partial but never more than what is still owed.
+     * When editing, the payment's own current amount counts as available again.
+     */
+    private function overpaymentError(array $validated, ?Income $existing = null): ?string
+    {
+        $invoice = !empty($validated['invoice_id']) ? Invoice::find($validated['invoice_id']) : null;
+        if (!$invoice) {
+            return null;
+        }
+
+        $paidElsewhere = (float) $invoice->incomes()
+            ->when($existing, fn ($q) => $q->where('id', '!=', $existing->id))
+            ->sum('amount');
+        $outstanding = max((float) $invoice->grand_total - $paidElsewhere, 0);
+
+        if ((float) $validated['amount'] > $outstanding + 0.01) {
+            return 'Amount cannot exceed the outstanding balance of ' . formatMoney($outstanding, 0, $invoice) . ' on invoice ' . $invoice->invoice_number . '.';
+        }
+
+        return null;
     }
 
     public function destroy(Income $income)
@@ -315,6 +346,8 @@ class IncomeController extends Controller
                 ->sum('amount');
             $balanceAfter = max((float) $invoice->grand_total - $paidToDate, 0);
         }
+
+        preparePdfFontCache(); // before loadView: dompdf reads its font cache on creation
 
         $pdf = Pdf::loadView('admin.income.receipt', compact('income', 'invoice', 'paidToDate', 'balanceAfter'))
             ->setPaper('a4', 'portrait')

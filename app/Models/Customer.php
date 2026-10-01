@@ -42,6 +42,7 @@ class Customer extends Model
         'email',
         'company_name',
         'company_trn',
+        'company_lrn',
         'work_type',
         'work_lead',
         'budget',

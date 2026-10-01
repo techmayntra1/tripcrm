@@ -47,7 +47,7 @@
             margin-bottom: 5px;
         }
         .company-logo {
-            height: 45px;
+            height: 80px;
             width: auto;
             margin-bottom: 4px;
         }
@@ -254,8 +254,9 @@
             <div class="company-info">
                 @if($quotation->company)
                     @if($quotation->company->phone)Phone: {{ $quotation->company->phone }}<br>@endif
-                    @if($quotation->company->gst_number)GST: {{ $quotation->company->gst_number }}@endif
-                    @if($quotation->company->is_uae && $quotation->company->vat_number)TRN: {{ $quotation->company->vat_number }}@endif
+                    @if($quotation->company->gst_number)GST: {{ $quotation->company->gst_number }}<br>@endif
+                    @if($quotation->company->is_uae && $quotation->company->vat_number)<strong style="color: #333;">TRN: {{ $quotation->company->vat_number }}</strong><br>@endif
+                    @if($quotation->company->lrn_number)LRN No: {{ $quotation->company->lrn_number }}@endif
                 @endif
             </div>
         </div>
@@ -297,6 +298,8 @@
             return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
         };
 
+        $hasLineVat = collect($quotation->items)->contains(fn ($i) => isset($i['vat_rate']));
+
         // Per-line tax rollup (GST/VAT summed across line items).
         $lineTaxByType = ['gst' => 0, 'vat' => 0];
         $hasLineTax = false;
@@ -327,7 +330,7 @@
         <thead>
             <tr style="background-color: #405189; color: #fff;">
                 <th style="width: {{ $hasDimensions ? '5%' : '6%' }}; text-align: center; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">#</th>
-                <th style="width: {{ $hasDimensions ? '39%' : '54%' }}; text-align: left; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
+                <th style="width: {{ ($hasDimensions ? 39 : 54) - ($hasLineVat ? 24 : 0) }}%; text-align: left; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
                 @if($hasDimensions)
                 <th style="width: 8%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">HEIGHT</th>
                 <th style="width: 8%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">WIDTH</th>
@@ -336,6 +339,10 @@
                 <th style="width: {{ $hasDimensions ? '8%' : '13%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">QTY</th>
                 <th style="width: {{ $hasDimensions ? '12%' : '13%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">RATE ({{ $currencySymbol }})</th>
                 <th style="width: {{ $hasDimensions ? '12%' : '14%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">AMOUNT ({{ $currencySymbol }})</th>
+                @if($hasLineVat)
+                <th style="width: 12%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">VAT ({{ $currencySymbol }})</th>
+                <th style="width: 12%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">TOTAL ({{ $currencySymbol }})</th>
+                @endif
                 @if($hasLineTax)
                 <th style="width: 10%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">TAX</th>
                 @endif
@@ -350,6 +357,14 @@
                         ? ($item['total'] ?? 0) * ($item['qty'] ?? 0) * ($item['rate'] ?? 0)
                         : ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
                 }
+                $itemRate = $item['rate'] ?? 0;
+                if ($hasLineVat) {
+                    // UAE: the service fee is folded into rate/amount, never shown separately
+                    $vatLine = vatLineDisplay($item);
+                    $itemRate = $vatLine['rate'];
+                    $itemAmount = $vatLine['amount'];
+                }
+                $moneyDecimals = $hasLineVat ? 2 : 0;
             @endphp
             <tr>
                 <td style="text-align: center; padding: 5px 6px; font-size: 10px; font-weight: bold; border: 1px solid #ccc;">{{ $index + 1 }}</td>
@@ -360,8 +375,12 @@
                 <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ $formatDimension($item['total'] ?? null) }}</td>
                 @endif
                 <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($item['qty'] ?? 0, 0) }}</td>
-                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($item['rate'] ?? 0, 0) }}</td>
-                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($itemAmount, 0) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($itemRate, $moneyDecimals) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($itemAmount, $moneyDecimals) }}</td>
+                @if($hasLineVat)
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($vatLine['vat'], 2) }} <span style="font-size: 8px; color: #888;">({{ $vatLine['vat_rate'] }}%)</span></td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc; font-weight: bold;">{{ number_format($vatLine['total'], 2) }}</td>
+                @endif
                 @if($hasLineTax)
                 @php $rowTaxType = $item['tax_type'] ?? 'none'; $rowTaxRate = (float) ($item['tax_rate'] ?? 0); @endphp
                 <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">@if($rowTaxType !== 'none' && $rowTaxRate > 0){{ strtoupper($rowTaxType) }} {{ rtrim(rtrim(number_format($rowTaxRate, 2), '0'), '.') }}%@else-@endif</td>
@@ -395,7 +414,7 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Subtotal:</td>
-                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->subtotal, 0) }}</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($quotation->subtotal + $quotation->service_fee, 0) }}</td>
                 </tr>
                 @if($quotation->discount > 0)
                 <tr>
@@ -440,7 +459,7 @@
                     </tr>
                     @else
                     <tr>
-                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">{{ $quotation->company?->is_uae ? 'VAT' : 'GST' }} ({{ $quotation->gst_percent }}%){{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
+                        <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">{{ $quotation->company?->is_uae ? 'VAT' : 'GST (' . $quotation->gst_percent . '%)' }}{{ $quotation->gst_inclusive ? ' - Inclusive' : '' }}:</td>
                         <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: {{ $quotation->gst_inclusive ? '#333' : '#27ae60' }};">{{ $quotation->gst_inclusive ? '' : '+ ' }}{{ $currencySymbol }} {{ number_format($quotation->gst, 0) }}</td>
                     </tr>
                     @endif
@@ -455,7 +474,11 @@
 
     
     <div class="footer">
-        <div class="signature-box">
+        @php $stampDataUri = $quotation->company?->stamp_data_uri; @endphp
+        <div class="signature-box" style="{{ $stampDataUri ? 'border-top: none;' : '' }}">
+            @if($stampDataUri)
+            <img src="{{ $stampDataUri }}" style="height: 90px; width: auto; margin-bottom: 4px;" alt="">
+            @endif
             <div class="signature-company">For {{ $quotation->company->name ?? '' }}</div>
             <div class="signature-text">Authorized Signatory</div>
         </div>

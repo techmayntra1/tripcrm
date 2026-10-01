@@ -6,6 +6,7 @@
     @if($customer->address){{ $customer->address }}<br>@endif
     @if($customer->mobile)Phone: {{ $customer->mobile }}<br>@endif
     @if($customer->gst_number)GST: {{ $customer->gst_number }}<br>@endif
-    @if($customer->company_trn)TRN: {{ $customer->company_trn }}@endif
+    @if($customer->company_trn)<strong style="color: #333;">TRN: {{ $customer->company_trn }}</strong><br>@endif
+    @if($customer->company_lrn)LRN No: {{ $customer->company_lrn }}@endif
 </div>
 @endif

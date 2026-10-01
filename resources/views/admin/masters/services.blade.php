@@ -60,6 +60,7 @@
                     <th>Name</th>
                     <th width="130" class="text-end">Price (₹)</th>
                     <th width="150" class="text-end">Admin Price (₹)</th>
+                    <th width="150" class="text-end">Final Price (₹)</th>
                     <th width="120" class="text-center">Actions</th>
                 </tr>
             </thead>
@@ -75,6 +76,7 @@
                     </td>
                     <td class="text-end">{{ $item->price !== null ? number_format($item->price, 2) : '-' }}</td>
                     <td class="text-end">{{ $item->admin_price !== null ? number_format($item->admin_price, 2) : '-' }}</td>
+                    <td class="text-end fw-semibold">{{ number_format($item->final_price, 2) }}</td>
                     <td class="text-center">
                         <div class="d-flex gap-1 justify-content-center">
                             <button class="btn btn-sm btn-outline-primary" onclick="openEditModal({{ json_encode($item) }})" data-bs-toggle="modal" data-bs-target="#editModal" title="Edit">
@@ -91,7 +93,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">
+                    <td colspan="6" class="text-center py-4 text-muted">
                         <i class="bi bi-tools fs-1 d-block mb-2"></i>
                         No services found.
                     </td>

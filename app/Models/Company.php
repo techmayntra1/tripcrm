@@ -47,6 +47,7 @@ class Company extends Model
         'gst_number',
         'pan_number',
         'vat_number',
+        'lrn_number',
         'address',
         'city',
         'state',
@@ -55,6 +56,7 @@ class Company extends Model
         'email',
         'website',
         'logo',
+        'stamp',
         'quotation_number_series',
         'invoice_number_series',
     ];
@@ -137,13 +139,28 @@ class Company extends Model
     // Inlined as base64 so dompdf renders it without remote fetches or the storage symlink.
     public function getLogoDataUriAttribute(): ?string
     {
-        if (!$this->logo || !Storage::disk('public')->exists($this->logo)) {
+        return self::imageDataUri($this->logo);
+    }
+
+    public function getStampUrlAttribute(): ?string
+    {
+        return $this->stamp ? asset('storage/' . $this->stamp) : null;
+    }
+
+    public function getStampDataUriAttribute(): ?string
+    {
+        return self::imageDataUri($this->stamp);
+    }
+
+    private static function imageDataUri(?string $path): ?string
+    {
+        if (!$path || !Storage::disk('public')->exists($path)) {
             return null;
         }
 
-        $mime = Storage::disk('public')->mimeType($this->logo) ?: 'image/png';
+        $mime = Storage::disk('public')->mimeType($path) ?: 'image/png';
 
-        return 'data:' . $mime . ';base64,' . base64_encode(Storage::disk('public')->get($this->logo));
+        return 'data:' . $mime . ';base64,' . base64_encode(Storage::disk('public')->get($path));
     }
 
 }

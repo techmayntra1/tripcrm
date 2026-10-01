@@ -180,6 +180,7 @@ class InvoiceController extends Controller
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.service_fee' => 'nullable|numeric|min:0',
+            'items.*.vat_rate' => 'nullable|in:0,5',
             'items.*.description' => 'nullable|string|max:150',
             'items.*.passenger_type' => 'nullable|string|max:100',
             'items.*.qty' => 'nullable|numeric|min:0',
@@ -306,6 +307,7 @@ class InvoiceController extends Controller
             'items.*.tax_type' => 'nullable|in:none,gst,vat',
             'items.*.tax_rate' => 'nullable|numeric|min:0|max:100',
             'items.*.service_fee' => 'nullable|numeric|min:0',
+            'items.*.vat_rate' => 'nullable|in:0,5',
             'items.*.description' => 'nullable|string|max:150',
             'items.*.passenger_type' => 'nullable|string|max:100',
             'items.*.qty' => 'nullable|numeric|min:0',
@@ -382,18 +384,32 @@ class InvoiceController extends Controller
         $company = !empty($validated['company_id']) ? Company::find($validated['company_id']) : null;
 
         if ($company && $company->tax_mode === 'vat') {
+            // Item mode: VAT per line (5% or 0%) on that line's service fee
             if ($items) {
-                $items = array_map(fn ($item) => array_merge($item, [
-                    'tax_type' => 'none',
-                    'tax_rate' => 0,
-                    'service_fee' => (float) ($item['service_fee'] ?? 0),
-                ]), $items);
+                $items = array_map(function ($item) {
+                    $fee = (float) ($item['service_fee'] ?? 0);
+                    $rate = (float) ($item['vat_rate'] ?? Company::UAE_VAT_PERCENT);
+                    return array_merge($item, [
+                        'tax_type' => 'none',
+                        'tax_rate' => 0,
+                        'service_fee' => $fee,
+                        'vat_rate' => $rate,
+                        'vat_amount' => round($fee * $rate / 100, 2),
+                    ]);
+                }, $items);
             }
-            $serviceFee = $isItems
-                ? array_sum(array_column($items ?? [], 'service_fee'))
-                : (float) ($validated['service_fee'] ?? 0);
-            $vatPercent = (float) ($validated['vat_percent'] ?? Company::UAE_VAT_PERCENT);
-            $vat = $serviceFee * $vatPercent / 100;
+            if ($isItems) {
+                // The form's subtotal box shows amounts + fees, so the stored subtotal (amounts only) comes from the lines
+                $validated['subtotal'] = array_sum(array_map(fn ($i) => (float) ($i['amount'] ?? 0), $items ?? []));
+                $fields['subtotal'] = $validated['subtotal'];
+                $serviceFee = array_sum(array_column($items ?? [], 'service_fee'));
+                $vat = array_sum(array_map(fn ($i) => $i['service_fee'] * $i['vat_rate'] / 100, $items ?? []));
+                $vatPercent = (float) max(array_column($items ?? [], 'vat_rate') ?: [0]);
+            } else {
+                $serviceFee = (float) ($validated['service_fee'] ?? 0);
+                $vatPercent = (float) ($validated['vat_percent'] ?? Company::UAE_VAT_PERCENT);
+                $vat = $serviceFee * $vatPercent / 100;
+            }
             $taxable = (float) ($validated['subtotal'] ?? 0) + $serviceFee - (float) ($validated['discount'] ?? 0);
 
             $fields += [
@@ -407,7 +423,7 @@ class InvoiceController extends Controller
             ];
         } else {
             if ($items) {
-                $items = array_map(fn ($item) => Arr::except($item, ['service_fee']), $items);
+                $items = array_map(fn ($item) => Arr::except($item, ['service_fee', 'vat_rate', 'vat_amount']), $items);
             }
             $fields += [
                 'service_fee' => 0,
@@ -462,7 +478,9 @@ class InvoiceController extends Controller
 
     public function downloadPdf(Invoice $invoice)
     {
-        $invoice->load(['company', 'customer', 'trip', 'quotation']);
+        $invoice->load(['company', 'customer', 'trip', 'quotation', 'incomes']);
+
+        preparePdfFontCache(); // before loadView: dompdf reads its font cache on creation
 
         $pdf = Pdf::loadView('admin.invoices.pdf', compact('invoice'))
             ->setPaper('a4', 'portrait')

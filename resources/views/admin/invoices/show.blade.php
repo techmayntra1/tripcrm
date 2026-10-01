@@ -70,7 +70,10 @@
                         <p class="text-muted mb-0">GST: {{ $invoice->company->gst_number }}</p>
                         @endif
                         @if($invoice->company->is_uae && $invoice->company->vat_number)
-                        <p class="text-muted mb-0">TRN: {{ $invoice->company->vat_number }}</p>
+                        <p class="mb-0 fw-bold">TRN: {{ $invoice->company->vat_number }}</p>
+                        @endif
+                        @if($invoice->company->lrn_number)
+                        <p class="text-muted mb-0">LRN No: {{ $invoice->company->lrn_number }}</p>
                         @endif
                         @endif
                     </div>
@@ -103,7 +106,10 @@
                         <p class="mb-0">GST: {{ $invoice->customer->gst_number }}</p>
                         @endif
                         @if($invoice->customer->company_trn)
-                        <p class="mb-0">TRN: {{ $invoice->customer->company_trn }}</p>
+                        <p class="mb-0 fw-bold">TRN: {{ $invoice->customer->company_trn }}</p>
+                        @endif
+                        @if($invoice->customer->company_lrn)
+                        <p class="mb-0">LRN No: {{ $invoice->customer->company_lrn }}</p>
                         @endif
                         @endif
                     </div>
@@ -146,7 +152,7 @@
                         return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
                     };
 
-                    $hasServiceFee = collect($invoice->items)->contains(fn ($i) => (float) ($i['service_fee'] ?? 0) > 0);
+                    $hasLineVat = collect($invoice->items)->contains(fn ($i) => isset($i['vat_rate']));
 
                     // Per-line tax rollup (GST/VAT summed across line items).
                     $lineTaxByType = ['gst' => 0, 'vat' => 0];
@@ -187,8 +193,9 @@
                             <th width="60" class="text-end" style="border: 1px solid #405189; padding: 10px;">QTY</th>
                             <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">RATE ({{ currencySymbol($invoice) }})</th>
                             <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">AMOUNT ({{ currencySymbol($invoice) }})</th>
-                            @if($hasServiceFee)
-                            <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">SERVICE FEE ({{ currencySymbol($invoice) }})</th>
+                            @if($hasLineVat)
+                            <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">VAT ({{ currencySymbol($invoice) }})</th>
+                            <th width="120" class="text-end" style="border: 1px solid #405189; padding: 10px;">TOTAL ({{ currencySymbol($invoice) }})</th>
                             @endif
                             @if($hasLineTax)
                             <th width="100" class="text-end" style="border: 1px solid #405189; padding: 10px;">TAX</th>
@@ -204,6 +211,14 @@
                                     ? ($item['total'] ?? 0) * ($item['qty'] ?? 0) * ($item['rate'] ?? 0)
                                     : ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
                             }
+                            $itemRate = $item['rate'] ?? 0;
+                            if ($hasLineVat) {
+                                // UAE: the service fee is folded into rate/amount, never shown separately
+                                $vatLine = vatLineDisplay($item);
+                                $itemRate = $vatLine['rate'];
+                                $itemAmount = $vatLine['amount'];
+                            }
+                            $moneyDecimals = $hasLineVat ? 2 : 0;
                         @endphp
                         <tr>
                             <td style="border: 1px solid #ddd; padding: 10px;">{{ $index + 1 }}</td>
@@ -214,10 +229,11 @@
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ $formatDimension($item['total'] ?? null) }}</td>
                             @endif
                             <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['qty'] ?? 0, 0) }}</td>
-                            <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['rate'] ?? 0, 0) }}</td>
-                            <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($itemAmount, 0) }}</td>
-                            @if($hasServiceFee)
-                            <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($item['service_fee'] ?? 0, 0) }}</td>
+                            <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($itemRate, $moneyDecimals) }}</td>
+                            <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($itemAmount, $moneyDecimals) }}</td>
+                            @if($hasLineVat)
+                            <td class="text-end" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($vatLine['vat'], 2) }} <small class="text-muted">({{ $vatLine['vat_rate'] }}%)</small></td>
+                            <td class="text-end fw-bold" style="border: 1px solid #ddd; padding: 10px;">{{ number_format($vatLine['total'], 2) }}</td>
                             @endif
                             @if($hasLineTax)
                             @php $rowTaxType = $item['tax_type'] ?? 'none'; $rowTaxRate = (float) ($item['tax_rate'] ?? 0); @endphp
@@ -252,14 +268,8 @@
                         <table class="table table-sm">
                             <tr>
                                 <td>Subtotal:</td>
-                                <td class="text-end">{{ formatMoney($invoice->subtotal, 0, $invoice) }}</td>
+                                <td class="text-end">{{ formatMoney($invoice->subtotal + $invoice->service_fee, 0, $invoice) }}</td>
                             </tr>
-                            @if($invoice->service_fee > 0)
-                            <tr>
-                                <td>Service Fee:</td>
-                                <td class="text-end">{{ formatMoney($invoice->service_fee, 0, $invoice) }}</td>
-                            </tr>
-                            @endif
                             @if($invoice->discount > 0)
                             <tr>
                                 <td>Discount:</td>
@@ -269,7 +279,7 @@
                             @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
                             @if($invoice->is_vat)
                             <tr>
-                                <td>Total VAT ({{ rtrim(rtrim(number_format($invoice->vat_percent, 2), '0'), '.') }}% on service fee):</td>
+                                <td>VAT{{ ($hasLineVat ?? false) ? '' : ' (' . rtrim(rtrim(number_format($invoice->vat_percent, 2), '0'), '.') . '%)' }}:</td>
                                 <td class="text-end text-success">+ {{ formatMoney($invoice->gst, 0, $invoice) }}</td>
                             </tr>
                             @elseif($hasLineTax)
@@ -317,6 +327,18 @@
                                 <td><strong>Grand Total:</strong></td>
                                 <td class="text-end"><strong>{{ formatMoney($invoice->grand_total, 0, $invoice) }}</strong></td>
                             </tr>
+                            @foreach($invoice->incomes->sortBy('income_date') as $payment)
+                            <tr>
+                                <td>Payment Received ({{ formatDate($payment->income_date) }}):</td>
+                                <td class="text-end text-success">- {{ formatMoney($payment->amount, 0, $invoice) }}</td>
+                            </tr>
+                            @endforeach
+                            @if($invoice->amount_paid > 0)
+                            <tr>
+                                <td><strong>{{ $invoice->balance_due > 0 ? 'Outstanding Balance:' : 'Balance Due:' }}</strong></td>
+                                <td class="text-end"><strong class="{{ $invoice->balance_due > 0 ? 'text-danger' : 'text-success' }}">{{ formatMoney(max($invoice->balance_due, 0), 0, $invoice) }}</strong></td>
+                            </tr>
+                            @endif
                             @if($invoice->agent)
                             <tr class="text-muted">
                                 <td>Agent Commission ({{ $invoice->agent->name }}):<div class="small">Not included in grand total</div></td>
@@ -355,6 +377,9 @@
                         @endif
                     </div>
                     <div class="col-md-6 text-md-end">
+                        @if($invoice->company?->stamp_url)
+                        <img src="{{ $invoice->company->stamp_url }}" alt="Company stamp" class="mb-1" style="height: 90px; width: auto;">
+                        @endif
                         <p class="mb-0"><strong>For {{ $invoice->company->name ?? '-' }}</strong></p>
                         <p class="text-muted small">Authorized Signatory</p>
                     </div>
@@ -398,7 +423,7 @@
                                 <br><small class="text-muted">{{ formatDate($income->income_date) }}</small>
                             </div>
                             <div class="text-end">
-                                <span class="badge bg-success">{{ ucfirst(str_replace('_', ' ', $income->payment_mode)) }}</span>
+                                <span class="badge bg-success">{{ $income->payment_mode_display }}</span>
                                 <br><small class="text-muted">{{ $income->receipt_number }}</small>
                                 <br><a href="{{ route('admin.income.receipt', $income) }}" class="btn btn-outline-secondary btn-sm mt-1" target="_blank"><i class="bi bi-download me-1"></i> Receipt</a>
                             </div>

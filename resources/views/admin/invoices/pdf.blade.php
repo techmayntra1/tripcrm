@@ -47,7 +47,7 @@
             margin-bottom: 5px;
         }
         .company-logo {
-            height: 45px;
+            height: 80px;
             width: auto;
             margin-bottom: 4px;
         }
@@ -183,8 +183,9 @@
                     @if($invoice->company->address){{ $invoice->company->address }}<br>@endif
                     @if($invoice->company->phone)Phone: {{ $invoice->company->phone }}<br>@endif
                     @if($invoice->company->email)Email: {{ $invoice->company->email }}<br>@endif
-                    @if($invoice->company->gst_number)GST: {{ $invoice->company->gst_number }}@endif
-                    @if($invoice->company->is_uae && $invoice->company->vat_number)TRN: {{ $invoice->company->vat_number }}@endif
+                    @if($invoice->company->gst_number)GST: {{ $invoice->company->gst_number }}<br>@endif
+                    @if($invoice->company->is_uae && $invoice->company->vat_number)<strong style="color: #333;">TRN: {{ $invoice->company->vat_number }}</strong><br>@endif
+                    @if($invoice->company->lrn_number)LRN No: {{ $invoice->company->lrn_number }}@endif
                 @endif
             </div>
         </div>
@@ -230,7 +231,7 @@
             return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
         };
 
-        $hasServiceFee = collect($invoice->items)->contains(fn ($i) => (float) ($i['service_fee'] ?? 0) > 0);
+        $hasLineVat = collect($invoice->items)->contains(fn ($i) => isset($i['vat_rate']));
 
         // Per-line tax rollup (GST/VAT summed across line items).
         $lineTaxByType = ['gst' => 0, 'vat' => 0];
@@ -262,7 +263,7 @@
         <thead>
             <tr style="background-color: #405189; color: #fff;">
                 <th style="width: {{ $hasDimensions ? '4%' : '5%' }}; text-align: center; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">#</th>
-                <th style="width: {{ ($hasDimensions ? 43 : 55) - ($hasServiceFee ? 12 : 0) }}%; text-align: left; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
+                <th style="width: {{ ($hasDimensions ? 43 : 55) - ($hasLineVat ? 24 : 0) }}%; text-align: left; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">DESCRIPTION</th>
                 @if($hasDimensions)
                 <th style="width: 7%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">HEIGHT</th>
                 <th style="width: 7%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">WIDTH</th>
@@ -271,8 +272,9 @@
                 <th style="width: {{ $hasDimensions ? '7%' : '10%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">QTY</th>
                 <th style="width: {{ $hasDimensions ? '11%' : '15%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">RATE ({{ $currencySymbol }})</th>
                 <th style="width: {{ $hasDimensions ? '14%' : '15%' }}; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">AMOUNT ({{ $currencySymbol }})</th>
-                @if($hasServiceFee)
-                <th style="width: 12%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">SERVICE FEE ({{ $currencySymbol }})</th>
+                @if($hasLineVat)
+                <th style="width: 12%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">VAT ({{ $currencySymbol }})</th>
+                <th style="width: 12%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">TOTAL ({{ $currencySymbol }})</th>
                 @endif
                 @if($hasLineTax)
                 <th style="width: 10%; text-align: right; padding: 5px 6px; font-size: 9px; font-weight: bold; border: 1px solid #ccc;">TAX</th>
@@ -288,6 +290,14 @@
                         ? ($item['total'] ?? 0) * ($item['qty'] ?? 0) * ($item['rate'] ?? 0)
                         : ($item['qty'] ?? 0) * ($item['rate'] ?? 0);
                 }
+                $itemRate = $item['rate'] ?? 0;
+                if ($hasLineVat) {
+                    // UAE: the service fee is folded into rate/amount, never shown separately
+                    $vatLine = vatLineDisplay($item);
+                    $itemRate = $vatLine['rate'];
+                    $itemAmount = $vatLine['amount'];
+                }
+                $moneyDecimals = $hasLineVat ? 2 : 0;
             @endphp
             <tr>
                 <td style="text-align: center; padding: 5px 6px; font-size: 10px; font-weight: bold; border: 1px solid #ccc;">{{ $index + 1 }}</td>
@@ -298,10 +308,11 @@
                 <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ $formatDimension($item['total'] ?? null) }}</td>
                 @endif
                 <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($item['qty'] ?? 0, 0) }}</td>
-                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($item['rate'] ?? 0, 0) }}</td>
-                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($itemAmount, 0) }}</td>
-                @if($hasServiceFee)
-                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($item['service_fee'] ?? 0, 0) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($itemRate, $moneyDecimals) }}</td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($itemAmount, $moneyDecimals) }}</td>
+                @if($hasLineVat)
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc;">{{ number_format($vatLine['vat'], 2) }} <span style="font-size: 8px; color: #888;">({{ $vatLine['vat_rate'] }}%)</span></td>
+                <td style="text-align: right; padding: 5px 6px; font-size: 10px; border: 1px solid #ccc; font-weight: bold;">{{ number_format($vatLine['total'], 2) }}</td>
                 @endif
                 @if($hasLineTax)
                 @php $rowTaxType = $item['tax_type'] ?? 'none'; $rowTaxRate = (float) ($item['tax_rate'] ?? 0); @endphp
@@ -340,14 +351,8 @@
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Subtotal:</td>
-                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($invoice->subtotal, 0) }}</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($invoice->subtotal + $invoice->service_fee, 0) }}</td>
                 </tr>
-                @if($invoice->service_fee > 0)
-                <tr>
-                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Service Fee:</td>
-                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #333;">{{ $currencySymbol }} {{ number_format($invoice->service_fee, 0) }}</td>
-                </tr>
-                @endif
                 @if($invoice->discount > 0)
                 <tr>
                     <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Discount:</td>
@@ -357,7 +362,7 @@
                 @php $hasLineTax = $hasLineTax ?? false; $lineTaxByType = $lineTaxByType ?? ['gst' => 0, 'vat' => 0]; @endphp
                 @if($invoice->is_vat)
                 <tr>
-                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">Total VAT ({{ rtrim(rtrim(number_format($invoice->vat_percent, 2), '0'), '.') }}% on service fee):</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666; width: 60%;">VAT{{ ($hasLineVat ?? false) ? '' : ' (' . rtrim(rtrim(number_format($invoice->vat_percent, 2), '0'), '.') . '%)' }}:</td>
                     <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60;">+ {{ $currencySymbol }} {{ number_format($invoice->gst, 0) }}</td>
                 </tr>
                 @elseif($hasLineTax)
@@ -403,37 +408,39 @@
                 @endif
                 <tr style="background-color: #f0f4f8;">
                     <td style="padding: 6px; font-size: 12px; text-align: right; font-weight: bold; color: #333;">Grand Total:</td>
-                    <td style="padding: 6px; font-size: 13px; text-align: right; font-weight: bold; color: #333; white-space: nowrap;">{{ $currencySymbol }}{{ number_format($invoice->grand_total, 0) }}</td>
+                    <td style="padding: 6px; font-size: 13px; text-align: right; font-weight: bold; color: #333; white-space: nowrap;">{{ $currencySymbol }} {{ number_format($invoice->grand_total, 0) }}</td>
                 </tr>
+                @foreach($invoice->incomes->sortBy('income_date') as $payment)
+                <tr>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; color: #666;">Payment Received ({{ $payment->income_date->format('d M Y') }}):</td>
+                    <td style="padding: 4px 6px; font-size: 11px; border-bottom: 1px solid #eee; text-align: right; font-weight: bold; color: #27ae60; white-space: nowrap;">- {{ $currencySymbol }} {{ number_format($payment->amount, 0) }}</td>
+                </tr>
+                @endforeach
+                @if($invoice->amount_paid > 0)
+                <tr style="background-color: #fdf2f2;">
+                    <td style="padding: 6px; font-size: 12px; text-align: right; font-weight: bold; color: #333;">{{ $invoice->balance_due > 0 ? 'Outstanding Balance:' : 'Balance Due:' }}</td>
+                    <td style="padding: 6px; font-size: 13px; text-align: right; font-weight: bold; color: {{ $invoice->balance_due > 0 ? '#e74c3c' : '#27ae60' }}; white-space: nowrap;">{{ $currencySymbol }} {{ number_format(max($invoice->balance_due, 0), 0) }}</td>
+                </tr>
+                @endif
             </table>
         </div>
     </div>
 
     
-    @if($invoice->amount_paid > 0 || $invoice->balance_due > 0)
-    <div style="margin-top: 12px; padding: 6px; background-color: #f8f9fa; border: 1px solid #ddd;">
-        <table style="width: 100%;">
-            <tr>
-                <td style="width: 33%; text-align: center;">
-                    <div style="font-size: 9px; color: #666;">Amount Paid</div>
-                    <div style="font-size: 12px; font-weight: bold; color: #27ae60;">{{ $currencySymbol }} {{ number_format($invoice->amount_paid, 0) }}</div>
-                </td>
-                <td style="width: 33%; text-align: center;">
-                    <div style="font-size: 9px; color: #666;">Balance Due</div>
-                    <div style="font-size: 12px; font-weight: bold; color: {{ $invoice->balance_due > 0 ? '#e74c3c' : '#27ae60' }};">{{ $currencySymbol }} {{ number_format($invoice->balance_due, 0) }}</div>
-                </td>
-                <td style="width: 33%; text-align: center;">
-                    <div style="font-size: 9px; color: #666;">Status</div>
-                    <div style="font-size: 11px; font-weight: bold; color: #333;">{{ strtoupper($invoice->status) }}</div>
-                </td>
-            </tr>
-        </table>
+    <div style="margin-top: 10px; font-size: 10px; color: #333;">
+        <strong>Amount in words:</strong> {{ amountInWords($invoice->grand_total, $invoice) }}
+        @if($invoice->amount_paid > 0 && $invoice->balance_due > 0)
+        <br><strong>Pending amount in words:</strong> {{ amountInWords($invoice->balance_due, $invoice) }}
+        @endif
     </div>
-    @endif
 
     
     <div class="footer">
-        <div class="signature-box">
+        @php $stampDataUri = $invoice->company?->stamp_data_uri; @endphp
+        <div class="signature-box" style="{{ $stampDataUri ? 'border-top: none;' : '' }}">
+            @if($stampDataUri)
+            <img src="{{ $stampDataUri }}" style="height: 90px; width: auto; margin-bottom: 4px;" alt="">
+            @endif
             <div class="signature-company">For {{ $invoice->company->name ?? '' }}</div>
             <div class="signature-text">Authorized Signatory</div>
         </div>

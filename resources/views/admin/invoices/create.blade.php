@@ -161,49 +161,27 @@
                 <i class="bi bi-list-check me-2"></i> Invoice Items
             </div>
             <div class="d-flex align-items-center gap-3">
-                <div class="btn-group" role="group">
-                    <input type="radio" class="btn-check" name="invoice_type" id="typePdf" value="pdf" checked>
-                    <label class="btn btn-outline-primary btn-sm" for="typePdf">
-                        <i class="bi bi-file-pdf me-1"></i> Upload PDF
-                    </label>
-                    <input type="radio" class="btn-check" name="invoice_type" id="typeItems" value="items">
-                    <label class="btn btn-outline-primary btn-sm" for="typeItems">
-                        <i class="bi bi-list-ul me-1"></i> Add Items
-                    </label>
-                </div>
-                <button type="button" class="btn btn-sm btn-primary" id="addItemBtn" style="display: none;">
+                <input type="radio" class="d-none" name="invoice_type" id="typeItems" value="items" checked>
+                <button type="button" class="btn btn-sm btn-primary" id="addItemBtn">
                     <i class="bi bi-plus-lg me-1"></i> Add Item
                 </button>
             </div>
         </div>
-        <div class="card-body" id="pdfUploadSection">
-            <div class="row">
-                <div class="col-md-5">
-                    <label for="invoice_pdf" class="form-label">Upload Invoice PDF <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="invoice_pdf" name="invoice_pdf" accept=".pdf" required>
-                    <div class="invalid-feedback">Please upload an invoice PDF</div>
-                    <small class="text-muted">Max 10MB. Upload your invoice document.</small>
-                </div>
-                <div class="col-md-7">
-                    <label for="pdf_description" class="form-label">Description</label>
-                    <input type="text" class="form-control" id="pdf_description" name="pdf_description" value="{{ old('pdf_description') }}" placeholder="Brief description of the invoice...">
-                </div>
-            </div>
-        </div>
-        <div class="card-body p-0" id="manualItemsSection" style="display: none;">
+        <div class="card-body p-0" id="manualItemsSection">
             <div class="table-responsive">
                 <table class="table table-bordered mb-0" id="itemsTable">
                     <thead class="table-light">
                         <tr>
-                            <th width="40">#</th>
+                            <th width="32">#</th>
                             <th width="160">Service</th>
                             <th>Description <span class="text-danger">*</span></th>
-                            <th width="95">Qty <span class="text-danger">*</span></th>
+                            <th width="70">Qty <span class="text-danger">*</span></th>
                             <th width="100">Rate (<span class="js-currency-symbol">₹</span>)</th>
-                            <th width="120">Amount (<span class="js-currency-symbol">₹</span>)</th>
-                        <th width="110" class="fee-col" style="display:none;">Service Fee (<span class="js-currency-symbol">₹</span>)</th>
-                            <th width="110" class="tax-col" style="display:none;">Tax Type</th>
-                            <th width="90" class="tax-col" style="display:none;">Tax %</th>
+                            <th width="100">Amount (<span class="js-currency-symbol">₹</span>)</th>
+                        <th width="95" class="fee-col" style="display:none;">Service Fee (<span class="js-currency-symbol">₹</span>)</th>
+                        <th width="95" class="vat-col" style="display:none;">VAT (<span class="js-currency-symbol">₹</span>)</th>
+                            <th width="95" class="tax-col" style="display:none;">Tax Type</th>
+                            <th width="75" class="tax-col" style="display:none;">Tax %</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -214,7 +192,7 @@
                                 <select class="form-select form-select-sm service-select" name="items[0][service_id]">
                                     <option value="">— None —</option>
                                     @foreach($services as $svc)
-                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->final_price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
                                     @endforeach
                                 </select>
                                 <input type="hidden" class="service-name" name="items[0][service_name]" value="">
@@ -224,6 +202,7 @@
                             <td><input type="number" class="form-control form-control-sm rate" name="items[0][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm amount" name="items[0][amount]" value="0" min="0" step="1" inputmode="numeric"></td>
                             <td class="fee-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[0][service_fee]" value="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
+                            <td class="vat-col" style="display:none;"><select class="form-select form-select-sm vat-rate" name="items[0][vat_rate]"><option value="5">5%</option><option value="0" >0%</option></select><input type="number" class="form-control form-control-sm vat-amount mt-1" title="VAT amount" value="0" readonly tabindex="-1" style="background-color: #e9ecef;"></td>
                             <td class="tax-col" style="display:none;">
                                 <select class="form-select form-select-sm tax-type" name="items[0][tax_type]">
                                     <option value="none">None</option>
@@ -380,14 +359,11 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const typeItems = document.getElementById('typeItems');
-    const typePdf = document.getElementById('typePdf');
     const quotationSelect = document.getElementById('quotation');
     const customerSelect = document.getElementById('customer');
     const companySelect = document.getElementById('company');
     const gstRow = document.getElementById('gstRow');
     const itemsTableBody = document.querySelector('#itemsTable tbody');
-    const manualItemsSection = document.getElementById('manualItemsSection');
-    const pdfUploadSection = document.getElementById('pdfUploadSection');
     const addItemBtn = document.getElementById('addItemBtn');
     const tripSelect = document.getElementById('trip');
     let itemIndex = 1;
@@ -478,9 +454,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const vatMode = mode === 'vat';
         gstRow.style.display = mode === 'none' ? 'none' : '';
         document.getElementById('gstToggles').classList.toggle('d-none', vatMode);
-        document.getElementById('serviceFeeRow').style.display = vatMode ? '' : 'none';
+        // Item invoices fold the per-line fees into the subtotal; only an uploaded PDF takes the fee here
+        document.getElementById('serviceFeeRow').style.display = vatMode && !typeItems.checked ? '' : 'none';
         serviceFeeInput.disabled = !vatMode;
-        vatPercentSelect.disabled = !vatMode;
+        vatPercentSelect.disabled = !vatMode || typeItems.checked;
         if (vatMode) {
             document.getElementById('gstInclusive').checked = false;
             document.getElementById('gstSplit').checked = false;
@@ -503,20 +480,26 @@ document.addEventListener('DOMContentLoaded', function() {
         if (taxMode() === 'vat') {
             // UAE: VAT (5% or 0%) on the service fee only; the fee is added to the total
             const discount = parseFloat(document.getElementById('discountInput').value) || 0;
-            let fees = 0;
+            let fees = 0, vat = 0;
             if (typeItems.checked) {
                 itemsTableBody.querySelectorAll('tr').forEach(function(row) {
+                    const fee = parseFloat((row.querySelector('.service-fee') || {}).value) || 0;
+                    const lineVat = fee * (parseFloat((row.querySelector('.vat-rate') || {}).value) || 0) / 100;
                     subtotal += parseFloat((row.querySelector('.amount') || {}).value) || 0;
-                    fees += parseFloat((row.querySelector('.service-fee') || {}).value) || 0;
+                    fees += fee;
+                    vat += lineVat;
+                    const vatEl = row.querySelector('.vat-amount');
+                    if (vatEl) vatEl.value = Math.round(lineVat * 100) / 100;
                 });
                 subtotal = Math.min(Math.round(subtotal), 99999999);
-                subtotalInput.value = subtotal;
+                // Shown with the service fees included; the server stores the amounts-only subtotal
+                subtotalInput.value = Math.round(subtotal + fees);
                 serviceFeeInput.value = Math.round(fees);
             } else {
                 subtotal = parseFloat(subtotalInput.value) || 0;
                 fees = parseFloat(serviceFeeInput.value) || 0;
+                vat = fees * (parseFloat(vatPercentSelect.value) || 0) / 100;
             }
-            const vat = fees * (parseFloat(vatPercentSelect.value) || 0) / 100;
             grandTotal = Math.round(subtotal + fees - discount + vat);
             document.getElementById('gstInput').value = Math.round(vat);
             gstSign.innerHTML = '+ <span class="js-currency-symbol">' + currencySymbol() + '</span>';
@@ -613,33 +596,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     companySelect.addEventListener('change', updateGstVisibility);
 
-    const pdfInput = document.getElementById('invoice_pdf');
-
-    typeItems.addEventListener('change', function() {
-        if (this.checked) {
-            manualItemsSection.style.display = 'block';
-            pdfUploadSection.style.display = 'none';
-            addItemBtn.style.display = 'inline-block';
-            pdfInput.removeAttribute('required');
-            pdfInput.classList.remove('is-invalid');
-            updateTaxColumns();
-            updateSummaryTaxMode();
-            calculateTotals();
-        }
-    });
-
-    typePdf.addEventListener('change', function() {
-        if (this.checked) {
-            manualItemsSection.style.display = 'none';
-            pdfUploadSection.style.display = 'block';
-            addItemBtn.style.display = 'none';
-            pdfInput.setAttribute('required', 'required');
-            updateTaxColumns();
-            updateSummaryTaxMode();
-            calculateTotals();
-        }
-    });
-
     function updateTaxColumns() {
         const mode = taxMode();
         document.querySelectorAll('.tax-col').forEach(function(el) {
@@ -647,9 +603,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // VAT invoices tax the service fee only, so line-level tax is not submitted
             el.querySelectorAll('input, select').forEach(function(input) { input.disabled = mode === 'vat'; });
         });
-        document.querySelectorAll('.fee-col').forEach(function(el) {
+        document.querySelectorAll('.fee-col, .vat-col').forEach(function(el) {
             el.style.display = typeItems.checked && mode === 'vat' ? '' : 'none';
-            el.querySelectorAll('input').forEach(function(input) { input.disabled = mode !== 'vat'; });
+            el.querySelectorAll('input, select').forEach(function(input) { input.disabled = mode !== 'vat'; });
         });
     }
 
@@ -663,11 +619,13 @@ document.addEventListener('DOMContentLoaded', function() {
             gstPercent.classList.toggle('d-none', perLine || vatMode);
             gstPercent.disabled = vatMode;
         }
-        vatPercentSelect.classList.toggle('d-none', !vatMode);
+        vatPercentSelect.classList.toggle('d-none', !vatMode || typeItems.checked);
         if (gstPerLineNote) gstPerLineNote.classList.toggle('d-none', !perLine);
-        if (gstLabel) gstLabel.textContent = vatMode ? 'Total VAT' : (perLine ? 'Tax' : 'GST');
-        // Item mode sums the per-line fees; an uploaded PDF takes the fee directly
+        if (gstLabel) gstLabel.textContent = vatMode ? 'VAT' : (perLine ? 'Tax' : 'GST');
+        // Item mode sums the per-line fees and VAT; an uploaded PDF takes the fee and VAT % directly
         serviceFeeInput.readOnly = typeItems.checked;
+        document.getElementById('serviceFeeRow').style.display = vatMode && !typeItems.checked ? '' : 'none';
+        vatPercentSelect.disabled = !vatMode || typeItems.checked;
     }
 
     function calculateRowAmount(row) {
@@ -685,7 +643,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <select class="form-select form-select-sm service-select" name="items[${itemIndex}][service_id]">
                         <option value="">— None —</option>
                         @foreach($services as $svc)
-                        <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
+                        <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->final_price }}" data-description="{{ $svc->description }}">{{ $svc->name }}</option>
                         @endforeach
                     </select>
                     <input type="hidden" class="service-name" name="items[${itemIndex}][service_name]" value="">
@@ -695,6 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td><input type="number" class="form-control form-control-sm rate" name="items[${itemIndex}][rate]" placeholder="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
                 <td><input type="number" class="form-control form-control-sm amount" name="items[${itemIndex}][amount]" value="0" min="0" step="1" inputmode="numeric"></td>
                 <td class="fee-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[${itemIndex}][service_fee]" value="0" min="0" max="999999999" step="1" inputmode="numeric"></td>
+                <td class="vat-col" style="display:none;"><select class="form-select form-select-sm vat-rate" name="items[${itemIndex}][vat_rate]"><option value="5">5%</option><option value="0" >0%</option></select><input type="number" class="form-control form-control-sm vat-amount mt-1" title="VAT amount" value="0" readonly tabindex="-1" style="background-color: #e9ecef;"></td>
                 <td class="tax-col" style="${showTax ? '' : 'display:none;'}">
                     <select class="form-select form-select-sm tax-type" name="items[${itemIndex}][tax_type]">
                         <option value="none">None</option>
@@ -752,7 +711,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             applyServiceMin(row);
         }
-        if (e.target.classList.contains('tax-type')) {
+        if (e.target.classList.contains('tax-type') || e.target.classList.contains('vat-rate')) {
             calculateTotals();
         }
         if (e.target.classList.contains('service-select')) {
@@ -813,8 +772,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (items && items.length > 0) {
-                typeItems.checked = true;
-                typeItems.dispatchEvent(new Event('change'));
 
                 const showTaxItem = gstRow.style.display !== 'none';
                 let itemsHtml = '';
@@ -829,7 +786,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <select class="form-select form-select-sm service-select" name="items[${index}][service_id]">
                                     <option value="">— None —</option>
                                     @foreach($services as $svc)
-                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->price }}" data-description="{{ $svc->description }}" ${String(item.service_id || '') === '{{ $svc->id }}' ? 'selected' : ''}>{{ $svc->name }}</option>
+                                    <option value="{{ $svc->id }}" data-name="{{ $svc->name }}" data-price="{{ $svc->final_price }}" data-description="{{ $svc->description }}" ${String(item.service_id || '') === '{{ $svc->id }}' ? 'selected' : ''}>{{ $svc->name }}</option>
                                     @endforeach
                                 </select>
                                 <input type="hidden" class="service-name" name="items[${index}][service_name]" value="${item.service_name || ''}">
@@ -839,6 +796,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <td><input type="number" class="form-control form-control-sm rate" name="items[${index}][rate]" value="${item.rate || 0}" min="0" max="999999999" step="1" inputmode="numeric"></td>
                             <td><input type="number" class="form-control form-control-sm amount" name="items[${index}][amount]" value="${amount}" min="0" step="1" inputmode="numeric">${item.passenger_type ? `<input type="hidden" name="items[${index}][passenger_type]" value="${item.passenger_type}">` : ''}</td>
                             <td class="fee-col" style="display:none;"><input type="number" class="form-control form-control-sm service-fee" name="items[${index}][service_fee]" value="${item.service_fee || 0}" min="0" max="999999999" step="1" inputmode="numeric"></td>
+                            <td class="vat-col" style="display:none;"><select class="form-select form-select-sm vat-rate" name="items[${index}][vat_rate]"><option value="5">5%</option><option value="0" ${String(item.vat_rate) === '0' ? 'selected' : ''}>0%</option></select><input type="number" class="form-control form-control-sm vat-amount mt-1" title="VAT amount" value="0" readonly tabindex="-1" style="background-color: #e9ecef;"></td>
                             <td class="tax-col" style="${showTaxItem ? '' : 'display:none;'}">
                                 <select class="form-select form-select-sm tax-type" name="items[${index}][tax_type]">
                                     <option value="none" ${(item.tax_type || 'gst') === 'none' ? 'selected' : ''}>None</option>
@@ -934,13 +892,7 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
 
-        if (typePdf.checked) {
-            const pdfInput = document.getElementById('invoice_pdf');
-            if (!pdfInput.files || pdfInput.files.length === 0) {
-                pdfInput.classList.add('is-invalid');
-                isValid = false;
-            }
-        } else if (typeItems.checked) {
+        if (typeItems.checked) {
             const rows = itemsTableBody.querySelectorAll('tr');
 
             rows.forEach(function(row) {
@@ -1066,7 +1018,33 @@ document.addEventListener('DOMContentLoaded', function() {
     width: 100%;
 }
 #itemsTable {
-    min-width: 1080px;
+    min-width: 860px;
+}
+/* Compact item grid so all columns fit without scrolling on typical screens */
+#itemsTable > :not(caption) > * > * {
+    padding: 0.3rem 0.35rem;
+    vertical-align: top;
+}
+#itemsTable thead th {
+    font-size: 12px;
+    white-space: nowrap;
+}
+#itemsTable .form-control-sm,
+#itemsTable .form-select-sm {
+    padding-left: 0.4rem;
+    font-size: 13px;
+}
+#itemsTable .form-select-sm {
+    padding-right: 1.5rem;
+    background-position: right 0.35rem center;
+}
+#itemsTable input[type=number]::-webkit-outer-spin-button,
+#itemsTable input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+#itemsTable input[type=number] {
+    -moz-appearance: textfield;
 }
 #itemsTable .qty {
     min-width: 85px;
