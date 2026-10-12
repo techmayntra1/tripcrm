@@ -785,12 +785,6 @@ document.addEventListener('DOMContentLoaded', function() {
             isValid = false;
         }
 
-        const tripInput = document.getElementById('trip');
-        if ((tripInput.selectedIndex === 0 || !tripInput.value) && !tripInput.disabled) {
-            tripInput.classList.add('is-invalid');
-            isValid = false;
-        }
-
         const subtotalInput = document.getElementById('subtotalInput');
         const grandTotalInput = document.getElementById('grandTotalInput');
         const subtotal = parseFloat(subtotalInput.value) || 0;

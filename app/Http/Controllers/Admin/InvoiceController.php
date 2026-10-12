@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Agent;
+use App\Models\Bank;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\GstRate;
@@ -478,11 +479,15 @@ class InvoiceController extends Controller
 
     public function downloadPdf(Invoice $invoice)
     {
-        $invoice->load(['company', 'customer', 'trip', 'quotation', 'incomes']);
+        $invoice->load(['company.banks', 'customer', 'trip', 'quotation', 'agent', 'incomes']);
+
+        $bank = $this->pdfBank($invoice->company);
+        // Invoices saved without terms still print the default Terms & Conditions template.
+        $terms = $invoice->terms ?: TermTemplate::defaultContent(TermTemplate::TYPE_TERMS);
 
         preparePdfFontCache(); // before loadView: dompdf reads its font cache on creation
 
-        $pdf = Pdf::loadView('admin.invoices.pdf', compact('invoice'))
+        $pdf = Pdf::loadView('admin.invoices.pdf', compact('invoice', 'bank', 'terms'))
             ->setPaper('a4', 'portrait')
             ->setOptions([
                 'defaultFont' => 'DejaVu Sans',
@@ -492,5 +497,20 @@ class InvoiceController extends Controller
             ], true); // merged with the dompdf config so chroot/font cache allow the bundled Dirham font
 
         return $pdf->download(safeFilename('Invoice-' . $invoice->invoice_number, 'Invoice') . '.pdf');
+    }
+
+    /**
+     * Bank account printed for payment: the company's primary bank, then any of its banks,
+     * then a bank not tied to any company (same country first).
+     */
+    private function pdfBank(?Company $company): ?Bank
+    {
+        if ($company && $company->banks->isNotEmpty()) {
+            return $company->banks->firstWhere('is_primary', true) ?? $company->banks->sortBy('sort_order')->first();
+        }
+
+        $unassigned = Bank::whereNull('company_id')->orderByDesc('is_primary')->ordered()->get();
+
+        return $unassigned->firstWhere('country', $company?->country) ?? $unassigned->first();
     }
 }
