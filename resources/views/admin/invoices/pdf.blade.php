@@ -488,7 +488,8 @@
         <tr><td class="kv-key">Account Name</td><td class="kv-val">{{ $bank->account_holder ?: strtoupper($company->name ?? '') }}</td></tr>
         <tr><td class="kv-key">Account No.</td><td class="kv-val bold">{{ $bank->account_number }}</td></tr>
         @if($bank->bank_code)
-        <tr><td class="kv-key">{{ $bank->bank_code_label }}</td><td class="kv-val bold">{{ $bank->bank_code }}</td></tr>
+        {{-- IBAN printed in groups of four (AE62 0330 0000 ...) --}}
+        <tr><td class="kv-key">{{ $bank->bank_code_label }}</td><td class="kv-val bold">{{ $bank->is_uae ? trim(chunk_split(str_replace(' ', '', $bank->bank_code), 4, ' ')) : $bank->bank_code }}</td></tr>
         @endif
         @if($bank->branch)
         <tr><td class="kv-key">Branch</td><td class="kv-val">{{ $bank->branch }}</td></tr>
